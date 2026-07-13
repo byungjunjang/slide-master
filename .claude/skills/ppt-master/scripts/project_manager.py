@@ -134,13 +134,17 @@ class ProjectManager:
             )
 
         date_str = datetime.now().strftime("%Y%m%d")
-        # A name already carrying a `_<format>_<YYYYMMDD>` suffix (e.g. a full
-        # project dir name pasted back into init) is used as-is — re-appending
-        # would produce `name_ppt169_20260101_ppt169_20260102`.
-        if re.search(rf"_{re.escape(normalized_format)}_\d{{8}}$", project_name):
+        # Naming scheme: YYYYMMDD_<title>. A name already carrying a date
+        # prefix, or a full legacy `<name>_<format>_<YYYYMMDD>` dir name
+        # pasted back into init, is used as-is — re-prefixing would produce
+        # `20260102_20260101_name`. The canvas format is not encoded in the
+        # dir name; it is persisted in project_meta.json instead.
+        if re.match(r"^\d{8}_", project_name) or re.search(
+            rf"_{re.escape(normalized_format)}_\d{{8}}$", project_name
+        ):
             project_dir_name = project_name
         else:
-            project_dir_name = f"{project_name}_{normalized_format}_{date_str}"
+            project_dir_name = f"{date_str}_{project_name}"
         project_path = base_path / project_dir_name
 
         if project_path.exists():
@@ -161,6 +165,23 @@ class ProjectManager:
             (project_path / rel_path).mkdir(parents=True, exist_ok=True)
 
         canvas_info = self.CANVAS_FORMATS[normalized_format]
+        # Machine-readable project metadata — the dir name no longer encodes
+        # the canvas format, so downstream tools (get_project_info, export)
+        # read title/format from here first.
+        meta_path = project_path / "project_meta.json"
+        meta_path.write_text(
+            json.dumps(
+                {
+                    "title": project_name,
+                    "canvas_format": normalized_format,
+                    "created": date_str,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         readme_path = project_path / "README.md"
         readme_path.write_text(
             (
@@ -177,7 +198,7 @@ class ProjectManager:
                 "- `live_preview/`: browser preview runtime files and history (lock.json, server.log, edits.jsonl, annotations.jsonl)\n"
                 "- `sources/`: source materials and normalized markdown\n"
                 "- `analysis/`: machine-extracted intermediate analysis (PPTX intake, image_analysis.csv) — the pipeline's canonical must-read source/asset facts\n"
-                "- `exports/`: native DrawingML pptx (timestamped); `_native_charts.pptx` name with `--native-objects`, `_narrated.pptx` name when narration audio is embedded\n"
+                "- `exports/`: native DrawingML pptx (`<title>_ver1.pptx`, `_ver2`, ... auto-increment); `_native_charts` suffix with `--native-objects`, `_narrated` suffix when narration audio is embedded\n"
                 "- `backup/<timestamp>/`: svg_output/ archive (always written in default-flow mode; safe to delete old timestamps)\n"
             ),
             encoding="utf-8",

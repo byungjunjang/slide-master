@@ -62,6 +62,25 @@ from ..animation_config import (
 )
 
 
+def _next_export_version(exports_dir: Path, title: str) -> int:
+    """Next `_verN` number for this title's exports (suffix variants included).
+
+    Scans `<title>_ver<N>.pptx` plus tagged variants such as
+    `<title>_ver<N>_native_charts.pptx`; returns max(N) + 1, starting at 1.
+    """
+    pattern = re.compile(
+        rf"^{re.escape(title)}_ver(\d+)(?:_[a-z_]+)?\.pptx$",
+        re.IGNORECASE,
+    )
+    latest = 0
+    if exports_dir.is_dir():
+        for entry in exports_dir.iterdir():
+            match = pattern.match(entry.name)
+            if match:
+                latest = max(latest, int(match.group(1)))
+    return latest + 1
+
+
 def _as_dict(value: object) -> dict:
     return value if isinstance(value, dict) else {}
 
@@ -585,9 +604,12 @@ Recorded narration:
         # Narration flags likewise mark _narrated (audio embedded per slide +
         # auto-advance timings). Flag-driven (not content-sniffed) so the name
         # is predictable; an explicit -o keeps the caller's exact name untouched.
+        # Default-flow names use `<title>_verN` auto-increment; the timestamp
+        # survives only in the backup/<timestamp>/ snapshot dir.
         native_tag = "_native_charts" if args.native_objects else ""
         narrated_tag = "_narrated" if (args.recorded_narration or args.narration_audio_dir) else ""
-        native_path = exports_dir / f"{project_name}_{timestamp}{native_tag}{narrated_tag}.pptx"
+        version = _next_export_version(exports_dir, project_name)
+        native_path = exports_dir / f"{project_name}_ver{version}{native_tag}{narrated_tag}.pptx"
         # Preserve the authored svg_output/ beside every default-flow export.
         backup_dir = project_path / "backup" / timestamp
 

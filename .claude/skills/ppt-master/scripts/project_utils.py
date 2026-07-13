@@ -7,6 +7,7 @@ reusable by other tools.
 """
 
 import argparse
+import json
 import re
 from pathlib import Path
 from datetime import datetime
@@ -110,7 +111,21 @@ def parse_project_name(dir_name: str) -> Dict[str, str]:
 
     dir_name_lower = dir_name.lower()
 
-    # Extract date (format: _YYYYMMDD)
+    # Current scheme: YYYYMMDD_<title> (canvas format lives in
+    # project_meta.json, not in the dir name — see get_project_info)
+    prefix_match = re.match(r'^(\d{8})_(.+)$', dir_name)
+    if prefix_match:
+        date_str = prefix_match.group(1)
+        result['name'] = prefix_match.group(2)
+        result['date'] = date_str
+        try:
+            date_obj = datetime.strptime(date_str, '%Y%m%d')
+            result['date_formatted'] = date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+        return result
+
+    # Extract date (legacy format: _YYYYMMDD)
     date_match = re.search(r'_(\d{8})$', dir_name)
     if date_match:
         date_str = date_match.group(1)
@@ -163,6 +178,31 @@ def get_project_info(project_path: str) -> Dict:
 
     # Parse directory name
     parsed = parse_project_name(project_path.name)
+
+    # project_meta.json (written by project_manager init since the
+    # YYYYMMDD_<title> scheme) is authoritative over name parsing.
+    meta_path = project_path / 'project_meta.json'
+    if meta_path.is_file():
+        try:
+            meta = json.loads(meta_path.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            meta = {}
+        if isinstance(meta, dict):
+            title = meta.get('title')
+            if isinstance(title, str) and title:
+                parsed['name'] = title
+            fmt = normalize_canvas_format(str(meta.get('canvas_format') or ''))
+            if fmt in CANVAS_FORMATS:
+                parsed['format'] = fmt
+                parsed['format_name'] = CANVAS_FORMATS[fmt]['name']
+            created = str(meta.get('created') or '')
+            if re.fullmatch(r'\d{8}', created):
+                parsed['date'] = created
+                try:
+                    parsed['date_formatted'] = datetime.strptime(
+                        created, '%Y%m%d').strftime('%Y-%m-%d')
+                except ValueError:
+                    pass
 
     info = {
         'path': str(project_path),

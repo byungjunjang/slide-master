@@ -23,7 +23,7 @@
 ↓ (방향/디자인 확인 후 자동 진행)
 
 ```
-projects/<프로젝트>/exports/<이름>_<타임스탬프>.pptx   ← PowerPoint에서 바로 열어 편집
+projects/<프로젝트>/exports/<제목>_ver1.pptx          ← PowerPoint에서 바로 열어 편집 (재수출 시 ver2, ver3…)
 projects/<프로젝트>/svg_final/                        ← 브라우저로 보는 페이지별 미리보기
 ```
 

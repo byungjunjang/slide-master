@@ -881,7 +881,7 @@ Project folder must exist before Strategist runs. If not, execute:
 python3 scripts/project_manager.py init <project_name> --format <canvas_format>
 ```
 
-Save outputs to `projects/<project_name>_<format>_<YYYYMMDD>/design_spec.md`.
+Save outputs to `projects/<YYYYMMDD>_<project_name>/design_spec.md` (the folder name `project_manager.py init` created; the canvas format is recorded in that folder's `project_meta.json`).
 
 ---
 

@@ -63,6 +63,6 @@ The fresh session pays the cost of re-reading references (~14K tokens) but earns
 
 ## Step 3: Hand-back
 
-When Step 7 completes and `exports/<project_name>_<timestamp>.pptx` is produced, the workflow ends. Report the export path to the user.
+When Step 7 completes and `exports/<title>_ver<N>.pptx` is produced, the workflow ends. Report the export path to the user.
 
 If the deck contains data charts, the [`verify-charts`](verify-charts.md) workflow runs between Step 6 and Step 7 as documented in SKILL.md — resume mode handles it the same way the continuous mode does.

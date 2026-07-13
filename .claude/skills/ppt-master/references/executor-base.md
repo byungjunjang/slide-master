@@ -590,7 +590,7 @@ python3 scripts/finalize_svg.py <project_path>
 # 3. Export PPTX
 python3 scripts/svg_to_pptx.py <project_path>
 # Output (default-flow mode):
-#   exports/<project_name>_<timestamp>.pptx           ← native pptx (canonical output)
+#   exports/<title>_ver<N>.pptx                       ← native pptx (canonical output; verN auto-increments per export)
 #   backup/<timestamp>/svg_output/                    ← Executor SVG source backup (always written)
 ```
 

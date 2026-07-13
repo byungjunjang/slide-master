@@ -707,12 +707,12 @@ This mandatory step writes self-contained visual-preview SVGs to `svg_final/`. T
 ```bash
 python3 ${SKILL_DIR}/scripts/svg_to_pptx.py <project_path>
 # Output (default-flow mode):
-#   exports/<project_name>_<timestamp>.pptx           ← native pptx (canonical output, reads svg_output/)
+#   exports/<title>_ver<N>.pptx                       ← native pptx (canonical output, reads svg_output/; verN auto-increments per export)
 #   backup/<timestamp>/svg_output/                    ← Executor SVG source backup (always written)
 # Add --native-objects to emit real editable chart/table objects instead of flattened shapes:
-#   exports/<project_name>_<timestamp>_native_charts.pptx  ← native chart/table objects (data-pptx-native markers)
+#   exports/<title>_ver<N>_native_charts.pptx         ← native chart/table objects (data-pptx-native markers)
 # Re-export with --recorded-narration audio (generate-audio workflow) embeds per-slide narration:
-#   exports/<project_name>_<timestamp>_narrated.pptx  ← narrated pptx (embedded audio + auto-advance timings)
+#   exports/<title>_ver<N>_narrated.pptx              ← narrated pptx (embedded audio + auto-advance timings)
 ```
 
 > The native pptx consumes `svg_output/` directly so the converter can preserve
