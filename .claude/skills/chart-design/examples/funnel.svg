@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <rect width="800" height="500" fill="#FFFFFF"/>
+  <g transform="translate(40,40)">
+<g id="chart_funnel" data-chart-type="funnel">
+<g id="chartArea">
+<!-- chart-plot-area: 0,0,720,420 -->
+<polygon points="25.20,0.00 478.80,0.00 342.72,100.50 161.28,100.50" fill="#0F4C81" stroke-linejoin="round" fill-opacity="0.85"/>
+<text x="252.00" y="48.25" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#FFFFFF" text-anchor="middle">방문</text>
+<text x="252.00" y="68.65" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#FFFFFF" text-anchor="middle">120만</text>
+<polygon points="161.28,106.50 342.72,106.50 315.50,207.00 188.50,207.00" fill="#0F4C81" stroke-linejoin="round" fill-opacity="0.6"/>
+<text x="252.00" y="154.75" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#FFFFFF" text-anchor="middle">가입</text>
+<text x="252.00" y="175.15" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#FFFFFF" text-anchor="middle">48만</text>
+<text x="516.00" y="114.50" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">▸ 전환 40%</text>
+<polygon points="188.50,213.00 315.50,213.00 315.50,313.50 188.50,313.50" fill="#0F4C81" stroke-linejoin="round" fill-opacity="0.4"/>
+<text x="252.00" y="261.25" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C" text-anchor="middle">활성화</text>
+<text x="252.00" y="281.65" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#1C1C1C" text-anchor="middle">26만</text>
+<text x="516.00" y="221.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">▸ 전환 54%</text>
+<polygon points="188.50,319.50 315.50,319.50 304.07,420.00 199.93,420.00" fill="#0F4C81" stroke-linejoin="round" fill-opacity="0.25"/>
+<text x="252.00" y="367.75" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C" text-anchor="middle">결제</text>
+<text x="252.00" y="388.15" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#1C1C1C" text-anchor="middle">9만</text>
+<text x="516.00" y="327.50" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">▸ 전환 35%</text>
+<text x="516.00" y="416.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">전체 전환율 7.5%</text>
+</g>
+</g>
+  </g>
+</svg>

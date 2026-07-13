@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <rect width="800" height="500" fill="#FFFFFF"/>
+  <g transform="translate(40,40)">
+<g id="chart_stacked_bar" data-chart-type="stacked_bar">
+<g id="chartArea">
+<!-- chart-plot-area: 55,40,712,390 -->
+<rect x="54.88" y="5" width="10" height="10" fill="#0F4C81" rx="4" fill-opacity="0.85"/>
+<text x="70.88" y="15.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">구독</text>
+<rect x="120.88" y="5" width="10" height="10" fill="#0F4C81" rx="4" fill-opacity="0.6"/>
+<text x="136.88" y="15.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">광고</text>
+<rect x="186.88" y="5" width="10" height="10" fill="#0F4C81" rx="4" fill-opacity="0.4"/>
+<text x="202.88" y="15.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">기타</text>
+<text x="46.88" y="395.04" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">0억</text>
+<line x1="54.88" y1="331.27" x2="712" y2="331.27" stroke="#E2E5EA" stroke-width="1"/>
+<text x="46.88" y="336.71" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">20억</text>
+<line x1="54.88" y1="272.93" x2="712" y2="272.93" stroke="#E2E5EA" stroke-width="1"/>
+<text x="46.88" y="278.37" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">40억</text>
+<line x1="54.88" y1="214.6" x2="712" y2="214.6" stroke="#E2E5EA" stroke-width="1"/>
+<text x="46.88" y="220.04" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">60억</text>
+<line x1="54.88" y1="156.27" x2="712" y2="156.27" stroke="#E2E5EA" stroke-width="1"/>
+<text x="46.88" y="161.71" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">80억</text>
+<line x1="54.88" y1="97.93" x2="712" y2="97.93" stroke="#E2E5EA" stroke-width="1"/>
+<text x="46.88" y="103.37" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">100억</text>
+<line x1="54.88" y1="39.6" x2="712" y2="39.6" stroke="#E2E5EA" stroke-width="1"/>
+<text x="46.88" y="45.04" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">120억</text>
+<text x="163.49" y="411.20" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">2023</text>
+<text x="310.12" y="411.20" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">2024</text>
+<text x="456.76" y="411.20" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">2025</text>
+<text x="603.39" y="411.20" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">2026</text>
+<line x1="54.88" y1="389.6" x2="712" y2="389.6" stroke="#1C1C1C" stroke-width="1" stroke-opacity="0.26"/>
+<rect x="109.19" y="302.1" width="108.61" height="87.5" fill="#0F4C81" fill-opacity="0.85"/>
+<rect x="109.19" y="237.93" width="108.61" height="64.17" fill="#0F4C81" fill-opacity="0.6"/>
+<rect x="109.19" y="214.6" width="108.61" height="23.33" fill="#0F4C81" fill-opacity="0.4"/>
+<text x="163.49" y="208.60" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C" text-anchor="middle">60억</text>
+<rect x="255.82" y="267.1" width="108.61" height="122.5" fill="#0F4C81" fill-opacity="0.85"/>
+<rect x="255.82" y="194.18" width="108.61" height="72.92" fill="#0F4C81" fill-opacity="0.6"/>
+<rect x="255.82" y="167.93" width="108.61" height="26.25" fill="#0F4C81" fill-opacity="0.4"/>
+<text x="310.12" y="161.93" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C" text-anchor="middle">76억</text>
+<rect x="402.45" y="220.43" width="108.61" height="169.17" fill="#0F4C81" fill-opacity="0.85"/>
+<rect x="402.45" y="141.68" width="108.61" height="78.75" fill="#0F4C81" fill-opacity="0.6"/>
+<rect x="402.45" y="109.6" width="108.61" height="32.08" fill="#0F4C81" fill-opacity="0.4"/>
+<text x="456.76" y="103.60" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C" text-anchor="middle">96억</text>
+<rect x="549.08" y="173.77" width="108.61" height="215.83" fill="#0F4C81" fill-opacity="0.85"/>
+<rect x="549.08" y="86.27" width="108.61" height="87.5" fill="#0F4C81" fill-opacity="0.6"/>
+<rect x="549.08" y="51.27" width="108.61" height="35" fill="#0F4C81" fill-opacity="0.4"/>
+<text x="603.39" y="45.27" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C" text-anchor="middle">116억</text>
+</g>
+</g>
+  </g>
+</svg>

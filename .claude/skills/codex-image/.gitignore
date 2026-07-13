@@ -1,0 +1,13 @@
+# Generated images in project root (test outputs)
+/codex-image-*.png
+
+# Keep examples/ tracked
+!examples/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

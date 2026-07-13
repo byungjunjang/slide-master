@@ -1,0 +1,32 @@
+{
+  "type": "treemap",
+  "unit": "억",
+  "width": 720,
+  "height": 420,
+  "data": [
+    {
+      "label": "클라우드",
+      "value": 420
+    },
+    {
+      "label": "모바일",
+      "value": 310
+    },
+    {
+      "label": "커머스",
+      "value": 200
+    },
+    {
+      "label": "콘텐츠",
+      "value": 150
+    },
+    {
+      "label": "광고",
+      "value": 120
+    },
+    {
+      "label": "기타",
+      "value": 80
+    }
+  ]
+}

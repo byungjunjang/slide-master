@@ -1,0 +1,33 @@
+# Rendering: editorial
+
+Magazine-style infographic look — sophisticated layout, refined type-as-shape elements, restrained color, editorial pacing. The default choice for finance, journalism, explainers, opinion pieces, sophisticated B2B content.
+
+## 1. Style paragraph (paste-ready, 100 words)
+
+> Magazine-style editorial illustration with sophisticated visual hierarchy and confident negative space. Elements are arranged with editorial pacing — one dominant focal area, deliberate alignment to invisible columns, generous gutters between blocks. Color is restrained and balanced — typically one rich brand tone, one neutral, one subtle accent. Geometric forms are simple but rendered with editorial confidence: bold blocks, refined dividers, accent rules. Optional duotone or limited-color treatment reinforces the magazine feel. Composition feels like a thoughtful magazine spread — not loud, not minimal, but considered. Overall mood is intelligent, premium, restrained, suitable for analytical and opinion content.
+
+---
+
+## 2. Line, texture, depth
+
+| Aspect | Treatment |
+|---|---|
+| Line quality | Refined — thin precise rules as dividers; clean filled shapes |
+| Texture | Minimal — optional very subtle paper grain at 5-10% opacity |
+| Depth | Flat with intentional layering; no shadows |
+| Material | None — abstract editorial composition |
+| Mood | Refined, intelligent, premium-restrained |
+
+## 3. Using the deck's HEX values
+
+- Primary HEX: dominant block or background field if a saturated editorial mood is wanted
+- Secondary HEX: gutters, dividers, background field (usually neutral)
+- Accent HEX: one accent rule, one highlighted element
+
+---
+
+## 4. Fewshot prompt snippets
+
+**Snippet A — half-page financial explainer, text_policy: none**
+
+> Magazine-style editorial illustration. The canvas is divided into a deliberate two-column composition — a tall block on the left occupying 40% of the width filled with primary deep navy `#0F2C4C`, and the right 60% as a calm secondary cream `#FAF7F2` field. Within the cream field, three stylized bar-chart elements rise from a baseline, each bar a different height, rendered in primary navy with thin uniform width. A thin accent rule in burnt orange `#C2410C` runs horizontally across the lower third connecting the navy block to the bars. One small circular accent marker in the same orange sits at the peak of the tallest bar. Subtle paper grain at 8% opacity across the canvas. Composed as a 600×500 half-page block with 15% inner padding. NO text, no labels, no numbers anywhere. Color values are rendering guidance only.

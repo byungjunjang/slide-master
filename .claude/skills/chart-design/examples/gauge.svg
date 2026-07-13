@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 380" width="560" height="380">
+  <rect width="560" height="380" fill="#FFFFFF"/>
+  <g transform="translate(40,40)">
+<g id="chart_gauge" data-chart-type="gauge">
+<g id="chartArea">
+<!-- chart-plot-area: donut | center: 240,276 | outer-radius: 234 | inner-radius: 159 -->
+<path d="M80.88,276.00 L6.00,276.00 A234.00,234.00 0 0 1 474.00,276.00 L399.12,276.00 A159.12,159.12 0 0 0 80.88,276.00 Z" fill="#1C1C1C" fill-opacity="0.06"/>
+<path d="M80.88,276.00 L6.00,276.00 A234.00,234.00 0 0 1 394.75,100.47 L345.23,156.64 A159.12,159.12 0 0 0 80.88,276.00 Z" fill="#0F4C81"/>
+<text x="240.00" y="250.54" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="56" font-weight="800" fill="#1C1C1C" text-anchor="middle">73%</text>
+<text x="240.00" y="277.74" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">연간 목표 달성률</text>
+<text x="43.44" y="297.60" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#1C1C1C" text-anchor="middle" fill-opacity="0.45">0</text>
+<text x="436.56" y="297.60" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#1C1C1C" text-anchor="middle" fill-opacity="0.45">100</text>
+</g>
+</g>
+  </g>
+</svg>

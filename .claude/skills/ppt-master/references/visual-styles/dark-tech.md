@@ -1,0 +1,38 @@
+# Visual style: dark-tech
+
+Dark canvas, luminous accents, geometric precision. For tech, AI, dev tools, data products, launches.
+
+---
+
+## 1. Shape & decoration
+
+- Shape language: crisp geometry; thin glowing rules; hexagon / circuit / grid motifs used sparingly. Slight rounding (`rx` 4-8) or sharp.
+- Composition geometry: a glowing diagonal circuit trace splitting the field; concentric orbit rings staging a central metric; a hexagon node cluster mapping components; an oversized low-opacity numeral or glyph floating behind the content layer; thin bracket frames zoning the page.
+- Decoration: glow accents, fine grid backgrounds, monospace labels, node / connector lines. Restrained — precision over clutter.
+- Whitespace: dark negative space reads as depth; let elements float on it.
+
+## 2. Typography character
+
+- Clean sans for body; monospace for labels / figures / code cues. Wide tracking on small-caps labels.
+- High-contrast hierarchy against the dark field.
+
+> Families are chosen at confirmation `g`; this style asks for a clean sans + monospace pairing.
+
+## 3. Using the deck's colors
+
+- Dark background; one or two luminous accents carry focus (glowing figures, active nodes); everything else low-key.
+- The accent does the work of attention — few points, high contrast.
+
+> HEX values come from confirmation `e`; this style only governs the dark-field, luminous-accent discipline — it names no colors.
+
+## 4. Texture / elevation
+
+- Depth via glow and layering on dark, not drop shadows. Outer glow / light strokes mark elevation; gradients stay same-hue and subtle.
+
+## 5. Paired image-rendering
+
+`digital-dashboard` or `blueprint` — polished UI / technical-schematic look for AI images.
+
+## 6. Illustration propensity
+
+**sparse** — glow accents and geometric precision lead, and raster spots tend to read as clip-art against the dark UI. With no user steer, default to none. If the user explicitly asks, prefer restrained geometric marks over illustrated characters. `image_usage: none` writes no illustration rows.

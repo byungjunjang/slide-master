@@ -1,0 +1,23 @@
+{
+  "type": "pie",
+  "width": 560,
+  "height": 420,
+  "data": [
+    {
+      "label": "네이버",
+      "value": 42
+    },
+    {
+      "label": "구글",
+      "value": 31
+    },
+    {
+      "label": "다음",
+      "value": 14
+    },
+    {
+      "label": "기타",
+      "value": 13
+    }
+  ]
+}

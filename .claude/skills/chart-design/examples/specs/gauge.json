@@ -1,0 +1,11 @@
+{
+  "type": "gauge",
+  "unit": "%",
+  "width": 480,
+  "height": 300,
+  "data": {
+    "value": 73,
+    "max": 100,
+    "label": "연간 목표 달성률"
+  }
+}

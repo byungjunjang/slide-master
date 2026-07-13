@@ -1,0 +1,35 @@
+{
+  "type": "horizontal_bar",
+  "unit": "점",
+  "width": 720,
+  "height": 420,
+  "data": [
+    {
+      "label": "고객 만족도 개선",
+      "value": 88
+    },
+    {
+      "label": "신규 기능 출시 속도",
+      "value": 76
+    },
+    {
+      "label": "운영 비용 절감",
+      "value": 69
+    },
+    {
+      "label": "브랜드 인지도 상승",
+      "value": 64
+    },
+    {
+      "label": "내부 협업 효율",
+      "value": 57
+    },
+    {
+      "label": "파트너 생태계 확장",
+      "value": 45
+    }
+  ],
+  "options": {
+    "focus": 0
+  }
+}

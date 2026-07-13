@@ -1,0 +1,24 @@
+{
+  "type": "funnel",
+  "unit": "만",
+  "width": 720,
+  "height": 420,
+  "data": [
+    {
+      "label": "방문",
+      "value": 120
+    },
+    {
+      "label": "가입",
+      "value": 48
+    },
+    {
+      "label": "활성화",
+      "value": 26
+    },
+    {
+      "label": "결제",
+      "value": 9
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+# Image Tools
+
+> Architecture rationale (why provider-specific config keys instead of a generic `IMAGE_API_KEY`, why permissive license filter with strict-mode escape hatch, why external refs in dev but two divergent embedding strategies for delivery): see [docs/technical-design.md "Image Acquisition & Embedding"](../../../../docs/technical-design.md#image-acquisition--embedding).
+
+Image tools cover formula rendering, prompt-based AI generation, web image search, image inspection, and Gemini watermark removal.
+
+## `latex_render.py`
+
+Manifest-driven LaTeX formula renderer. Strategist writes `images/formula_manifest.json` after the Typography confirmation; this script renders only those declared formulas to transparent PNGs and writes dimensions back into the manifest.
+
+```bash
+python3 scripts/latex_render.py <project_path>
+python3 scripts/latex_render.py <project_path> --dry-run
+python3 scripts/latex_render.py <project_path> --providers codecogs,quicklatex,mathpad,wikimedia
+```
+
+Manifest shape:
+
+```json
+{
+  "providers": ["codecogs", "quicklatex", "mathpad", "wikimedia"],
+  "items": [
+    {
+      "id": "formula_001",
+      "latex": "E = mc^2",
+      "display": "block",
+      "color": "#1D1D1F",
+      "background": "#FFFFFF",
+      "transparent": true,
+      "dpi": 300,
+      "filename": "formula_001.png"
+    }
+  ]
+}
+```
+
+Output files land directly under `project/images/`. Formula filenames should use a shared `formula_` prefix, e.g. `formula_001.png`. The default provider chain is `codecogs,quicklatex,mathpad,wikimedia`; each provider is tried automatically until one succeeds, and the winning provider is recorded back into the manifest. `--providers` or manifest-level `providers` may override the order, but all four are available as no-key fallbacks. Formula PNGs are transparent by default. `background` is the temporary render matte and local background-removal reference; set `transparent: false` only when an opaque final formula asset is intentional. The script does not scan `spec_lock.md` or source documents for `$...$`; formula selection is a Strategist decision.
+
+## `image_gen.py`
+
+Unified image generation entry point.
+
+This script is the **Path A** API/proxy executor for generated images. In the
+PPT pipeline, always check the confirmed `image_ai_path` before running manifest
+mode: `host-native` uses the host's image tool directly and must not run
+`image_gen.py --manifest`; use `image_gen.py --render-md` only for its
+read-only Markdown sidecar.
+
+```bash
+python3 scripts/image_gen.py "A modern futuristic workspace"
+python3 scripts/image_gen.py "Abstract tech background" --aspect_ratio 16:9 --image_size 4K
+python3 scripts/image_gen.py "Concept car" -o projects/demo/images
+python3 scripts/image_gen.py "Beautiful landscape" -n "low quality, blurry, watermark"
+python3 scripts/image_gen.py --list-backends
+```
+
+Backends are grouped into Core / Extended / Experimental tiers. Run `python3 scripts/image_gen.py --list-backends` for the current list.
+
+Backend selection:
+
+```bash
+python3 scripts/image_gen.py "A cat" --backend openai
+python3 scripts/image_gen.py "A cinematic portrait" --backend minimax
+python3 scripts/image_gen.py "A product launch hero image" --backend qwen
+python3 scripts/image_gen.py "科技感背景图" --backend zhipu
+python3 scripts/image_gen.py "A product KV in cinematic style" --backend volcengine
+```
+
+Configuration sources:
+
+1. Current process environment variables
+2. First `.env` found in this order:
+   - Current working directory
+   - Skill directory (e.g. `~/.agents/skills/ppt-master/.env`)
+   - Clone repo root
+   - `~/.ppt-master/.env`
+
+When `IMAGE_BACKEND` is unset, the `codex` backend is used by default (Codex CLI via ChatGPT OAuth — requires `codex login`, no API key or `.env`). Set `IMAGE_BACKEND` explicitly to select an API provider instead.
+
+Example `.env`:
+
+```env
+IMAGE_BACKEND=openai
+OPENAI_API_KEY=sk-xxx
+OPENAI_MODEL=gpt-image-2
+# Optional proxy
+# OPENAI_BASE_URL=http://127.0.0.1:3000/v1
+# OpenAI-compatible provider knobs:
+# OPENAI_SIZE_PRESET=auto
+# OPENAI_RESPONSE_FORMAT=auto
+# OPENAI_QUALITY=auto
+# Allowed values: png / jpeg / webp
+# OPENAI_OUTPUT_FORMAT=png
+# jpeg/webp only, 0-100
+# OPENAI_OUTPUT_COMPRESSION=80
+# gpt-image-2: auto / opaque
+# OPENAI_BACKGROUND=auto
+# auto / low
+# OPENAI_MODERATION=auto
+```
+
+Example process environment:
+
+```bash
+export IMAGE_BACKEND=openai
+export OPENAI_API_KEY=sk-xxx
+export OPENAI_MODEL=gpt-image-2
+export OPENAI_OUTPUT_FORMAT=png
+```
+
+Current process environment wins over `.env`.
+
+OpenAI backend notes:
+- `gpt-image-2` is the default OpenAI model.
+- Requests are sent with plain `requests.post()` to improve compatibility with
+  OpenAI-compatible proxies that block the OpenAI SDK's `httpx` transport.
+- For `gpt-image-2`, `image_size=512px` means a low-quality draft preset, not a literal 512px edge. The model requires both edges to be multiples of 16px, a long:short ratio no greater than 3:1, and total pixels between 655,360 and 8,294,400.
+- `OPENAI_BACKGROUND=transparent` is not supported by `gpt-image-2`; use `auto` or `opaque`.
+- If `OPENAI_OUTPUT_FORMAT=jpeg` or `webp`, generated files use `.jpg` or `.webp` extensions instead of `.png`.
+- OpenAI-compatible providers that reject OpenAI-specific fields can use `OPENAI_RESPONSE_FORMAT=omit`, `OPENAI_QUALITY=omit`, and `OPENAI_SIZE_PRESET=<preset>`. Valid response formats are `auto`, `b64_json`, `url`, and `omit`; valid size presets are `auto`, `legacy`, `gpt-image`, `gpt-image-2`, and `dall-e-2`.
+
+Example `.env` for Agnes AI through the OpenAI-compatible backend:
+
+```env
+IMAGE_BACKEND=openai
+OPENAI_API_KEY=your-agnes-key
+OPENAI_MODEL=agnes-image-2.1-flash
+OPENAI_BASE_URL=https://apihub.agnes-ai.com/v1
+OPENAI_SIZE_PRESET=gpt-image-2
+OPENAI_RESPONSE_FORMAT=omit
+OPENAI_QUALITY=omit
+```
+
+Use provider-specific keys only (e.g. `GEMINI_API_KEY`, `OPENAI_API_KEY`). See `.env.example` in clone mode or `${SKILL_DIR}/.env.example` in skill-install mode for the full list per backend.
+
+`IMAGE_API_KEY`, `IMAGE_MODEL`, and `IMAGE_BASE_URL` are intentionally unsupported.
+
+If you keep multiple providers in one `.env` or environment, `IMAGE_BACKEND` must explicitly select the active provider.
+
+Recommendation:
+- Default to the Core tier for routine PPT work
+- Use Extended only when you need a specific model style
+- Treat Experimental backends as opt-in
+
+Example `.env` for MiniMax image backend:
+
+```env
+IMAGE_BACKEND=minimax
+MINIMAX_API_KEY=your-api-key
+# Optional: override base URL (defaults to https://api.minimaxi.com, domestic China endpoint)
+# Use https://api.minimax.io for overseas access
+# MINIMAX_BASE_URL=https://api.minimax.io
+# MINIMAX_MODEL=image-01
+```
+
+## `analyze_images.py`
+
+Analyze images in a project directory before writing the design spec or composing slide layouts.
+
+```bash
+python3 scripts/analyze_images.py <project_path>/images
+```
+
+Use this instead of opening image files directly when following the project workflow.
+
+## `image_search.py`
+
+Zero-config web image search across openly-licensed providers. Sister tool to `image_gen.py` — used when the resource list row has `Acquire Via: web`.
+
+```bash
+python3 scripts/image_search.py "offshore wind farm" \
+  --filename cover_bg.jpg --slide 01_cover \
+  --orientation landscape -o projects/demo/images
+```
+
+For multiple web rows, `--batch images/image_queries.json` searches them concurrently (modest default, `--concurrency N` / `IMAGE_SEARCH_CONCURRENCY` to tune) instead of one call per row — the web sister of `image_gen.py --manifest`. Schema and status semantics: [`image-searcher.md`](../../references/image-searcher.md) §5.
+
+Providers (Openverse and Wikimedia work with no key; configure Pexels / Pixabay for better stock-photo quality):
+
+| Provider | Config | Strength |
+|---|---|---|
+| `openverse` | zero-config | fallback aggregator: Wikimedia + Flickr + museums + rawpixel |
+| `wikimedia` | zero-config | educational, scientific, geographic, historical |
+| `pexels` | recommended: `PEXELS_API_KEY` | modern stock photography, people, workplace, lifestyle |
+| `pixabay` | recommended: `PIXABAY_API_KEY` | broad type coverage including photos and illustrations |
+
+Default search chain (when `--provider` is unset): zero-config providers first, then keyed providers whose API key is set in the environment. Keyed providers without a key are silently skipped. For polished visual decks, configure at least one keyed provider.
+
+`image_search.py` uses the same `.env` lookup order as `image_gen.py`, so skill installs can keep `PEXELS_API_KEY` / `PIXABAY_API_KEY` in `~/.ppt-master/.env`.
+
+Query guidance:
+
+| Case | Pattern |
+|---|---|
+| Generic stock concept | `boardroom meeting, professional editorial photography, natural light` |
+| China-specific landmark | Official Chinese place name + concrete scene |
+| Avoid | Negative prompt wording such as `not tourist snapshot` |
+
+License filter:
+
+- **Default**: search all providers with `cc0,pdm,pexels,pixabay,cc by,cc by-sa` allowed together. The chosen image may be `no-attribution` or `attribution-required`; Executor adds an inline credit only when needed.
+- `--strict-no-attribution` restricts the search to `cc0,pdm,pexels,pixabay` — useful for full-bleed hero images or templates that cannot host a credit element.
+
+Pin a provider, refuse attribution, or override the manifest path:
+
+```bash
+# Pin Wikimedia
+python3 scripts/image_search.py "Olympics opening ceremony" \
+  --filename event.jpg --provider wikimedia \
+  --orientation landscape -o projects/demo/images
+
+# Strict mode — refuse CC BY / CC BY-SA
+python3 scripts/image_search.py "abstract gradient" \
+  --filename hero.jpg --strict-no-attribution \
+  -o projects/demo/images
+```
+
+Suitability & manual replacement (a web top hit is metadata-relevant, not guaranteed visually right):
+
+- By default only the best match is downloaded, plus a downscaled review copy at `images/.review/<stem>.jpg` (the placed asset stays full-resolution).
+- For exact subjects (landmarks, people, companies, products), use `--require-terms` or batch `required_terms` so visually plausible but wrong metadata is rejected before ranking. Example: `--require-terms Chongqing --require-terms "Jiefangbei|Liberation Monument"`. Keep proper-name / geography anchors; do not broaden to generic terms like `canyon`, `stone pillar`, or `ancient town` just to improve coverage.
+- `--save-candidates` (with `--max-candidates`, default 4) keeps an opt-in escalation pool under `candidates/<stem>/`; review it, then `--promote candidate_03.jpg --filename <name>.jpg`.
+- `--from-url <url> --filename <name>.jpg` downloads a user-chosen image URL and replaces the target (recorded `license_tier: manual`) — the model-agnostic manual path; works even without a multimodal model.
+
+Full review / escalation flow: [`image-searcher.md`](../../references/image-searcher.md) §5.
+
+Output:
+
+- Image saved to the specified output directory (auto-converts webp → jpg via Pillow when the filename extension demands)
+- `image_sources.json` manifest with full provenance (provider, license, license_tier, author, source URL, dimensions, attribution_text)
+- Manifest is idempotent on `filename` — rerunning replaces that entry only
+
+Allowed licenses (default): CC0, Public Domain, Pexels License, Pixabay Content License, CC BY, CC BY-SA. Auto-rejected: CC BY-NC, CC BY-ND, CC BY-NC-SA, CC BY-NC-ND, all rights reserved, unknown.
+
+The full role-level reference (intent → query translation, on-slide attribution visual specification) is in [`references/image-searcher.md`](../../references/image-searcher.md).
+
+## `gemini_watermark_remover.py`
+
+Remove Gemini watermark assets after manual download.
+
+```bash
+python3 scripts/gemini_watermark_remover.py <image_path>
+python3 scripts/gemini_watermark_remover.py <image_path> -o output_path.png
+python3 scripts/gemini_watermark_remover.py <image_path> -q
+```
+
+Notes:
+- Requires `scripts/assets/bg_48.png` and `scripts/assets/bg_96.png`
+- Best used after downloading “full size” Gemini images
+
+Dependencies:
+
+```bash
+pip install Pillow numpy
+```

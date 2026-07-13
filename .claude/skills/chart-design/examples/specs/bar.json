@@ -1,0 +1,31 @@
+{
+  "type": "bar",
+  "unit": "억",
+  "width": 720,
+  "height": 420,
+  "data": [
+    {
+      "label": "서울",
+      "value": 124
+    },
+    {
+      "label": "부산",
+      "value": 87
+    },
+    {
+      "label": "대구",
+      "value": 62
+    },
+    {
+      "label": "인천",
+      "value": 95
+    },
+    {
+      "label": "광주",
+      "value": 41
+    }
+  ],
+  "options": {
+    "focus": "서울"
+  }
+}

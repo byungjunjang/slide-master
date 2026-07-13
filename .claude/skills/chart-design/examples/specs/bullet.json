@@ -1,0 +1,26 @@
+{
+  "type": "bullet",
+  "unit": "억",
+  "width": 720,
+  "height": 300,
+  "data": [
+    {
+      "label": "매출",
+      "value": 92,
+      "target": 100,
+      "max": 120
+    },
+    {
+      "label": "신규 고객",
+      "value": 78,
+      "target": 70,
+      "max": 100
+    },
+    {
+      "label": "NPS",
+      "value": 54,
+      "target": 60,
+      "max": 100
+    }
+  ]
+}

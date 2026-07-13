@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+"""PPT Master - SVG to PPTX Tool (thin wrapper).
+
+Delegates to the svg_to_pptx package. ``-s final`` remains a native-export
+diagnostic override; the standard pipeline reads ``svg_output/``:
+    python3 scripts/svg_to_pptx.py <project_path> -s final
+"""
+
+import sys
+from pathlib import Path
+
+# Ensure the scripts directory is on sys.path so the package can be found
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from console_encoding import configure_utf8_stdio
+from svg_to_pptx import main
+
+configure_utf8_stdio()
+
+if __name__ == '__main__':
+    raise SystemExit(main())

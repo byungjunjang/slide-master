@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets / local env
+.env
+.env.*
+
+# Personal project workspace — decks and source material stay local
+projects/*
+!projects/README.md
+
+# Tool scratch
+.superpowers/
+.preview/
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

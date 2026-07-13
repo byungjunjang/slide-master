@@ -1,0 +1,22 @@
+{
+  "type": "donut",
+  "width": 560,
+  "height": 420,
+  "data": [
+    {
+      "label": "구독",
+      "value": 58
+    },
+    {
+      "label": "광고",
+      "value": 27
+    },
+    {
+      "label": "커머스",
+      "value": 15
+    }
+  ],
+  "options": {
+    "center_label": "1,240억"
+  }
+}

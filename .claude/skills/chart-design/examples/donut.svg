@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 500" width="640" height="500">
+  <rect width="640" height="500" fill="#FFFFFF"/>
+  <g transform="translate(40,40)">
+<g id="chart_donut" data-chart-type="donut">
+<g id="chartArea">
+<!-- chart-plot-area: donut | center: 280,210 | outer-radius: 168 | inner-radius: 104 -->
+<path d="M280.00,105.59 L280.00,41.60 A168.40,168.40 0 1 1 198.87,357.57 L229.70,301.49 A104.41,104.41 0 1 0 280.00,105.59 Z" fill="#0F4C81" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" fill-opacity="0.85"/>
+<text x="452.80" y="257.57" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472">구독 58%</text>
+<path d="M229.70,301.49 L198.87,357.57 A168.40,168.40 0 0 1 143.76,111.02 L195.53,148.63 A104.41,104.41 0 0 0 229.70,301.49 Z" fill="#0F4C81" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" fill-opacity="0.6"/>
+<text x="105.90" y="252.12" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">광고 27%</text>
+<path d="M195.53,148.63 L143.76,111.02 A168.40,168.40 0 0 1 280.00,41.60 L280.00,105.59 A104.41,104.41 0 0 0 195.53,148.63 Z" fill="#0F4C81" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" fill-opacity="0.4"/>
+<text x="199.01" y="54.24" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">커머스 15%</text>
+<text x="280.00" y="230.16" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="56" font-weight="800" fill="#1C1C1C" text-anchor="middle">1,240억</text>
+</g>
+</g>
+  </g>
+</svg>

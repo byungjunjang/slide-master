@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <rect width="800" height="500" fill="#FFFFFF"/>
+  <g transform="translate(40,40)">
+<g id="chart_horizontal_bar" data-chart-type="horizontal_bar">
+<g id="chartArea">
+<!-- chart-plot-area: 157,6,712,391 -->
+<text x="157.44" y="412.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">0점</text>
+<line x1="268.35" y1="6" x2="268.35" y2="391.2" stroke="#E2E5EA" stroke-width="1"/>
+<text x="268.35" y="412.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">20점</text>
+<line x1="379.26" y1="6" x2="379.26" y2="391.2" stroke="#E2E5EA" stroke-width="1"/>
+<text x="379.26" y="412.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">40점</text>
+<line x1="490.18" y1="6" x2="490.18" y2="391.2" stroke="#E2E5EA" stroke-width="1"/>
+<text x="490.18" y="412.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">60점</text>
+<line x1="601.09" y1="6" x2="601.09" y2="391.2" stroke="#E2E5EA" stroke-width="1"/>
+<text x="601.09" y="412.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">80점</text>
+<line x1="712" y1="6" x2="712" y2="391.2" stroke="#E2E5EA" stroke-width="1"/>
+<text x="712.00" y="412.00" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="middle">100점</text>
+<text x="147.44" y="55.46" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">고객 만족도 개선</text>
+<text x="147.44" y="114.89" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">신규 기능 출시 속도</text>
+<text x="147.44" y="174.32" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">운영 비용 절감</text>
+<text x="147.44" y="233.76" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">브랜드 인지도 상승</text>
+<text x="147.44" y="293.19" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">내부 협업 효율</text>
+<text x="147.44" y="352.62" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">파트너 생태계 확장</text>
+<line x1="157.44" y1="6" x2="157.44" y2="391.2" stroke="#1C1C1C" stroke-width="1" stroke-opacity="0.26"/>
+<rect x="157.44" y="28.01" width="488.01" height="44.02" fill="#0F4C81" rx="4" fill-opacity="0.85"/>
+<text x="653.45" y="55.46" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">88점</text>
+<rect x="157.44" y="87.44" width="421.47" height="44.02" fill="#5B6472" rx="4" fill-opacity="0.3"/>
+<text x="586.91" y="114.89" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">76점</text>
+<rect x="157.44" y="146.87" width="382.65" height="44.02" fill="#5B6472" rx="4" fill-opacity="0.3"/>
+<text x="548.09" y="174.32" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">69점</text>
+<rect x="157.44" y="206.3" width="354.92" height="44.02" fill="#5B6472" rx="4" fill-opacity="0.3"/>
+<text x="520.36" y="233.76" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">64점</text>
+<rect x="157.44" y="265.73" width="316.1" height="44.02" fill="#5B6472" rx="4" fill-opacity="0.3"/>
+<text x="481.54" y="293.19" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">57점</text>
+<rect x="157.44" y="325.17" width="249.55" height="44.02" fill="#5B6472" rx="4" fill-opacity="0.3"/>
+<text x="414.99" y="352.62" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">45점</text>
+</g>
+</g>
+  </g>
+</svg>

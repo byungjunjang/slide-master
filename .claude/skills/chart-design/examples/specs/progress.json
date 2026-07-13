@@ -1,0 +1,23 @@
+{
+  "type": "progress",
+  "width": 720,
+  "height": 300,
+  "data": [
+    {
+      "label": "제품 로드맵",
+      "value": 82
+    },
+    {
+      "label": "글로벌 진출",
+      "value": 64
+    },
+    {
+      "label": "조직 확장",
+      "value": 45
+    },
+    {
+      "label": "보안 인증",
+      "value": 91
+    }
+  ]
+}

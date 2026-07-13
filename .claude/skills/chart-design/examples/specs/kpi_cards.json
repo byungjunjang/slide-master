@@ -1,0 +1,29 @@
+{
+  "type": "kpi_cards",
+  "width": 900,
+  "height": 220,
+  "data": [
+    {
+      "label": "연 매출",
+      "value": "1,240억",
+      "delta": 18.2
+    },
+    {
+      "label": "MAU",
+      "value": "194만",
+      "delta": 12.4
+    },
+    {
+      "label": "NPS",
+      "value": 62,
+      "delta": -3.0,
+      "delta_unit": "p"
+    },
+    {
+      "label": "구독 전환율",
+      "value": "8.7%",
+      "delta": 1.1,
+      "delta_unit": "%p"
+    }
+  ]
+}

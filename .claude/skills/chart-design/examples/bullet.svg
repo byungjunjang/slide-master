@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" width="800" height="380">
+  <rect width="800" height="380" fill="#FFFFFF"/>
+  <g transform="translate(40,40)">
+<g id="chart_bullet" data-chart-type="bullet">
+<g id="chartArea">
+<!-- chart-plot-area: 0,0,720,300 -->
+<text x="72.48" y="55.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">매출</text>
+<rect x="82.48" y="32" width="553.52" height="36" fill="#1C1C1C" rx="4" fill-opacity="0.06"/>
+<rect x="82.48" y="41" width="400.34" height="18" fill="#0F4C81" rx="4"/>
+<line x1="517.64" y1="25.7" x2="517.64" y2="74.3" stroke="#1C1C1C" stroke-width="2"/>
+<text x="646.00" y="55.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">92억 (92%)</text>
+<text x="72.48" y="155.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">신규 고객</text>
+<rect x="82.48" y="132" width="553.52" height="36" fill="#1C1C1C" rx="4" fill-opacity="0.06"/>
+<rect x="82.48" y="141" width="407.31" height="18" fill="#0F4C81" rx="4"/>
+<line x1="448.01" y1="125.7" x2="448.01" y2="174.3" stroke="#1C1C1C" stroke-width="2"/>
+<text x="646.00" y="155.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">78억 (111%)</text>
+<text x="72.48" y="255.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="500" fill="#5B6472" text-anchor="end">NPS</text>
+<rect x="82.48" y="232" width="553.52" height="36" fill="#1C1C1C" rx="4" fill-opacity="0.06"/>
+<rect x="82.48" y="241" width="281.98" height="18" fill="#0F4C81" rx="4"/>
+<line x1="395.79" y1="225.7" x2="395.79" y2="274.3" stroke="#1C1C1C" stroke-width="2"/>
+<text x="646.00" y="255.44" font-family="Pretendard, 'Malgun Gothic', 'Microsoft YaHei', Arial, sans-serif" font-size="16" font-weight="600" fill="#1C1C1C">54억 (90%)</text>
+</g>
+</g>
+  </g>
+</svg>
