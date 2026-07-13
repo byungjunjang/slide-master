@@ -157,6 +157,81 @@
             nav_counter: "{current} / {total}",
             nav_empty: "— / —"
         },
+        ko: {
+            page_title: "PPT Master - 라이브 프리뷰",
+            panel_slides: "슬라이드",
+            panel_annotations: "주석",
+            panel_edit_annotate: "편집 / 주석",
+            placeholder_select_slide: "왼쪽에서 슬라이드를 선택해 시작하세요",
+            label_selected_element: "선택된 요소",
+            empty_selected_element: "슬라이드의 요소를 클릭해 선택하세요",
+            btn_select_group: "상위 그룹 선택",
+            label_batch_edit: "일괄 편집",
+            label_group_edit: "그룹 편집",
+            section_geometry: "위치·크기",
+            section_style: "스타일",
+            section_text_style: "텍스트",
+            section_raw_attrs: "원시 속성",
+            label_edit_instruction: "편집 지시",
+            pending_none: "적용 대기 중인 변경이 없습니다",
+            pending_summary: "직접 편집 {edits}건, AI 주석 페이지 {annotations}건 대기 중",
+            pending_pages: "대상 페이지: {pages}",
+            quick_align: "정렬 / 이동",
+            quick_resize: "크기 조정",
+            quick_replace_image: "이미지 교체",
+            quick_copy: "문구 수정",
+            quick_relayout: "영역 재배치",
+            placeholder_annotation: "AI가 이 요소를 어떻게 수정하면 좋을지 적어주세요…",
+            placeholder_annotation_multi: "선택한 {count}개 요소를 어떻게 수정할지 적어주세요…",
+            btn_add_annotation: "주석 추가",
+            label_annotations_on_slide: "이 슬라이드의 주석",
+            btn_submit_annotations: "변경 적용",
+            btn_exit_preview: "프리뷰 종료",
+            modal_submit: "제출",
+            modal_cancel: "취소",
+            empty_waiting_slides: "슬라이드 생성을 기다리는 중…",
+            empty_no_slides: "슬라이드가 없습니다",
+            placeholder_live_ready: "라이브 프리뷰 준비 완료. 생성된 슬라이드가 여기에 표시됩니다.",
+            placeholder_slide_writing: "슬라이드가 아직 작성 중입니다. 다음 새로고침을 기다리는 중…",
+            empty_annotations: "아직 주석이 없습니다",
+            tooltip_remove_annotation: "주석 삭제",
+            multi_selected: "{count}개 요소 선택됨",
+            multi_mixed: "혼합",
+            err_load_slides: "슬라이드 목록을 불러오지 못했습니다: ",
+            err_load_slide: "슬라이드를 불러오지 못했습니다: ",
+            err_add_annotation: "주석 추가 실패: ",
+            err_remove_annotation: "주석 삭제 실패: ",
+            err_save: "저장 실패: ",
+            err_edit: "편집 실패: ",
+            label_direct_edit: "객체 속성 (변경 적용 전까지 대기)",
+            prop_multiline_hint: "여러 줄 텍스트입니다 — 글자를 편집하려면 한 줄(tspan)을 선택하세요",
+            edit_saved_hint: "변경이 임시 저장됐습니다. 변경 적용을 누르면 svg_output에 기록됩니다.",
+            btn_undo: "실행 취소",
+            undo_done: "마지막 임시 저장 편집을 되돌렸습니다",
+            undo_empty: "되돌릴 편집이 없습니다",
+            overlap_caption: "요소가 겹쳐 있습니다 — 하나를 선택하세요",
+            err_empty_svg: "슬라이드를 불러왔지만 캔버스가 비어 있습니다. SVG가 손상됐거나 루트 <svg> 요소가 없을 수 있습니다.",
+            warn_icon_inline: "아이콘 {count}개를 렌더링하지 못했습니다: {names}",
+            warn_matrix_transform: "이 위치·크기 편집은 transform matrix로 저장됩니다. 프리뷰는 정확하며, PPTX 내보내기는 matrix를 지원하는 현재 변환기가 필요합니다.",
+            modal_matrix_transform_note: "\n\n참고: 임시 저장된 편집 중 transform matrix를 사용하는 항목이 있습니다. matrix가 반영되도록 현재 PPTX 변환기로 다시 내보내세요.",
+            slide_error_tooltip: "이 슬라이드 해석에 실패했습니다: ",
+            reload_banner: "이 슬라이드가 디스크에서 갱신됐습니다. 클릭하면 다시 불러옵니다.",
+            modal_confirm_submit: "임시 저장된 직접 편집과 AI 주석을 디스크에 기록할까요?\n\n프리뷰 서비스는 계속 실행됩니다. 중지하려면 프리뷰 종료를 누르세요.",
+            modal_success_submit: "변경이 svg_output에 저장됐습니다.\n\n프리뷰 서비스는 계속 실행 중입니다.",
+            modal_success_direct_only: "변경이 svg_output에 저장됐습니다.\n\n직접 편집이 SVG 원본에 반영됐습니다. PPTX를 갱신하려면 채팅으로 돌아가 재수출을 요청하세요. 프리뷰 서비스는 계속 실행 중입니다.",
+            modal_success_annotations_only: "주석이 svg_output에 저장됐습니다.\n\nAI가 주석을 해석·반영하게 하려면 채팅으로 돌아가 주석 적용을 요청하세요. 프리뷰 서비스는 계속 실행 중입니다.",
+            modal_success_mixed: "직접 편집과 주석이 svg_output에 저장됐습니다.\n\n채팅으로 돌아가 AI 판단이 필요한 주석을 먼저 적용한 뒤, 확인되면 PPTX를 다시 내보내세요. 프리뷰 서비스는 계속 실행 중입니다.",
+            modal_confirm_exit: "프리뷰를 종료하고 로컬 서버를 중지할까요?\n\n적용하지 않은 편집과 주석은 삭제됩니다.",
+            modal_success_exit: "프리뷰가 중지됐습니다.\n\n이 탭을 닫고 채팅으로 돌아가세요.",
+            modal_stopping: "프리뷰 서버를 중지하는 중…",
+            lang_toggle_title: "언어 전환",
+            nav_first: "첫 슬라이드 (Home)",
+            nav_prev: "이전 슬라이드 (←)",
+            nav_next: "다음 슬라이드 (→)",
+            nav_last: "마지막 슬라이드 (End)",
+            nav_counter: "{current} / {total}",
+            nav_empty: "— / —"
+        },
         zh: {
             page_title: "PPT Master - 实时预览",
             panel_slides: "幻灯片",
@@ -237,12 +312,11 @@
     var LANG = (function () {
         try {
             var stored = window.localStorage.getItem("ppt_lang");
-            if (stored === "zh" || stored === "en" || stored === "ja") return stored;
+            if (stored === "zh" || stored === "en" || stored === "ja" || stored === "ko") return stored;
         } catch (e) { /* ignore */ }
-        var nav = (navigator.language || navigator.userLanguage || "en").toLowerCase();
-        if (nav.indexOf("zh") === 0) return "zh";
-        if (nav.indexOf("ja") === 0) return "ja";
-        return "en";
+        // Default language for this install: Korean (standing user preference).
+        // An explicit pick from the language dropdown still wins via localStorage.
+        return "ko";
     })();
 
     function t(key, params) {
@@ -259,7 +333,7 @@
     }
 
     function applyI18n() {
-        document.documentElement.setAttribute("lang", LANG === "zh" ? "zh-CN" : (LANG === "ja" ? "ja" : "en"));
+        document.documentElement.setAttribute("lang", LANG === "zh" ? "zh-CN" : (LANG === "ja" ? "ja" : (LANG === "ko" ? "ko" : "en")));
         document.title = t("page_title");
         document.querySelectorAll("[data-i18n]").forEach(function (el) {
             el.textContent = t(el.getAttribute("data-i18n"));
@@ -273,7 +347,7 @@
         updateNavLabel();
     }
 
-    var LANG_NAMES = { zh: "中文", en: "English", ja: "日本語" };
+    var LANG_NAMES = { zh: "中文", en: "English", ja: "日本語", ko: "한국어" };
 
     function refreshLangUI(lang) {
         // Custom dropdown (OS-independent): button shows the CURRENT language.
