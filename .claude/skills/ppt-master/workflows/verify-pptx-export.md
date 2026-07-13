@@ -11,7 +11,7 @@ This workflow is **independent**: it reads `<project>/exports/<file>.pptx` (plus
 ## When to Run
 
 - The user explicitly asks to verify / QA / check an exported PPTX.
-- An export exists under `<project>/exports/` — from main pipeline Step 7.3, `template-fill-pptx`, `native-enhance-pptx`, or `beautify-pptx`.
+- An export exists under `<project>/exports/` — from main pipeline Step 7.3, the `ppt-template-fill` skill, `native-enhance-pptx`, or `beautify-pptx`.
 
 ## When NOT to Run
 
@@ -93,7 +93,7 @@ Read the rendered output and check every page:
 | Deck route | Compare against |
 |---|---|
 | SVG pipeline export (`svg_output/` route) | `svg_final/<page>.svg` design intent, page by page |
-| `template-fill-pptx` / `native-enhance-pptx` | Source deck design — unchanged pages must look unchanged |
+| `ppt-template-fill` / `native-enhance-pptx` | Source deck design — unchanged pages must look unchanged |
 
 **Known HTML-engine deviations** (only under `--render html`) — never report these as export defects:
 
@@ -112,7 +112,7 @@ Read the rendered output and check every page:
 | Deck route | Fix location | Re-export |
 |---|---|---|
 | Main SVG pipeline / beautify | `svg_output/<page>.svg` | `SKILL.md` Step 7.2–7.3 (`finalize_svg.py`, then `svg_to_pptx.py`) |
-| `template-fill-pptx` | `fill_plan.json` (shorten text, re-pick page) | template-fill Step 6–7 |
+| `ppt-template-fill` | `fill_plan.json` (shorten text, re-pick page) | [`ppt-template-fill`](../../ppt-template-fill/SKILL.md) Step 6–7 (its Step 7.2 gate already runs this scan) |
 | `native-enhance-pptx` | Enhancement plan / config | native-enhance apply + validate |
 
 Re-run this workflow after re-export until no unaccepted findings remain.

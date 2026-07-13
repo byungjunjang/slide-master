@@ -22,7 +22,7 @@ description: >
 | Semantic SVG markers | Minimal rendering-neutral compiler hints used only after existing Layout/Layer/Placeholder/Native metadata has been considered. They never replace native SVG geometry, text, styles, grouping, or asset references. |
 | `svg_final/` | Mandatory derived, self-contained SVG visual preview. It may be opened directly or inserted into PowerPoint as an SVG picture, but it is not a supported PPTX source and carries no manual Convert-to-Shape compatibility contract. |
 | SVG-to-PPTX export | The only supported generated-PPTX route reads `svg_output/` and maps its content through the project converter to DrawingML/native objects. It may reorganize represented content into Master/Layout/Slide structure but MUST NOT invent new visible page content. |
-| Direct PPTX and presentation-behavior workflows | Remain separate. `template-fill-pptx`, `native-enhance-pptx`, animations, transitions, speaker notes, narration, and package relationships are not required to round-trip through SVG. |
+| Direct PPTX and presentation-behavior workflows | Remain separate. The `ppt-template-fill` skill, `native-enhance-pptx`, animations, transitions, speaker notes, narration, and package relationships are not required to round-trip through SVG. |
 
 **MUST — page-design closure**: For an SVG-authoring route, inspect the final page SVG to determine what the exported slide looks like. Do not reinterpret “SVG is the page-design language” as “SVG is the complete PPTX package description language.”
 
@@ -123,13 +123,13 @@ For complete tool documentation, see `${SKILL_DIR}/scripts/README.md`.
 
 | User intent | Route |
 |---|---|
-| Raw PPTX template plus new material/topic, generate a PPTX | [`template-fill-pptx`](workflows/template-fill-pptx.md) |
+| Raw PPTX template plus new material/topic, generate a PPTX | [`ppt-template-fill` skill](../ppt-template-fill/SKILL.md) |
 | Existing PPTX, preserve page count/order and slide wording 1:1, improve layout | [`beautify-pptx`](workflows/beautify-pptx.md) |
 | Existing PPTX as source material, rethink outline or change page count/order | Main pipeline via `source_to_md.py` plus PPTX intake |
 | Build a reusable template package from a PPTX/design reference | [`create-template`](workflows/create-template.md), then return with the generated template workspace path |
 | Finished PPTX, keep content/layout stable and add notes/audio/timing/transitions | [`native-enhance-pptx`](workflows/native-enhance-pptx.md) |
 
-**MUST**: Raw `.pptx` template plus "generate PPTX" routes to `template-fill-pptx` by default. The SVG generation route consumes only an explicit template workspace path with a valid `templates/design_spec.md`, or a supported direct/legacy package root with `design_spec.md`.
+**MUST**: Raw `.pptx` template plus "generate PPTX" routes to the `ppt-template-fill` skill by default. The SVG generation route consumes only an explicit template workspace path with a valid `templates/design_spec.md`, or a supported direct/legacy package root with `design_spec.md`.
 
 **MUST**: Beautify is strictly 1:1. Any split, merge, drop, reorder, or page-count change routes to the main pipeline.
 
@@ -783,7 +783,7 @@ python3 ${SKILL_DIR}/scripts/svg_to_pptx.py <project_path>
 > topology/bounds change; the lock is updated immediately. Non-mirror skin
 > remains project-controlled, mirror preserves the reused visual identities,
 > and the exporter never reads a template to add visible objects missing from
-> `svg_output/`. Raw PPTX templates still route to `template-fill-pptx`;
+> `svg_output/`. Raw PPTX templates still route to the `ppt-template-fill` skill;
 > reusable template creation goes through `create-template`.
 
 > **Paragraph editability vs line fidelity** — by default, mergeable dy-stacked

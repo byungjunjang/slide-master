@@ -15,7 +15,7 @@ This file remains only as a compatibility reference for older agents and links. 
 | Existing `.pptx` + add speaker notes, narration audio, auto-advance, or page transitions while preserving visible slides | Run [`native-enhance-pptx`](./native-enhance-pptx.md) |
 | PPT Master generated project with `svg_output/` / `svg_final/` | Use [`generate-audio`](./generate-audio.md) |
 | Existing `.pptx` + beautify or re-layout visible slides | Use [`beautify-pptx`](./beautify-pptx.md) |
-| Existing `.pptx` + fill new content into a native design | Use [`template-fill-pptx`](./template-fill-pptx.md) |
+| Existing `.pptx` + fill new content into a native design | Use the [`ppt-template-fill` skill](../../ppt-template-fill/SKILL.md) |
 
 **Hard rule**: Do not follow the retired `native_narration_pptx.py` workflow steps directly. Use the stable `native_enhance_pptx.py` entry point documented in [`native-enhance-pptx`](./native-enhance-pptx.md).
 

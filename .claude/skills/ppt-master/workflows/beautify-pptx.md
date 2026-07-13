@@ -4,7 +4,7 @@ description: Content-faithful PPT beautification — re-layout an existing deck 
 
 # Beautify PPTX (Re-layout) Workflow
 
-> Mirror of [`template-fill-pptx.md`](./template-fill-pptx.md): template-fill reuses a deck's design and swaps in new content; beautify keeps a deck's content and redoes its layout.
+> Mirror of the [`ppt-template-fill` skill](../../ppt-template-fill/SKILL.md): template-fill reuses a deck's design and swaps in new content; beautify keeps a deck's content and redoes its layout.
 
 Re-lays-out an existing `.pptx`: the text is preserved **verbatim**, the source deck's visual identity (palette / fonts) is **inherited as truth**, and only layout, hierarchy, and whitespace are redesigned. Output is a brand-new native deck generated through the standard SVG pipeline — not a patch over the original.
 
@@ -22,7 +22,7 @@ Re-lays-out an existing `.pptx`: the text is preserved **verbatim**, the source 
 
 **Hard rule — content is frozen**: every text string from the source is preserved exactly (no add / remove / reword / reorder). Beautification freedom lives only in layout, hierarchy, spacing, and visual rhythm.
 
-**Hard rule — not a patch, not a fill**: this regenerates a native deck through Strategist → Executor → export (SKILL.md Steps 4–7). It does **not** edit the source file in place, and it is **not** [`template-fill-pptx`](./template-fill-pptx.md) (which clones source slides and replaces text). It also does not parse an arbitrary third-party template for text-only substitution (the rejected #53 direction) — it builds every page from scratch.
+**Hard rule — not a patch, not a fill**: this regenerates a native deck through Strategist → Executor → export (SKILL.md Steps 4–7). It does **not** edit the source file in place, and it is **not** the [`ppt-template-fill` skill](../../ppt-template-fill/SKILL.md) (which clones source slides and replaces text). It also does not parse an arbitrary third-party template for text-only substitution (the rejected #53 direction) — it builds every page from scratch.
 
 **Distinct from mirror templates**: `replication_mode: mirror` (executor §1.1) keeps layout + visuals verbatim and edits text. Beautify is the inverse — content verbatim, layout redone, identity inherited.
 

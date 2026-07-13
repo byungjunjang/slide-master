@@ -26,7 +26,7 @@ Restore an existing SVG-authored project or template before quality checking or 
 | Current template workspace with `templates/` and optional `images/`, `icons/`, or `exports/` | Inspect SVG metadata to decide whether restoration is needed; the workspace folders themselves do not prove or disprove structure |
 | Raw PPTX intended as a reusable template | Run [`create-template`](./create-template.md), not this workflow |
 | Existing PPTX receiving notes/audio/timing/transitions | Keep the direct [`native-enhance-pptx`](./native-enhance-pptx.md) route; do not create SVGs |
-| Raw PPTX template receiving new content | Keep the direct [`template-fill-pptx`](./template-fill-pptx.md) route |
+| Raw PPTX template receiving new content | Keep the direct [`ppt-template-fill` skill](../../ppt-template-fill/SKILL.md) route |
 
 **Hard rule**: Keep restoration in the main agent and inspect the complete page roster. Do not delegate page classification, cluster by visual similarity, or write a batch SVG generator.
 

@@ -28,7 +28,7 @@ Route selection authority for PPT Master. Use this file before entering the main
 |---|---|
 | Main SVG pipeline and `beautify-pptx` | Every visible output-page object is authored in the completed page SVG; templates and locks guide authoring but are not export-time visual overlays. |
 | `create-template` | Each reusable template SVG is a complete visual reference plus explicit PowerPoint structure metadata. Library and project outputs use the same routing: required `templates/`, optional `images/` / `icons/`, and optional on-demand review output under `exports/`. |
-| `template-fill-pptx` and `native-enhance-pptx` | Native PPTX editing routes. They retain their OOXML contracts and are not forced through SVG. |
+| `ppt-template-fill` (standalone skill) and `native-enhance-pptx` | Native PPTX editing routes. They retain their OOXML contracts and are not forced through SVG. |
 | Animation, transition, speaker-note, and narration workflows | Presentation behavior/content outside the visible page-design layer; keep their dedicated sidecars and package post-processing. |
 
 **Hard rule**: Apply SVG page-design closure only after selecting an SVG-authoring route. Do not reroute a native PPTX operation merely to make every package-level capability pass through SVG.
@@ -50,12 +50,12 @@ Route selection authority for PPT Master. Use this file before entering the main
 
 | Request shape | Trigger | Route | Forbidden route | Preconditions | Output contract | Stop condition |
 |---|---|---|---|---|---|---|
-| Raw PPTX template plus new material/topic | "Use this PPT template to generate a PPTX", "fill this deck", "replace copy", native slide shell reuse | [`template-fill-pptx`](./template-fill-pptx.md) | Main SVG pipeline directly from raw PPTX template | Source PPTX plus content material or topic brief | New native PPTX in `exports/`, cloned/patched by OOXML | Stop if user instead wants a reusable template package |
+| Raw PPTX template plus new material/topic | "Use this PPT template to generate a PPTX", "fill this deck", "replace copy", native slide shell reuse | [`ppt-template-fill` skill](../../ppt-template-fill/SKILL.md) | Main SVG pipeline directly from raw PPTX template | Source PPTX plus content material or topic brief | New native PPTX in `exports/`, cloned/patched by OOXML, gated by the skill's OfficeCLI verification loop | Stop if user instead wants a reusable template package |
 | Existing PPTX, preserve page split and wording | "Beautify", "re-layout", "make more professional" with same slide count/order and verbatim text | [`beautify-pptx`](./beautify-pptx.md) | Main pipeline if page count/order changes | Single source PPTX | Regenerated deck through SVG pipeline, one source slide to one output slide | Stop if user asks to split/merge/drop/reorder |
 | Finished PPTX, native enhancement only | Add notes, recorded narration, auto-advance, transitions, or stable-layout metadata | [`native-enhance-pptx`](./native-enhance-pptx.md) | SVG regeneration | Finished PPTX exists; content/layout should stay stable | Patched PPTX through direct OOXML | Stop if user asks for visual redesign |
-| PPTX/reference design should become a reusable template | "Create a template", "make reusable", "build template from this deck/design", including a template for one named initialized project | [`create-template`](./create-template.md) | `template-fill-pptx` one-off fill | PPTX/design reference exists, or the user gives an explicit template-creation brief; project output additionally requires an initialized target project | Both scopes produce one workspace with required `templates/`, optional `images/` / `icons/`, and optional on-demand `exports/<id>_template_preview.pptx`; library root is `.claude/skills/ppt-master/templates/<kind>/<id>/`, project root is `projects/<name>/`; only library scope is registered | Return the exact workspace root for main Step 3; the target project's own root may resume in place after validation |
+| PPTX/reference design should become a reusable template | "Create a template", "make reusable", "build template from this deck/design", including a template for one named initialized project | [`create-template`](./create-template.md) | `ppt-template-fill` one-off fill | PPTX/design reference exists, or the user gives an explicit template-creation brief; project output additionally requires an initialized target project | Both scopes produce one workspace with required `templates/`, optional `images/` / `icons/`, and optional on-demand `exports/<id>_template_preview.pptx`; library root is `.claude/skills/ppt-master/templates/<kind>/<id>/`, project root is `projects/<name>/`; only library scope is registered | Return the exact workspace root for main Step 3; the target project's own root may resume in place after validation |
 
-**Hard rule**: Raw PPTX template plus "generate PPTX" routes to `template-fill-pptx` by default. A raw PPTX is not a Step 3 template until `create-template` has produced a reusable template directory.
+**Hard rule**: Raw PPTX template plus "generate PPTX" routes to the `ppt-template-fill` skill by default. A raw PPTX is not a Step 3 template until `create-template` has produced a reusable template directory.
 
 **Hard rule**: Beautify is strictly 1:1. Any page count or page order change is re-architecture and therefore the main pipeline, not beautify.
 
@@ -86,6 +86,6 @@ Route selection authority for PPT Master. Use this file before entering the main
 | Explicit legacy-flat root containing `design_spec.md` | Enter main Step 3 through the compatibility reader; flat packaging alone does not require structure restoration |
 | Bare template name, brand name, style label, or vague "use a template" | Do not trigger Step 3; treat as style input for Strategist confirmation stage |
 | User asks "what templates exist?" | Answer as Q&A by listing indexed paths; do not advance the pipeline |
-| Raw `.pptx` called a template | Route by §3, usually `template-fill-pptx`; never treat it as a Step 3 template path |
+| Raw `.pptx` called a template | Route by §3, usually the `ppt-template-fill` skill; never treat it as a Step 3 template path |
 
 **Forbidden - fuzzy resolution**: Do not resolve bare names to local template directories on the user's behalf. The user must provide the path that enters Step 3. For every current template kind, that path is the workspace root.

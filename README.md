@@ -121,7 +121,7 @@ npm install -g @officecli/officecli@1.0.135
 |---|---|---|
 | 자료로 새 덱 만들기 | "이 PDF(경로)로 PPT 만들어줘" | 메인 파이프라인 |
 | 주제만 있고 자료가 없음 | "국내 이차전지 시장 동향 PPT 만들어줘" | 웹 리서치 후 메인 파이프라인 |
-| 갖고 있는 PPTX 템플릿에 내용 채우기 | "이 템플릿 PPTX에 이 내용 채워서 만들어줘" | [`template-fill-pptx`](.claude/skills/ppt-master/workflows/template-fill-pptx.md) — 원본 디자인 그대로, SVG 안 거침 |
+| 갖고 있는 PPTX 템플릿에 내용 채우기 | "이 템플릿 PPTX에 이 내용 채워서 만들어줘" | [`ppt-template-fill`](.claude/skills/ppt-template-fill/SKILL.md) 스킬 — 원본 디자인 그대로, SVG 안 거침, OfficeCLI 검증 루프 내장 |
 | 기존 PPT를 페이지 그대로 예쁘게 | "이 PPT 문구/순서 유지하고 레이아웃만 개선해줘" | [`beautify-pptx`](.claude/skills/ppt-master/workflows/beautify-pptx.md) — 1:1 유지 |
 | 완성 덱에 노트·나레이션·전환 추가 | "이 PPTX에 발표자 노트랑 음성 나레이션 넣어줘" | [`native-enhance-pptx`](.claude/skills/ppt-master/workflows/native-enhance-pptx.md) |
 | PPTX/디자인을 재사용 템플릿으로 | "이 덱으로 재사용 템플릿 만들어줘" | [`create-template`](.claude/skills/ppt-master/workflows/create-template.md) |

@@ -13,7 +13,7 @@ PPT Master is an AI-driven presentation generation system. Multi-role collaborat
 **Route selection authority**: [`.claude/skills/ppt-master/workflows/routing.md`](.claude/skills/ppt-master/workflows/routing.md) owns the complete route matrix. The hard boundaries below stay inline because they bypass or redirect the main pipeline and are the most expensive to misroute.
 
 - Topic-only requests run [`topic-research`](.claude/skills/ppt-master/workflows/topic-research.md) before SKILL.md Step 1.
-- Raw PPTX template plus new material/topic routes to [`template-fill-pptx`](.claude/skills/ppt-master/workflows/template-fill-pptx.md), not the SVG pipeline.
+- Raw PPTX template plus new material/topic routes to the standalone [`ppt-template-fill`](.claude/skills/ppt-template-fill/SKILL.md) skill, not the SVG pipeline.
 - Raw PPTX cannot be consumed as a Step 3 SVG template; run [`create-template`](.claude/skills/ppt-master/workflows/create-template.md) first and return with the generated template workspace root.
 - PPTX beautify is strictly 1:1 page count/order and verbatim wording via [`beautify-pptx`](.claude/skills/ppt-master/workflows/beautify-pptx.md); any split/merge/drop/reorder routes to the main pipeline.
 - Finished PPTX native enhancement uses [`native-enhance-pptx`](.claude/skills/ppt-master/workflows/native-enhance-pptx.md) and must not enter SVG regeneration.
