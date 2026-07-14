@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1280 720" data-pptx-layout="03_content" data-pptx-layout-name="Content">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1280 720" data-pptx-master="government_red-master" data-pptx-master-name="Government Red" data-pptx-layout="03_content" data-pptx-layout-name="Content">
     <!-- 模板: 内容页 - 重庆两江新区发改委风格 -->
 
     <defs>
@@ -10,6 +10,8 @@
         </linearGradient>
     </defs>
 
+    <!-- 母版背景 -->
+    <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
     <!-- 白色背景 -->
     <rect x="0" y="0" width="1280" height="720" fill="#FFFFFF"  id="layout-03_content-background" data-pptx-layer="layout" data-pptx-editable="false"/>
 
@@ -22,7 +24,9 @@
     <text x="85" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#FFFFFF">{{CHAPTER_NUM}}</text>
 
     <!-- 页面标题 -->
-    <text x="130" y="65" font-family="Microsoft YaHei, SimHei, sans-serif" font-size="28" font-weight="bold" fill="#1A1A1A" id="slot-03_content-title-1" data-pptx-placeholder="title">{{PAGE_TITLE}}</text>
+    <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="130 38 950 36">
+        <text x="130" y="65" font-family="Microsoft YaHei, SimHei, sans-serif" font-size="28" font-weight="bold" fill="#1A1A1A" id="slot-03_content-title-1" data-pptx-placeholder-carrier="true">{{PAGE_TITLE}}</text>
+    </g>
 
     <!-- 右上角单位标识 -->
     <text x="1220" y="55" text-anchor="end" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#718096">{{ORG_SHORT}}</text>
@@ -39,9 +43,11 @@
        - 流程图
   -->
     <rect x="60" y="100" width="1160" height="560" fill="none" stroke="#E4E7EB" stroke-width="2" stroke-dasharray="8,8" />
-    <text x="640" y="360" text-anchor="middle" fill="#CBD5E1" font-size="18" font-family="Microsoft YaHei, sans-serif" id="slot-03_content-body-2" data-pptx-placeholder="body">
-        {{CONTENT_AREA}}
-    </text>
+    <g id="body-slot" data-pptx-placeholder="body" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="60 100 1160 560">
+        <text x="640" y="360" text-anchor="middle" fill="#CBD5E1" font-size="18" font-family="Microsoft YaHei, sans-serif" id="slot-03_content-body-2" data-pptx-placeholder-carrier="true">
+            {{CONTENT_AREA}}
+        </text>
+    </g>
     <text x="640" y="395" text-anchor="middle" fill="#CBD5E1" font-size="14" font-family="Microsoft YaHei, sans-serif">
         (由 Executor 根据实际内容自由布局)
     </text>
@@ -58,7 +64,9 @@
     <rect x="0" y="716" width="1280" height="4" fill="#8B0000" />
 
     <!-- 页码 -->
-    <text x="640" y="695" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#718096" id="slot-03_content-slide_number-3" data-pptx-placeholder="slide-number">{{PAGE_NUM}}</text>
+    <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="3" data-pptx-placeholder-bounds="540 680 200 20">
+        <text x="640" y="695" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#718096" id="slot-03_content-slide_number-3" data-pptx-placeholder-carrier="true">{{PAGE_NUM}}</text>
+    </g>
 
     <!-- 底部单位名称 -->
     <text x="1220" y="695" text-anchor="end" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#718096" fill-opacity="0.6">{{ORG_SHORT}}</text>
