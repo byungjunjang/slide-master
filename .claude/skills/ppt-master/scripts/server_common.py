@@ -24,14 +24,40 @@ from pathlib import Path
 from typing import Optional
 
 
+def port_has_listener(host: str, port: int, timeout: float = 0.3) -> bool:
+    """Return True if a server is actively accepting connections on host:port.
+
+    A bind probe alone is unreliable on Windows: with ``SO_REUSEADDR`` set, the
+    OS lets a second socket bind a port that another process is *actively
+    listening* on, so a successful bind does NOT prove the port is free. A
+    successful TCP connect, by contrast, proves something is already serving
+    there. ``find_free_port`` uses this to skip such ports so a fresh launch
+    (a new project, or a relaunch) never silently collides with a preview /
+    confirm server left running from an earlier session.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.settimeout(timeout)
+        try:
+            probe.connect((host, port))
+            return True
+        except OSError:
+            return False
+
+
 def find_free_port(preferred: int, host: str = '127.0.0.1', span: int = 50) -> int:
-    """Return ``preferred`` if it is bindable, else the next free port within
-    ``span``. Lets a new project's UI server coexist with another project's
-    server already holding the default port, instead of crashing on bind — each
-    project ends up on its own port serving its own data. Falls back to
-    ``preferred`` if the whole span is taken (let the caller's bind surface it).
+    """Return ``preferred`` if it is genuinely free, else the next free port
+    within ``span``. Lets a new project's UI server coexist with another
+    project's server already holding the default port, instead of crashing on
+    bind or — worse, on Windows — binding the same port a stale server is still
+    serving. A port is "free" only when nothing is actively listening on it
+    (connect probe) AND it is bindable. Falls back to ``preferred`` if the whole
+    span is taken (let the caller's bind surface it).
     """
     for port in range(preferred, preferred + span):
+        # Windows SO_REUSEADDR makes bind() succeed on an actively-served port,
+        # so an explicit connect probe is what actually detects a live server.
+        if port_has_listener(host, port):
+            continue
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
             probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
