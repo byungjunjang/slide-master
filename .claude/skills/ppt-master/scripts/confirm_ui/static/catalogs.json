@@ -1,5 +1,5 @@
 {
-  "_comment": "Enumerable (finite) option universe for the confirm page. Served by Flask static at /static/catalogs.json; the front-end prefers /api/catalogs when the server provides it. These fields list ALL options and the AI marks one as recommended via recommendations.json `recommend`. Open/generative fields (color, typography, generated-image style) are NOT here — the AI authors >=3 candidates each for those (creative recommendations always offer real choice). 'canvas' mirrors scripts/config.py CANVAS_FORMATS — keep in sync. User-facing catalog text supports label_zh/label_en/label_ja, desc_zh/desc_en/desc_ja, group_zh/group_en/group_ja.",
+  "_comment": "Enumerable (finite) option universe for the confirm page. Served by Flask static at /static/catalogs.json; the front-end prefers /api/catalogs when the server provides it. These fields list ALL options and the AI marks one as recommended via recommendations.json `recommend`. Open/generative fields (color, typography, generated-image style) are NOT here — the AI authors >=3 candidates each for those (creative recommendations always offer real choice). 'canvas' mirrors scripts/config.py CANVAS_FORMATS — keep in sync. User-facing catalog text supports label_zh/label_en/label_ja/label_ko, desc_zh/desc_en/desc_ja/desc_ko, group_zh/group_en/group_ja/group_ko.",
   "canvas": [
     {
       "id": "ppt169",
@@ -7,11 +7,13 @@
       "label_zh": "PPT 16:9",
       "label_en": "PPT 16:9",
       "label_ja": "PPT 16:9",
+      "label_ko": "PPT 16:9",
       "dim": "1280×720",
       "viewbox": "0 0 1280 720",
       "use_zh": "现代投影 / 在线演示",
       "use_en": "Modern projectors / online",
-      "use_ja": "現代的なプロジェクター／オンライン発表"
+      "use_ja": "現代的なプロジェクター／オンライン発表",
+      "use_ko": "최신 프로젝터 / 온라인 발표"
     },
     {
       "id": "ppt43",
@@ -19,11 +21,13 @@
       "label_zh": "PPT 4:3",
       "label_en": "PPT 4:3",
       "label_ja": "PPT 4:3",
+      "label_ko": "PPT 4:3",
       "dim": "1024×768",
       "viewbox": "0 0 1024 768",
       "use_zh": "传统投影",
       "use_en": "Traditional projectors",
-      "use_ja": "従来型プロジェクター"
+      "use_ja": "従来型プロジェクター",
+      "use_ko": "전통형 프로젝터"
     },
     {
       "id": "wechat",
@@ -31,11 +35,13 @@
       "label_zh": "公众号头图 2.35:1",
       "label_en": "WeChat Header 2.35:1",
       "label_ja": "WeChat ヘッダー 2.35:1",
+      "label_ko": "WeChat 헤더 2.35:1",
       "dim": "900×383",
       "viewbox": "0 0 900 383",
       "use_zh": "微信公众号文章封面",
       "use_en": "WeChat article cover",
-      "use_ja": "WeChat記事のカバー画像"
+      "use_ja": "WeChat記事のカバー画像",
+      "use_ko": "위챗 공식계정 글 커버"
     },
     {
       "id": "xiaohongshu",
@@ -43,11 +49,13 @@
       "label_zh": "小红书 3:4",
       "label_en": "RED 3:4",
       "label_ja": "小紅書（RED）3:4",
+      "label_ko": "샤오홍슈 3:4",
       "dim": "1242×1660",
       "viewbox": "0 0 1242 1660",
       "use_zh": "知识分享 / 种草封面",
       "use_en": "Knowledge sharing",
-      "use_ja": "知識共有／おすすめ紹介カバー"
+      "use_ja": "知識共有／おすすめ紹介カバー",
+      "use_ko": "지식 공유 / 추천 커버"
     },
     {
       "id": "moments",
@@ -55,11 +63,13 @@
       "label_zh": "社交方图 1:1",
       "label_en": "Social Square 1:1",
       "label_ja": "SNS正方形 1:1",
+      "label_ko": "소셜 정사각 1:1",
       "dim": "1080×1080",
       "viewbox": "0 0 1080 1080",
       "use_zh": "社交媒体方图",
       "use_en": "Social square",
-      "use_ja": "SNS用正方形画像"
+      "use_ja": "SNS用正方形画像",
+      "use_ko": "소셜 미디어 정사각 이미지"
     },
     {
       "id": "story",
@@ -67,11 +77,13 @@
       "label_zh": "竖屏 9:16",
       "label_en": "Vertical 9:16",
       "label_ja": "縦型 9:16",
+      "label_ko": "세로형 9:16",
       "dim": "1080×1920",
       "viewbox": "0 0 1080 1920",
       "use_zh": "短视频 / 竖屏封面",
       "use_en": "Short-video / story cover",
-      "use_ja": "ショート動画／ストーリーカバー"
+      "use_ja": "ショート動画／ストーリーカバー",
+      "use_ko": "숏폼 영상 / 스토리 커버"
     },
     {
       "id": "banner",
@@ -79,11 +91,13 @@
       "label_zh": "横幅 16:9",
       "label_en": "Banner 16:9",
       "label_ja": "バナー 16:9",
+      "label_ko": "배너 16:9",
       "dim": "1920×1080",
       "viewbox": "0 0 1920 1080",
       "use_zh": "网页横幅 / 大屏",
       "use_en": "Web banner / big screen",
-      "use_ja": "Webバナー／大画面"
+      "use_ja": "Webバナー／大画面",
+      "use_ko": "웹 배너 / 대형 스크린"
     },
     {
       "id": "a4",
@@ -91,11 +105,13 @@
       "label_zh": "A4 1:1.41",
       "label_en": "A4 1:1.41",
       "label_ja": "A4 1:1.41",
+      "label_ko": "A4 1:1.41",
       "dim": "1240×1754",
       "viewbox": "0 0 1240 1754",
       "use_zh": "打印 / 文档导出",
       "use_en": "Print / PDF export",
-      "use_ja": "印刷／PDF出力"
+      "use_ja": "印刷／PDF出力",
+      "use_ko": "인쇄 / PDF 내보내기"
     }
   ],
   "modes": [
@@ -105,9 +121,11 @@
       "label_zh": "金字塔",
       "label_en": "pyramid",
       "label_ja": "ピラミッド",
+      "label_ko": "피라미드",
       "desc_zh": "结论先行、相互独立且完全穷尽的论证、每个数据都带比较。适合决策、分析、战略、汇报。",
       "desc_en": "Lead with the answer, use MECE reasoning, and compare every key data point. Best for decisions, analysis, strategy, and reporting.",
-      "desc_ja": "結論を先に示し、MECEな論理構成で、主要データは必ず比較を添える。意思決定・分析・戦略・報告に最適。"
+      "desc_ja": "結論を先に示し、MECEな論理構成で、主要データは必ず比較を添える。意思決定・分析・戦略・報告に最適。",
+      "desc_ko": "결론을 먼저 제시하고 MECE 논리로 전개하며 핵심 데이터마다 비교를 덧붙입니다. 의사결정·분석·전략·보고에 적합."
     },
     {
       "id": "narrative",
@@ -115,9 +133,11 @@
       "label_zh": "叙事",
       "label_en": "narrative",
       "label_ja": "ナラティブ",
+      "label_ko": "내러티브",
       "desc_zh": "情境、张力、解决方案形成故事弧线，保留悬念与转折。适合路演、案例、品牌、融资。",
       "desc_en": "Build a story arc from context to tension to resolution, with suspense and turns. Best for roadshows, cases, brand stories, and fundraising.",
-      "desc_ja": "状況設定から緊張、解決へとストーリーアークを描き、意外性や転換を残す。ロードショー・事例紹介・ブランドストーリー・資金調達向け。"
+      "desc_ja": "状況設定から緊張、解決へとストーリーアークを描き、意外性や転換を残す。ロードショー・事例紹介・ブランドストーリー・資金調達向け。",
+      "desc_ko": "상황–긴장–해결의 스토리 아크를 그리며 반전과 긴장감을 유지합니다. 로드쇼·사례·브랜드 스토리·투자 유치에 적합."
     },
     {
       "id": "instructional",
@@ -125,9 +145,11 @@
       "label_zh": "教学",
       "label_en": "instructional",
       "label_ja": "教育・解説",
+      "label_ko": "교육형",
       "desc_zh": "概念拆解、分步推进、并列讲解。适合培训、教程、科普、知识分享。",
       "desc_en": "Break concepts down, advance step by step, and explain parallel ideas clearly. Best for training, tutorials, popular science, and knowledge sharing.",
-      "desc_ja": "概念を分解し、段階的に進め、並列する要素を明確に説明する。研修・チュートリアル・科学解説・知識共有に最適。"
+      "desc_ja": "概念を分解し、段階的に進め、並列する要素を明確に説明する。研修・チュートリアル・科学解説・知識共有に最適。",
+      "desc_ko": "개념을 분해하고 단계별로 진행하며 병렬 개념을 명확히 설명합니다. 교육·튜토리얼·과학 해설·지식 공유에 적합."
     },
     {
       "id": "showcase",
@@ -135,9 +157,11 @@
       "label_zh": "展演",
       "label_en": "showcase",
       "label_ja": "ショーケース",
+      "label_ko": "쇼케이스",
       "desc_zh": "视觉主导，大图、大数和情绪节奏优先。适合发布、品牌秀、活动。",
       "desc_en": "Use visual rhythm, large images, and strong numbers as the lead. Best for launches, brand showcases, and events.",
-      "desc_ja": "ビジュアル主導で、大きな画像・大きな数字・感情のリズムを優先する。発表会・ブランドショー・イベント向け。"
+      "desc_ja": "ビジュアル主導で、大きな画像・大きな数字・感情のリズムを優先する。発表会・ブランドショー・イベント向け。",
+      "desc_ko": "비주얼 중심으로 큰 이미지·큰 숫자·감정 리듬을 우선합니다. 발표회·브랜드 쇼·이벤트에 적합."
     },
     {
       "id": "briefing",
@@ -145,9 +169,11 @@
       "label_zh": "简报",
       "label_en": "briefing",
       "label_ja": "ブリーフィング",
+      "label_ko": "브리핑",
       "desc_zh": "中性完整、便于速览，采用主题式标题和均匀权重。适合周报、参考材料、常见问题、会议包。",
       "desc_en": "Stay neutral, complete, and scannable with topical headings and balanced weight. Best for weekly reports, reference packs, FAQs, and meeting decks.",
-      "desc_ja": "中立的かつ網羅的で一覧しやすく、トピック見出しと均等な重み付けを用いる。週次報告・参考資料・FAQ・会議資料に最適。"
+      "desc_ja": "中立的かつ網羅的で一覧しやすく、トピック見出しと均等な重み付けを用いる。週次報告・参考資料・FAQ・会議資料に最適。",
+      "desc_ko": "중립적이고 빠짐없이 훑어보기 좋게, 주제형 제목과 균등한 비중을 사용합니다. 주간 보고·참고 자료·FAQ·회의 자료에 적합."
     }
   ],
   "visual_styles": [
@@ -156,6 +182,7 @@
       "group_zh": "企业 / 产品",
       "group_en": "Corporate / product",
       "group_ja": "企業／プロダクト",
+      "group_ko": "기업 / 프로덕트",
       "items": [
         {
           "id": "swiss-minimal",
@@ -163,9 +190,11 @@
           "label_zh": "瑞士极简",
           "label_en": "swiss-minimal",
           "label_ja": "スイス・ミニマル",
+          "label_ko": "스위스 미니멀",
           "desc_zh": "网格锁定、锐利层级、大留白、少装饰。",
           "desc_en": "Grid-locked layout, sharp hierarchy, generous whitespace, and minimal decoration.",
-          "desc_ja": "グリッドに沿ったレイアウト、明快な階層、余白を活かした装飾の少ないデザイン。"
+          "desc_ja": "グリッドに沿ったレイアウト、明快な階層、余白を活かした装飾の少ないデザイン。",
+          "desc_ko": "그리드 고정 레이아웃, 뚜렷한 위계, 넉넉한 여백, 최소한의 장식."
         },
         {
           "id": "soft-rounded",
@@ -173,9 +202,11 @@
           "label_zh": "柔和圆角",
           "label_en": "soft-rounded",
           "label_ja": "ソフト・ラウンド",
+          "label_ko": "소프트 라운드",
           "desc_zh": "圆角卡片、柔和投影、亲和现代。",
           "desc_en": "Rounded cards, soft shadows, and a friendly modern tone.",
-          "desc_ja": "角丸のカード、柔らかい影、親しみやすいモダンな雰囲気。"
+          "desc_ja": "角丸のカード、柔らかい影、親しみやすいモダンな雰囲気。",
+          "desc_ko": "둥근 카드, 부드러운 그림자, 친근하고 모던한 톤."
         },
         {
           "id": "glassmorphism",
@@ -183,9 +214,11 @@
           "label_zh": "玻璃拟态",
           "label_en": "glassmorphism",
           "label_ja": "グラスモーフィズム",
+          "label_ko": "글래스모피즘",
           "desc_zh": "半透明玻璃面板、渐变光感、漂浮层次。",
           "desc_en": "Translucent glass panels, gradient light, and floating depth.",
-          "desc_ja": "半透明のガラスパネル、グラデーションの光、浮遊感のある奥行き。"
+          "desc_ja": "半透明のガラスパネル、グラデーションの光、浮遊感のある奥行き。",
+          "desc_ko": "반투명 유리 패널, 그라데이션 빛, 떠 있는 듯한 깊이감."
         },
         {
           "id": "dark-tech",
@@ -193,9 +226,11 @@
           "label_zh": "深色科技",
           "label_en": "dark-tech",
           "label_ja": "ダークテック",
+          "label_ko": "다크 테크",
           "desc_zh": "深色画布、发光强调、几何精确。",
           "desc_en": "Dark canvas, glowing accents, and precise geometry.",
-          "desc_ja": "ダークな背景、光るアクセント、精密な幾何学表現。"
+          "desc_ja": "ダークな背景、光るアクセント、精密な幾何学表現。",
+          "desc_ko": "어두운 캔버스, 빛나는 강조, 정밀한 기하학."
         },
         {
           "id": "blueprint",
@@ -203,9 +238,11 @@
           "label_zh": "蓝图",
           "label_en": "blueprint",
           "label_ja": "ブループリント",
+          "label_ko": "블루프린트",
           "desc_zh": "深底蓝图线稿、等距结构、工程标注。",
           "desc_en": "Dark blueprint linework, isometric structure, and engineering annotations.",
-          "desc_ja": "濃紺の設計図風の線画、アイソメトリック構造、技術的な注記。"
+          "desc_ja": "濃紺の設計図風の線画、アイソメトリック構造、技術的な注記。",
+          "desc_ko": "짙은 바탕의 설계도 선화, 아이소메트릭 구조, 엔지니어링 주석."
         }
       ]
     },
@@ -214,6 +251,7 @@
       "group_zh": "编辑 / 出版",
       "group_en": "Editorial / publication",
       "group_ja": "エディトリアル／出版",
+      "group_ko": "에디토리얼 / 출판",
       "items": [
         {
           "id": "editorial",
@@ -221,9 +259,11 @@
           "label_zh": "编辑出版",
           "label_en": "editorial",
           "label_ja": "エディトリアル",
+          "label_ko": "에디토리얼",
           "desc_zh": "杂志式层级、栏线、衬线与无衬线交织。",
           "desc_en": "Magazine hierarchy, column rules, and a serif/sans-serif mix.",
-          "desc_ja": "雑誌のような階層構造、段組み罫線、セリフ・サンセリフの混在。"
+          "desc_ja": "雑誌のような階層構造、段組み罫線、セリフ・サンセリフの混在。",
+          "desc_ko": "잡지식 위계, 컬럼 괘선, 세리프·산세리프 혼용."
         },
         {
           "id": "photo-editorial",
@@ -231,9 +271,11 @@
           "label_zh": "摄影编辑",
           "label_en": "photo-editorial",
           "label_ja": "フォトエディトリアル",
+          "label_ko": "포토 에디토리얼",
           "desc_zh": "满版摄影主导，文字点缀与图注配合。",
           "desc_en": "Full-bleed photography leads, supported by light text and captions.",
-          "desc_ja": "裁ち落とし写真を主役に、控えめなテキストとキャプションで補う。"
+          "desc_ja": "裁ち落とし写真を主役に、控えめなテキストとキャプションで補う。",
+          "desc_ko": "풀블리드 사진이 주도하고 절제된 텍스트와 캡션이 보조합니다."
         },
         {
           "id": "data-journalism",
@@ -241,9 +283,11 @@
           "label_zh": "数据新闻",
           "label_en": "data-journalism",
           "label_ja": "データジャーナリズム",
+          "label_ko": "데이터 저널리즘",
           "desc_zh": "多栏微图表、侧栏、来源线、信息密度高。",
           "desc_en": "Multi-column microcharts, sidebars, source lines, and dense information.",
-          "desc_ja": "多段組みの小型チャート、サイドバー、出典表記、高い情報密度。"
+          "desc_ja": "多段組みの小型チャート、サイドバー、出典表記、高い情報密度。",
+          "desc_ko": "다단 마이크로 차트, 사이드바, 출처 표기, 높은 정보 밀도."
         },
         {
           "id": "brutalist",
@@ -251,9 +295,11 @@
           "label_zh": "粗野主义",
           "label_en": "brutalist",
           "label_ja": "ブルータリズム",
+          "label_ko": "브루탈리즘",
           "desc_zh": "报纸密度、粗线框、原始结构、扁平表达。",
           "desc_en": "Newspaper-like density, heavy rules, raw structure, and flat treatment.",
-          "desc_ja": "新聞のような情報密度、太い罫線、素朴な構造、フラットな表現。"
+          "desc_ja": "新聞のような情報密度、太い罫線、素朴な構造、フラットな表現。",
+          "desc_ko": "신문 같은 밀도, 굵은 괘선, 날것의 구조, 플랫한 표현."
         }
       ]
     },
@@ -262,6 +308,7 @@
       "group_zh": "表现 / 印刷",
       "group_en": "Expressive / print",
       "group_ja": "表現的／印刷",
+      "group_ko": "표현적 / 인쇄",
       "items": [
         {
           "id": "memphis",
@@ -269,9 +316,11 @@
           "label_zh": "孟菲斯",
           "label_en": "memphis",
           "label_ja": "メンフィス",
+          "label_ko": "멤피스",
           "desc_zh": "撞色块、几何碎片、粗描边。",
           "desc_en": "Contrasting color blocks, geometric scraps, and heavy outlines.",
-          "desc_ja": "コントラストの強い色面、幾何学的な断片、太いアウトライン。"
+          "desc_ja": "コントラストの強い色面、幾何学的な断片、太いアウトライン。",
+          "desc_ko": "대비 강한 색면, 기하학 조각, 굵은 아웃라인."
         },
         {
           "id": "zine",
@@ -279,9 +328,11 @@
           "label_zh": "小刊",
           "label_en": "zine",
           "label_ja": "ジン（自主制作誌）",
+          "label_ko": "진(zine)",
           "desc_zh": "孔版印刷错位、半调、有限色、印刷颗粒。",
           "desc_en": "Riso offsets, halftones, limited colors, and print grain.",
-          "desc_ja": "リソグラフのズレ、ハーフトーン、限られた色数、印刷の粒感。"
+          "desc_ja": "リソグラフのズレ、ハーフトーン、限られた色数、印刷の粒感。",
+          "desc_ko": "리소 인쇄의 어긋남, 하프톤, 제한된 색, 인쇄 질감."
         },
         {
           "id": "vintage-poster",
@@ -289,9 +340,11 @@
           "label_zh": "复古海报",
           "label_en": "vintage-poster",
           "label_ja": "ヴィンテージポスター",
+          "label_ko": "빈티지 포스터",
           "desc_zh": "中世纪扁平色块、半调、复古几何暖意。",
           "desc_en": "Mid-century flat color blocks, halftones, and warm vintage geometry.",
-          "desc_ja": "ミッドセンチュリー調のフラットな色面、ハーフトーン、温かみのあるレトロな幾何学模様。"
+          "desc_ja": "ミッドセンチュリー調のフラットな色面、ハーフトーン、温かみのあるレトロな幾何学模様。",
+          "desc_ko": "미드센추리 플랫 색면, 하프톤, 따뜻한 레트로 기하학."
         },
         {
           "id": "paper-cut",
@@ -299,9 +352,11 @@
           "label_zh": "剪纸",
           "label_en": "paper-cut",
           "label_ja": "切り絵",
+          "label_ko": "페이퍼 컷",
           "desc_zh": "层叠剪纸、层间柔影、手作质感。",
           "desc_en": "Layered cut paper, soft inter-layer shadows, and a handmade feel.",
-          "desc_ja": "重なり合う切り紙、層間の柔らかな影、手作り感のある質感。"
+          "desc_ja": "重なり合う切り紙、層間の柔らかな影、手作り感のある質感。",
+          "desc_ko": "겹겹이 쌓인 종이, 층 사이 부드러운 그림자, 수공예 질감."
         }
       ]
     },
@@ -310,6 +365,7 @@
       "group_zh": "手绘 / 笔触",
       "group_en": "Hand-drawn / brush",
       "group_ja": "手描き／筆致",
+      "group_ko": "손그림 / 붓터치",
       "items": [
         {
           "id": "sketch-notes",
@@ -317,9 +373,11 @@
           "label_zh": "手绘笔记",
           "label_en": "sketch-notes",
           "label_ja": "手描きノート",
+          "label_ko": "스케치 노트",
           "desc_zh": "暖纸底、涂鸦线条、柔和彩块。",
           "desc_en": "Warm paper, doodle lines, and soft color blocks.",
-          "desc_ja": "温かみのある紙の質感、落書き風の線、柔らかい色面。"
+          "desc_ja": "温かみのある紙の質感、落書き風の線、柔らかい色面。",
+          "desc_ko": "따뜻한 종이 바탕, 낙서풍 선, 부드러운 색면."
         },
         {
           "id": "ink-notes",
@@ -327,9 +385,11 @@
           "label_zh": "墨迹笔记",
           "label_en": "ink-notes",
           "label_ja": "インクノート",
+          "label_ko": "잉크 노트",
           "desc_zh": "浅底、黑色手写墨迹、稀疏语义强调。",
           "desc_en": "Light background, black handwritten ink, and sparse semantic emphasis.",
-          "desc_ja": "明るい背景に黒の手書きインク、要所を絞った強調表現。"
+          "desc_ja": "明るい背景に黒の手書きインク、要所を絞った強調表現。",
+          "desc_ko": "밝은 바탕, 검정 손글씨 잉크, 절제된 의미 강조."
         },
         {
           "id": "chalkboard",
@@ -337,9 +397,11 @@
           "label_zh": "黑板",
           "label_en": "chalkboard",
           "label_ja": "黒板",
+          "label_ko": "칠판",
           "desc_zh": "深板岩底、粉笔笔触、粉彩强调。",
           "desc_en": "Dark slate surface, chalk strokes, and pastel emphasis.",
-          "desc_ja": "濃いスレート調の背景に、チョークの筆致とパステルの強調色。"
+          "desc_ja": "濃いスレート調の背景に、チョークの筆致とパステルの強調色。",
+          "desc_ko": "짙은 슬레이트 바탕, 분필 터치, 파스텔 강조."
         },
         {
           "id": "ink-wash",
@@ -347,9 +409,11 @@
           "label_zh": "水墨",
           "label_en": "ink-wash",
           "label_ja": "水墨画",
+          "label_ko": "수묵화",
           "desc_zh": "宣纸留白、笔触、印章、静气，新中式表达。",
           "desc_en": "Rice-paper whitespace, brushwork, seals, and a quiet contemporary Chinese tone.",
-          "desc_ja": "画仙紙の余白、筆致、落款印、静謐な現代中国風の表現。"
+          "desc_ja": "画仙紙の余白、筆致、落款印、静謐な現代中国風の表現。",
+          "desc_ko": "화선지 여백, 붓터치, 낙관, 고요한 현대 동양풍 표현."
         }
       ]
     },
@@ -358,6 +422,7 @@
       "group_zh": "特殊风格",
       "group_en": "Specialty",
       "group_ja": "特殊スタイル",
+      "group_ko": "특수 스타일",
       "items": [
         {
           "id": "pixel-art",
@@ -365,9 +430,11 @@
           "label_zh": "像素风",
           "label_en": "pixel-art",
           "label_ja": "ピクセルアート",
+          "label_ko": "픽셀 아트",
           "desc_zh": "严格像素网格、块状形体、有限色、扁平表达。",
           "desc_en": "Strict pixel grid, blocky shapes, limited colors, and flat treatment.",
-          "desc_ja": "厳密なピクセルグリッド、ブロック状の形状、限られた色数、フラットな表現。"
+          "desc_ja": "厳密なピクセルグリッド、ブロック状の形状、限られた色数、フラットな表現。",
+          "desc_ko": "엄격한 픽셀 그리드, 블록형 형태, 제한된 색, 플랫한 표현."
         }
       ]
     }
@@ -379,9 +446,11 @@
       "label_zh": "几何实心图标",
       "label_en": "chunk-filled",
       "label_ja": "幾何学的塗りつぶしアイコン",
+      "label_ko": "기하학 채움 아이콘",
       "desc_zh": "实心、直线几何、锐利厚重，适合科技、工程、企业结构图。",
       "desc_en": "Solid, straight, geometric, sharp, and heavy. Good for tech, engineering, and corporate structure diagrams.",
-      "desc_ja": "塗りつぶし・直線的な幾何形状で、鋭くしっかりした印象。テック、エンジニアリング、企業組織図に適する。"
+      "desc_ja": "塗りつぶし・直線的な幾何形状で、鋭くしっかりした印象。テック、エンジニアリング、企業組織図に適する。",
+      "desc_ko": "채움형·직선 기하·날카롭고 묵직한 인상. 테크, 엔지니어링, 기업 구조도에 적합."
     },
     {
       "id": "tabler-filled",
@@ -389,9 +458,11 @@
       "label_zh": "圆润实心图标",
       "label_en": "tabler-filled",
       "label_ja": "丸みのある塗りつぶしアイコン",
+      "label_ko": "둥근 채움 아이콘",
       "desc_zh": "实心、圆润曲线、中等视觉重量，适合亲和现代风格。",
       "desc_en": "Solid, rounded, and medium-weight. Good for friendly modern styles.",
-      "desc_ja": "塗りつぶし・丸みのある曲線で、中程度の視覚的な重み。親しみやすいモダンなスタイルに適する。"
+      "desc_ja": "塗りつぶし・丸みのある曲線で、中程度の視覚的な重み。親しみやすいモダンなスタイルに適する。",
+      "desc_ko": "채움형·둥근 곡선·중간 시각 무게. 친근하고 모던한 스타일에 적합."
     },
     {
       "id": "tabler-outline",
@@ -399,9 +470,11 @@
       "label_zh": "线性描边图标",
       "label_en": "tabler-outline",
       "label_ja": "線形アウトラインアイコン",
+      "label_ko": "라인 아이콘",
       "desc_zh": "线性描边，轻盈精致，适合屏幕阅读和编辑型图标。",
       "desc_en": "Linear stroke, light and refined. Good for screen reading and editable icons.",
-      "desc_ja": "線形のストロークで、軽やかで洗練された印象。画面表示や編集用アイコンに適する。"
+      "desc_ja": "線形のストロークで、軽やかで洗練された印象。画面表示や編集用アイコンに適する。",
+      "desc_ko": "가늘고 정제된 라인 스트로크. 화면 가독성과 편집형 아이콘에 적합."
     },
     {
       "id": "phosphor-duotone",
@@ -409,9 +482,11 @@
       "label_zh": "双色层次图标",
       "label_en": "phosphor-duotone",
       "label_ja": "デュオトーン階調アイコン",
+      "label_ko": "듀오톤 아이콘",
       "desc_zh": "双色层次、中等重量，适合现代产品和平台类表达。",
       "desc_en": "Two-tone layering with medium weight. Good for modern product and platform narratives.",
-      "desc_ja": "2色の階調表現で中程度の重み。モダンなプロダクトやプラットフォームの説明に適する。"
+      "desc_ja": "2色の階調表現で中程度の重み。モダンなプロダクトやプラットフォームの説明に適する。",
+      "desc_ko": "2색 레이어와 중간 무게. 모던한 프로덕트·플랫폼 서사에 적합."
     },
     {
       "id": "emoji",
@@ -419,16 +494,19 @@
       "label_zh": "表情符号",
       "label_en": "Emoji",
       "label_ja": "絵文字",
+      "label_ko": "이모지",
       "desc_zh": "系统表情符号，适合轻量、社交、教学或快速识别场景；正式企业 / 咨询风谨慎使用。",
       "desc_en": "System emoji for lightweight, social, instructional, or quick-recognition contexts; use carefully in formal corporate or consulting decks.",
-      "desc_ja": "システム絵文字。軽やかなSNS・教育・素早い視認が求められる場面向き。フォーマルな企業／コンサル資料では慎重に使用すること。"
+      "desc_ja": "システム絵文字。軽やかなSNS・教育・素早い視認が求められる場面向き。フォーマルな企業／コンサル資料では慎重に使用すること。",
+      "desc_ko": "시스템 이모지. 가벼운 소셜·교육·빠른 인지 상황에 적합. 격식 있는 기업/컨설팅 덱에서는 신중히 사용."
     },
     {
       "id": "none",
       "label": "不用图标",
       "label_zh": "不用图标",
       "label_en": "No icons",
-      "label_ja": "アイコンなし"
+      "label_ja": "アイコンなし",
+      "label_ko": "아이콘 없음"
     }
   ],
   "image_usage": [
@@ -437,35 +515,40 @@
       "label": "AI 生成",
       "label_zh": "生成配图",
       "label_en": "AI-generated",
-      "label_ja": "AI生成"
+      "label_ja": "AI生成",
+      "label_ko": "AI 생성"
     },
     {
       "id": "web",
       "label": "Web 来源",
       "label_zh": "网络来源",
       "label_en": "Web-sourced",
-      "label_ja": "Web由来"
+      "label_ja": "Web由来",
+      "label_ko": "웹 소싱"
     },
     {
       "id": "provided",
       "label": "用户提供",
       "label_zh": "用户提供",
       "label_en": "User-provided",
-      "label_ja": "ユーザー提供"
+      "label_ja": "ユーザー提供",
+      "label_ko": "사용자 제공"
     },
     {
       "id": "placeholder",
       "label": "占位符",
       "label_zh": "占位符",
       "label_en": "Placeholder",
-      "label_ja": "プレースホルダー"
+      "label_ja": "プレースホルダー",
+      "label_ko": "플레이스홀더"
     },
     {
       "id": "none",
       "label": "不使用图片",
       "label_zh": "不使用图片",
       "label_en": "No images",
-      "label_ja": "画像なし"
+      "label_ja": "画像なし",
+      "label_ko": "이미지 없음"
     }
   ],
   "image_ai_path": [
@@ -474,7 +557,8 @@
       "label": "Automatic Path A → Path B → Offline Manual",
       "label_zh": "自动选择",
       "label_en": "Automatic Path A → Path B → Offline Manual",
-      "label_ja": "自動選択（Path A → Path B → オフライン手動）"
+      "label_ja": "自動選択（Path A → Path B → オフライン手動）",
+      "label_ko": "자동 선택 (Path A → Path B → 오프라인 수동)"
     },
     {
       "id": "api",
@@ -482,9 +566,11 @@
       "label_zh": "接口后端",
       "label_en": "Path A",
       "label_ja": "Path A",
+      "label_ko": "Path A",
       "desc_zh": "强制走接口后端，第 5 步运行 image_gen.py（需已配置 IMAGE_BACKEND）。",
       "desc_en": "Force the API backend — image_gen.py runs in Step 5 (requires IMAGE_BACKEND).",
-      "desc_ja": "APIバックエンドを強制使用。ステップ5でimage_gen.pyを実行（IMAGE_BACKENDの設定が必要）。"
+      "desc_ja": "APIバックエンドを強制使用。ステップ5でimage_gen.pyを実行（IMAGE_BACKENDの設定が必要）。",
+      "desc_ko": "API 백엔드를 강제 사용 — 5단계에서 image_gen.py 실행 (IMAGE_BACKEND 설정 필요)."
     },
     {
       "id": "host-native",
@@ -492,9 +578,11 @@
       "label_zh": "宿主原生工具",
       "label_en": "Path B",
       "label_ja": "Path B",
+      "label_ko": "Path B",
       "desc_zh": "强制使用当前环境的原生图像工具生成（即使配置了 IMAGE_BACKEND 也跳过接口）；需宿主提供原生图像工具（Codex / Claude Code 等）。",
       "desc_en": "Force the host's native image tool (skips the API even if IMAGE_BACKEND is set); requires a host with a native image tool (Codex / Claude Code / similar).",
-      "desc_ja": "現在の環境のネイティブ画像ツールを強制使用（IMAGE_BACKENDが設定されていてもAPIをスキップ）。ネイティブ画像ツールを持つホスト（Codex／Claude Codeなど）が必要。"
+      "desc_ja": "現在の環境のネイティブ画像ツールを強制使用（IMAGE_BACKENDが設定されていてもAPIをスキップ）。ネイティブ画像ツールを持つホスト（Codex／Claude Codeなど）が必要。",
+      "desc_ko": "현재 환경의 네이티브 이미지 도구를 강제 사용 (IMAGE_BACKEND가 설정돼 있어도 API는 건너뜀). 네이티브 이미지 도구가 있는 호스트(Codex / Claude Code 등) 필요."
     },
     {
       "id": "manual",
@@ -502,9 +590,11 @@
       "label_zh": "离线手动",
       "label_en": "Offline Manual",
       "label_ja": "オフライン手動",
+      "label_ko": "오프라인 수동",
       "desc_zh": "机制：写入图片提示词文件；用户在外部生成后放入项目图片目录。",
       "desc_en": "Prompts written to images/image_prompts.json; user generates externally and places files in project/images/.",
-      "desc_ja": "images/image_prompts.jsonにプロンプトを書き出し、ユーザーが外部で生成した画像をproject/images/に配置する方式。"
+      "desc_ja": "images/image_prompts.jsonにプロンプトを書き出し、ユーザーが外部で生成した画像をproject/images/に配置する方式。",
+      "desc_ko": "프롬프트를 images/image_prompts.json에 기록하고, 사용자가 외부에서 생성한 이미지를 project/images/에 넣는 방식."
     }
   ],
   "formula_policy": [
@@ -514,9 +604,11 @@
       "label_zh": "混合",
       "label_en": "mixed",
       "label_ja": "混合",
+      "label_ko": "혼합",
       "desc_zh": "复杂公式渲染为图片；简单行内公式保持为可编辑文本或字符。",
       "desc_en": "Render complex formula-worthy expressions to PNG; keep simple inline math as editable text / Unicode.",
-      "desc_ja": "複雑な数式はPNG画像として描画し、簡単な行内数式は編集可能なテキスト／Unicode文字のまま残す。"
+      "desc_ja": "複雑な数式はPNG画像として描画し、簡単な行内数式は編集可能なテキスト／Unicode文字のまま残す。",
+      "desc_ko": "복잡한 수식은 PNG로 렌더링하고, 간단한 인라인 수식은 편집 가능한 텍스트/유니코드로 유지합니다."
     },
     {
       "id": "render-all",
@@ -524,9 +616,11 @@
       "label_zh": "全部渲染",
       "label_en": "render-all",
       "label_ja": "すべて画像化",
+      "label_ko": "전부 렌더링",
       "desc_zh": "所有需要按公式处理的表达式都渲染为图片。",
       "desc_en": "Render every formula-worthy expression to PNG.",
-      "desc_ja": "数式として扱うべき表現はすべてPNG画像として描画する。"
+      "desc_ja": "数式として扱うべき表現はすべてPNG画像として描画する。",
+      "desc_ko": "수식으로 다뤄야 할 표현을 모두 PNG로 렌더링합니다."
     },
     {
       "id": "text-only",
@@ -534,9 +628,11 @@
       "label_zh": "仅文本",
       "label_en": "text-only",
       "label_ja": "テキストのみ",
+      "label_ko": "텍스트만",
       "desc_zh": "不渲染公式；表达式保持为可编辑文本或字符。",
       "desc_en": "Do not render formulas; keep expressions as editable text / Unicode.",
-      "desc_ja": "数式は画像化せず、編集可能なテキスト／Unicode文字のまま保持する。"
+      "desc_ja": "数式は画像化せず、編集可能なテキスト／Unicode文字のまま保持する。",
+      "desc_ko": "수식을 렌더링하지 않고 편집 가능한 텍스트/유니코드로 유지합니다."
     }
   ],
   "generation_mode": [
@@ -545,14 +641,16 @@
       "label": "continuous",
       "label_zh": "连续模式",
       "label_en": "continuous",
-      "label_ja": "連続モード"
+      "label_ja": "連続モード",
+      "label_ko": "연속 모드"
     },
     {
       "id": "split",
       "label": "split",
       "label_zh": "分段模式",
       "label_en": "split",
-      "label_ja": "分割モード"
+      "label_ja": "分割モード",
+      "label_ko": "분할 모드"
     }
   ],
   "template_adherence": [
@@ -562,9 +660,11 @@
       "label_zh": "适应性使用",
       "label_en": "adaptive",
       "label_ja": "適応的に使用",
+      "label_ko": "적응형 사용",
       "desc_zh": "每页选择一个模板 SVG 作为架构参考；没有合适版式时沿用同一 Master 创建新的显式 Layout。",
       "desc_en": "Choose a template SVG as the architecture reference for every page; when no layout fits, create a new explicit Layout under the same Master.",
-      "desc_ja": "各ページでテンプレートSVGを構造参照として選び、適合する版式がない場合は同じMaster配下に新しい明示的Layoutを作成する。"
+      "desc_ja": "各ページでテンプレートSVGを構造参照として選び、適合する版式がない場合は同じMaster配下に新しい明示的Layoutを作成する。",
+      "desc_ko": "페이지마다 템플릿 SVG를 구조 참조로 선택하고, 맞는 레이아웃이 없으면 같은 Master 아래 새 명시적 Layout을 만듭니다."
     },
     {
       "id": "strict",
@@ -572,9 +672,11 @@
       "label_zh": "严格套用",
       "label_en": "strict",
       "label_ja": "厳密に適用",
+      "label_ko": "엄격 적용",
       "desc_zh": "每一页都从模板 SVG roster 选择版式，并保持其显式 Master、Layout 与 Placeholder 契约不变。",
       "desc_en": "Map every page to the template SVG roster and keep its explicit Master, Layout, and Placeholder contract unchanged.",
-      "desc_ja": "すべてのページをテンプレートSVG一覧へ割り当て、明示されたMaster／Layout／Placeholder契約を変更せずに維持する。"
+      "desc_ja": "すべてのページをテンプレートSVG一覧へ割り当て、明示されたMaster／Layout／Placeholder契約を変更せずに維持する。",
+      "desc_ko": "모든 페이지를 템플릿 SVG 로스터에 매핑하고 명시된 Master/Layout/Placeholder 계약을 그대로 유지합니다."
     }
   ],
   "delivery_purpose": [
@@ -584,9 +686,11 @@
       "label_zh": "文字型 · 近读",
       "label_en": "text / read-close",
       "label_ja": "文書型・近距離閲覧",
+      "label_ko": "문서형 · 근거리 읽기",
       "desc_zh": "当文件读、近距离看（报告、数据密集 brief、留底材料）。正文 20px。",
       "desc_en": "Read close as a file (report, data-dense brief, leave-behind). Body 20px.",
-      "desc_ja": "資料として手元で読む用途（報告書、データ密度の高いブリーフ、配布資料）。本文20px。"
+      "desc_ja": "資料として手元で読む用途（報告書、データ密度の高いブリーフ、配布資料）。本文20px。",
+      "desc_ko": "파일로 가까이서 읽는 용도 (보고서, 데이터 밀도 높은 브리프, 배포 자료). 본문 20px."
     },
     {
       "id": "balanced",
@@ -594,9 +698,11 @@
       "label_zh": "均衡 · 商务",
       "label_en": "balanced / business",
       "label_ja": "バランス型・ビジネス",
+      "label_ko": "균형형 · 비즈니스",
       "desc_zh": "既投影也阅读（路演、业务评审）。默认档，正文 24px。",
       "desc_en": "Both projected and read (roadshow, business review). The default option, body 24px.",
-      "desc_ja": "投影でも閲覧でも使う用途（ロードショー、事業レビュー）。デフォルトの選択、本文24px。"
+      "desc_ja": "投影でも閲覧でも使う用途（ロードショー、事業レビュー）。デフォルトの選択、本文24px。",
+      "desc_ko": "투영과 읽기를 겸하는 용도 (로드쇼, 사업 리뷰). 기본 옵션, 본문 24px."
     },
     {
       "id": "presentation",
@@ -604,9 +710,11 @@
       "label_zh": "展示型 · 演讲",
       "label_en": "presentation / keynote",
       "label_ja": "プレゼン型・講演",
+      "label_ko": "발표형 · 프레젠테이션",
       "desc_zh": "投影、远距离扫一眼、内容稀疏（keynote、发布、课堂）。正文 32px。",
       "desc_en": "Projected, glanced from the back, sparse (keynote, launch, classroom). Body 32px.",
-      "desc_ja": "投影用で後方からも一目で分かる、情報量を絞った構成（キーノート、発表会、講義）。本文32px。"
+      "desc_ja": "投影用で後方からも一目で分かる、情報量を絞った構成（キーノート、発表会、講義）。本文32px。",
+      "desc_ko": "투영해서 뒤에서도 한눈에 읽히는 절제된 구성 (키노트, 발표회, 강의). 본문 32px."
     }
   ]
 }

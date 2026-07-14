@@ -58,7 +58,7 @@
 ## 5. 제약·주의
 
 - **게이트 수 불변이 이 안의 존재 이유** — Stage 1 외에 새 블로킹 지점을 만들지 말 것 (Global Execution Discipline 규칙 3·10).
-- 언어 규칙: `.claude/skills/ppt-master/` 하위 문서는 영어 스캐폴딩 (CLAUDE.md Markdown 규칙). catalogs.json 라벨은 zh/en/ja 3개 언어 필수 (한국어 UI는 미지원 — lang은 en 사용).
+- 언어 규칙: `.claude/skills/ppt-master/` 하위 문서는 영어 스캐폴딩 (CLAUDE.md Markdown 규칙). catalogs.json 라벨은 zh/en/ja/ko 4개 언어 필수 (2026-07-14부로 Confirm UI 한국어 지원 + 이 설치본 기본 언어 ko — 한국어 대화에서는 recommendations.json에 `lang: "ko"` 사용).
 - upstream 재동기화(재클론) 시 이 수정들이 충돌 지점이 됨 — 변경 파일 목록을 커밋 메시지/문서에 남길 것.
 - Confirm UI는 px-only, stage progression guard 있음 (stage 건너뛰기 금지).
 - repo 관례: main 직접 커밋, 커밋 말미 `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`, `tests/` 만들지 않기.

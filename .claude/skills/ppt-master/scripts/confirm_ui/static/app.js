@@ -234,6 +234,118 @@
             option_prefix: "案",
             error_retry: "エラー - 再試行"
         },
+        ko: {
+            page_title: "PPT Master - 디자인 확인",
+            topbar_hint: "각 항목을 선택하거나 입력한 뒤 확인을 누르세요. 페이지가 닫히면 채팅으로 돌아가세요.",
+            stage_anchors: "1단계 · 방향",
+            stage_design: "2단계 · 디자인 시스템",
+            stage_images: "3단계 · 이미지·실행 방식",
+            loading: "불러오는 중…",
+            load_error: "recommendations.json을 불러오지 못했습니다. 실행 전에 AI가 먼저 작성해야 합니다.",
+            btn_confirm: "확인",
+            btn_next: "다음 →",
+            deriving: "선택 내용을 바탕으로 다음 단계 옵션을 생성하는 중…",
+            connection_lost: "확인 페이지 서버 연결이 끊겨 다시 시도하는 중입니다. 계속 실패하면 채팅으로 돌아가 확인을 진행하세요.",
+            already_confirmed: "이미 한 번 확정했습니다. 다시 제출하면 이전 선택을 덮어씁니다.",
+            confirmed_title: "✓ 확정됨",
+            confirmed_hint: "선택이 저장됐습니다. 이 페이지를 닫고 채팅으로 돌아가세요.",
+            lang_toggle_title: "언어 전환",
+            sec_canvas: "캔버스 형식",
+            sec_pages: "페이지 수",
+            sec_audience: "대상 청중",
+            sec_style: "스타일 목표",
+            sec_color: "색상 구성",
+            sec_icons: "아이콘 사용",
+            sec_type: "타이포그래피",
+            sec_images: "이미지 사용",
+            sec_mode: "생성 모드",
+            sec_refine: "설계 스펙 먼저 다듬기",
+            sub_mode: "내러티브 모드",
+            sub_visual: "비주얼 스타일",
+            sub_template_adherence: "템플릿 준수 방식",
+            sub_divergence: "소스 발산도 (원문에 충실할지, 얼마나 자유롭게 재구성할지)",
+            placeholder_divergence: "자신의 말로 적어주세요 — 예: \"문서에 최대한 충실하게\" / \"소스 범위 안에서 자유롭게 재구성·확장\". 비워 두면 균형형으로 처리합니다.",
+            custom: "커스텀",
+            custom_placeholder: "직접 입력…",
+            recommended: "추천",
+            placeholder_audience: "이 덱은 누구를 위한 것인가요?",
+            placeholder_pages: "예: 12-15",
+            hex_override: "커스텀 HEX로 재정의:",
+            formula_policy: "수식 렌더링 정책",
+            image_ai_path: "AI 이미지 생성 방식",
+            image_strategy: "생성 이미지 스타일",
+            image_strategy_empty: "아직 생성 이미지 스타일 후보가 없습니다.",
+            image_strategy_rendering: "렌더링",
+            image_strategy_palette: "팔레트",
+            image_strategy_visual: "비주얼",
+            image_strategy_color: "색상",
+            image_strategy_mood: "무드",
+            image_strategy_manual: "커스텀",
+            image_strategy_manual_desc: "렌더링과 팔레트를 직접 고르거나, 커스텀 설명을 사용할 수 있습니다.",
+            image_strategy_custom_prompt: "커스텀 프롬프트 메모",
+            image_strategy_custom_placeholder: "생성 이미지의 구체적인 방향, 피사체, 구도, 스타일 키워드, 피해야 할 요소를 적어주세요.",
+            image_strategy_reference_hint: "참조 이미지는 렌더링·색 사용 방식만 보여줍니다. 최종 AI 이미지 색상은 위에서 선택한 색상 구성을 따릅니다.",
+            image_strategy_color_follow: "위에서 선택한 색상 구성을 사용합니다. 팔레트는 색 사용 방식만 제어합니다.",
+            image_strategy_no_reference: "이 커스텀 선택에는 참조 이미지가 없습니다.",
+            image_usage_notes: "이미지 추가 요구사항",
+            image_usage_notes_placeholder: "예: 실제 손 씻는 장면 우선, 만화풍 세균 일러스트 제외, 제품 사진은 원본 그대로 사용.",
+            image_usage_required: "이미지 사용 방식을 하나 이상 선택하세요.",
+            image_usage_none_exclusive: "\"이미지 없음\"은 다른 이미지 옵션과 함께 선택할 수 없습니다.",
+            font_heading: "제목",
+            font_body: "본문",
+            font_body_size: "본문 기준 크기",
+            font_body_size_hint: "모든 글자 크기는 이 본문 기준에서 도출됩니다.",
+            body_size_unit_relation: "SVG px ↔ PPT pt 환산: 1px = 0.75pt.",
+            body_size_pt_hint: "약 {pt} pt (1px = 0.75pt 환산, 저장은 px).",
+            role_size_pt_hint: "약 {pt} pt",
+            body_size_hint_canvas: "이 캔버스 권장 범위는 약 {lo}–{hi}px입니다 (캔버스 높이에 따라 조정).",
+            body_size_hint_purpose: "이 전달 목적의 권장값은 {def}px — 범위가 아닌 고정값입니다.",
+            body_size_hint_oor: "(현재 값이 이 캔버스의 일반 범위를 벗어났습니다 — 단위와 크기를 확인하세요.)",
+            delivery_purpose: "전달 목적",
+            delivery_purpose_hint: "가까이서 읽는 자료는 작아도 되고, 프로젝터로 발표하는 자료는 큰 글자가 필요합니다.",
+            size_override: "역할별 크기 재정의:",
+            size_role_title: "제목",
+            size_role_subtitle: "부제목",
+            size_role_annotation: "주석",
+            custom_typography: "커스텀 타이포그래피",
+            custom_typography_placeholder: "폰트 계획을 입력하세요. 예: 제목: Pretendard SemiBold / 본문: Pretendard + Arial…",
+            custom_color: "커스텀 색상",
+            custom_color_placeholder: "색상을 말로 설명하세요. 예: 짙은 남색 메인, 따뜻한 오렌지 강조, 흰색 배경 — 또는 HEX 값을 붙여넣기…",
+            role_background: "배경",
+            role_secondary_bg: "보조 배경",
+            role_primary: "메인",
+            role_accent: "강조",
+            role_secondary_accent: "보조 강조",
+            role_body_text: "본문 글자",
+            cjk: "한글",
+            latin: "영문",
+            sample_heading_cjk: "프레젠테이션 제목",
+            sample_heading_latin: "Presentation Title",
+            sample_body_cjk: "핵심 메시지 요약",
+            sample_body_latin: "Key message summary",
+            style_preview_label: "전체 인상 (색상 + 타이포그래피 + 아이콘)",
+            style_preview_body: "· 대략적인 느낌 확인용이며 실제 슬라이드 레이아웃이 아닙니다",
+            no_icons: "아이콘 없음",
+            preview_big_title: "큰 제목",
+            preview_section_title: "섹션 제목",
+            preview_latin_title: "Section Title",
+            preview_body_intro: "본문은 기준 글자 크기와 행간, 대비를 확인하기 위한 문장입니다.",
+            preview_latin_body: "Body text sample for checking Latin typography.",
+            preview_point_1_title: "본문 내용",
+            preview_point_1_text: "문단 밀도와 줄 간격을 이 영역에서 확인합니다.",
+            preview_point_2_title: "핵심 포인트",
+            preview_point_2_text: "아이콘은 홀로 두지 않고 실제 문장 옆에 배치합니다.",
+            preview_point_3_title: "결론",
+            preview_point_3_text: "이 조합이 발표 화면에서도 읽기 쉬운지 판단합니다.",
+            mode_continuous_desc: "덱 전체를 한 번에 생성합니다.",
+            mode_split_desc: "설계 스펙 작성 후 멈추고, 새 창에서 SVG 생성을 이어갑니다.",
+            refine_off_desc: "설계 스펙을 한 번에 작성하고 파이프라인이 자동으로 진행됩니다.",
+            refine_on_desc: "설계 스펙 작성 후 멈춰서 생성 전에 검토·수정할 수 있습니다.",
+            off_default: "끔",
+            on: "켬",
+            option_prefix: "옵션",
+            error_retry: "오류 - 다시 시도"
+        },
         zh: {
             page_title: "确认设计方案",
             topbar_hint: "选择或自定义各项后点「确认」；页面会关闭，请回到聊天窗口。",
@@ -351,12 +463,15 @@
     var LANG = (function () {
         try {
             var stored = window.localStorage.getItem("ppt_lang");
-            if (stored === "zh" || stored === "en" || stored === "ja") return stored;
+            if (stored === "zh" || stored === "en" || stored === "ja" || stored === "ko") return stored;
         } catch (e) { /* ignore */ }
         var nav = (navigator.language || navigator.userLanguage || "en").toLowerCase();
         if (nav.indexOf("zh") === 0) return "zh";
         if (nav.indexOf("ja") === 0) return "ja";
-        return "en";
+        // Default language for this install: Korean (standing user preference).
+        // An explicit dropdown pick still wins via localStorage; REC.lang applies
+        // only when nothing is stored (soft default from the AI).
+        return "ko";
     })();
 
     function t(key) {
@@ -365,46 +480,51 @@
     }
 
     // Fallback stays LANG-relative: zh/en users never see Japanese labels,
-    // ja pages fall back ja → en → zh.
-    var LANG_FALLBACK = { zh: ["zh", "en", "ja"], en: ["en", "zh", "ja"], ja: ["ja", "en", "zh"] };
+    // ja pages fall back ja → en → zh, ko pages fall back ko → en → zh → ja.
+    var LANG_FALLBACK = {
+        zh: ["zh", "en", "ja", "ko"],
+        en: ["en", "zh", "ja", "ko"],
+        ja: ["ja", "en", "zh", "ko"],
+        ko: ["ko", "en", "zh", "ja"]
+    };
     var IMAGE_COMPARISON_LABELS = {
         rendering: {
-            "vector-illustration": { zh: "矢量插画", en: "Vector illustration", ja: "ベクターイラスト" },
-            flat: { zh: "扁平插画", en: "Flat illustration", ja: "フラットイラスト" },
-            "3d-isometric": { zh: "3D 等距", en: "3D isometric", ja: "3Dアイソメトリック" },
-            "digital-dashboard": { zh: "数字仪表盘", en: "Digital dashboard", ja: "デジタルダッシュボード" },
-            "corporate-photo": { zh: "企业摄影", en: "Corporate photo", ja: "企業写真" },
-            blueprint: { zh: "蓝图线稿", en: "Blueprint", ja: "ブループリント" },
-            editorial: { zh: "编辑杂志", en: "Editorial", ja: "エディトリアル" },
-            "sketch-notes": { zh: "手绘笔记", en: "Sketch notes", ja: "スケッチノート" },
-            "ink-notes": { zh: "墨线笔记", en: "Ink notes", ja: "インクノート" },
-            chalkboard: { zh: "粉笔黑板", en: "Chalkboard", ja: "チョークボード" },
-            watercolor: { zh: "水彩", en: "Watercolor", ja: "水彩" },
-            "warm-scene": { zh: "暖调场景", en: "Warm scene", ja: "暖色シーン" },
-            "screen-print": { zh: "丝网印刷", en: "Screen print", ja: "スクリーンプリント" },
-            "fantasy-animation": { zh: "幻想动画", en: "Fantasy animation", ja: "ファンタジーアニメ" },
-            "pixel-art": { zh: "像素艺术", en: "Pixel art", ja: "ピクセルアート" },
-            nature: { zh: "自然有机", en: "Nature", ja: "自然・オーガニック" },
-            "minimalist-swiss": { zh: "瑞士极简", en: "Minimalist Swiss", ja: "スイスミニマル" },
-            glassmorphism: { zh: "玻璃拟态", en: "Glassmorphism", ja: "グラスモーフィズム" },
-            "vintage-poster": { zh: "复古海报", en: "Vintage poster", ja: "ヴィンテージポスター" },
-            "paper-cut": { zh: "剪纸拼贴", en: "Paper cut", ja: "ペーパーカット" }
+            "vector-illustration": { zh: "矢量插画", en: "Vector illustration", ja: "ベクターイラスト", ko: "벡터 일러스트" },
+            flat: { zh: "扁平插画", en: "Flat illustration", ja: "フラットイラスト", ko: "플랫 일러스트" },
+            "3d-isometric": { zh: "3D 等距", en: "3D isometric", ja: "3Dアイソメトリック", ko: "3D 아이소메트릭" },
+            "digital-dashboard": { zh: "数字仪表盘", en: "Digital dashboard", ja: "デジタルダッシュボード", ko: "디지털 대시보드" },
+            "corporate-photo": { zh: "企业摄影", en: "Corporate photo", ja: "企業写真", ko: "기업 사진" },
+            blueprint: { zh: "蓝图线稿", en: "Blueprint", ja: "ブループリント", ko: "블루프린트" },
+            editorial: { zh: "编辑杂志", en: "Editorial", ja: "エディトリアル", ko: "에디토리얼" },
+            "sketch-notes": { zh: "手绘笔记", en: "Sketch notes", ja: "スケッチノート", ko: "스케치 노트" },
+            "ink-notes": { zh: "墨线笔记", en: "Ink notes", ja: "インクノート", ko: "잉크 노트" },
+            chalkboard: { zh: "粉笔黑板", en: "Chalkboard", ja: "チョークボード", ko: "칠판" },
+            watercolor: { zh: "水彩", en: "Watercolor", ja: "水彩", ko: "수채화" },
+            "warm-scene": { zh: "暖调场景", en: "Warm scene", ja: "暖色シーン", ko: "따뜻한 장면" },
+            "screen-print": { zh: "丝网印刷", en: "Screen print", ja: "スクリーンプリント", ko: "스크린 프린트" },
+            "fantasy-animation": { zh: "幻想动画", en: "Fantasy animation", ja: "ファンタジーアニメ", ko: "판타지 애니메이션" },
+            "pixel-art": { zh: "像素艺术", en: "Pixel art", ja: "ピクセルアート", ko: "픽셀 아트" },
+            nature: { zh: "自然有机", en: "Nature", ja: "自然・オーガニック", ko: "자연·유기적" },
+            "minimalist-swiss": { zh: "瑞士极简", en: "Minimalist Swiss", ja: "スイスミニマル", ko: "스위스 미니멀" },
+            glassmorphism: { zh: "玻璃拟态", en: "Glassmorphism", ja: "グラスモーフィズム", ko: "글래스모피즘" },
+            "vintage-poster": { zh: "复古海报", en: "Vintage poster", ja: "ヴィンテージポスター", ko: "빈티지 포스터" },
+            "paper-cut": { zh: "剪纸拼贴", en: "Paper cut", ja: "ペーパーカット", ko: "페이퍼 컷" }
         },
         palette: {
-            "cool-corporate": { zh: "冷静企业色", en: "Cool corporate", ja: "クール企業色" },
-            "warm-earth": { zh: "暖土色", en: "Warm earth", ja: "ウォームアース" },
-            "tech-neon": { zh: "科技霓虹", en: "Tech neon", ja: "テックネオン" },
-            "editorial-classic": { zh: "经典编辑色", en: "Editorial classic", ja: "エディトリアルクラシック" },
-            macaron: { zh: "马卡龙", en: "Macaron", ja: "マカロン" },
-            "mono-ink": { zh: "单色墨线", en: "Mono ink", ja: "モノインク" },
-            "vivid-launch": { zh: "高饱和发布", en: "Vivid launch", ja: "ビビッドローンチ" },
-            "dark-cinematic": { zh: "暗色电影感", en: "Dark cinematic", ja: "ダークシネマティック" },
-            duotone: { zh: "双色调", en: "Duotone", ja: "デュオトーン" },
-            "nature-organic": { zh: "自然有机色", en: "Nature organic", ja: "自然オーガニック色" },
-            "jewel-tone": { zh: "宝石色", en: "Jewel tone", ja: "ジュエルトーン" },
-            "frost-ice": { zh: "霜冰浅色", en: "Frost ice", ja: "フロストアイス" },
-            "sunset-gradient": { zh: "日落渐变", en: "Sunset gradient", ja: "サンセットグラデーション" },
-            "earthy-dusty": { zh: "尘土大地色", en: "Earthy dusty", ja: "ダスティアース" }
+            "cool-corporate": { zh: "冷静企业色", en: "Cool corporate", ja: "クール企業色", ko: "쿨 코퍼레이트" },
+            "warm-earth": { zh: "暖土色", en: "Warm earth", ja: "ウォームアース", ko: "웜 어스" },
+            "tech-neon": { zh: "科技霓虹", en: "Tech neon", ja: "テックネオン", ko: "테크 네온" },
+            "editorial-classic": { zh: "经典编辑色", en: "Editorial classic", ja: "エディトリアルクラシック", ko: "에디토리얼 클래식" },
+            macaron: { zh: "马卡龙", en: "Macaron", ja: "マカロン", ko: "마카롱" },
+            "mono-ink": { zh: "单色墨线", en: "Mono ink", ja: "モノインク", ko: "모노 잉크" },
+            "vivid-launch": { zh: "高饱和发布", en: "Vivid launch", ja: "ビビッドローンチ", ko: "비비드 런치" },
+            "dark-cinematic": { zh: "暗色电影感", en: "Dark cinematic", ja: "ダークシネマティック", ko: "다크 시네마틱" },
+            duotone: { zh: "双色调", en: "Duotone", ja: "デュオトーン", ko: "듀오톤" },
+            "nature-organic": { zh: "自然有机色", en: "Nature organic", ja: "自然オーガニック色", ko: "내추럴 오가닉" },
+            "jewel-tone": { zh: "宝石色", en: "Jewel tone", ja: "ジュエルトーン", ko: "주얼 톤" },
+            "frost-ice": { zh: "霜冰浅色", en: "Frost ice", ja: "フロストアイス", ko: "프로스트 아이스" },
+            "sunset-gradient": { zh: "日落渐变", en: "Sunset gradient", ja: "サンセットグラデーション", ko: "선셋 그라데이션" },
+            "earthy-dusty": { zh: "尘土大地色", en: "Earthy dusty", ja: "ダスティアース", ko: "더스티 어스" }
         }
     };
 
@@ -464,13 +584,13 @@
     }
 
     function applyStaticTranslations() {
-        document.documentElement.setAttribute("lang", LANG === "zh" ? "zh-CN" : (LANG === "ja" ? "ja" : "en"));
+        document.documentElement.setAttribute("lang", LANG === "zh" ? "zh-CN" : (LANG === "ja" ? "ja" : (LANG === "ko" ? "ko" : "en")));
         document.querySelectorAll("[data-i18n]").forEach(function (node) {
             node.textContent = t(node.getAttribute("data-i18n"));
         });
     }
 
-    var LANG_NAMES = { zh: "中文", en: "English", ja: "日本語" };
+    var LANG_NAMES = { zh: "中文", en: "English", ja: "日本語", ko: "한국어" };
 
     function refreshLangToggle(toggleBtn) {
         // Custom dropdown (OS-independent): button shows the CURRENT language.
@@ -2366,7 +2486,7 @@
         var chooseLang = function (v) {
             setMenuOpen(false);
             toggleBtn.focus();
-            if (v !== "ja" && v !== "en" && v !== "zh") return;
+            if (v !== "ja" && v !== "en" && v !== "zh" && v !== "ko") return;
             if (v === LANG) return;
             LANG = v;
             try { window.localStorage.setItem("ppt_lang", LANG); } catch (e2) { /* ignore */ }
@@ -2442,7 +2562,7 @@
             REC = res[1];
             ICON_PREVIEWS = res[2] || {};
             AI_IMAGE_COMPARISON = res[3] || {};
-            if (REC.lang === "zh" || REC.lang === "en" || REC.lang === "ja") {
+            if (REC.lang === "zh" || REC.lang === "en" || REC.lang === "ja" || REC.lang === "ko") {
                 var hasStored = false;
                 try { hasStored = !!window.localStorage.getItem("ppt_lang"); } catch (e) { /* ignore */ }
                 if (!hasStored) { LANG = REC.lang; applyStaticTranslations(); refreshLangToggle(toggleBtn); }

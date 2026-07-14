@@ -363,7 +363,7 @@
     }
 
     function setLang(lang) {
-        if (lang !== "zh" && lang !== "en" && lang !== "ja") return;
+        if (lang !== "zh" && lang !== "en" && lang !== "ja" && lang !== "ko") return;
         LANG = lang;
         try { window.localStorage.setItem("ppt_lang", lang); } catch (e) { /* ignore */ }
         applyI18n();
