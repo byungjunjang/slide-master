@@ -1,6 +1,6 @@
-<svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" data-pptx-layout="02_chapter" data-pptx-layout-name="Section">
+<svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" data-pptx-master="ai_ops-master" data-pptx-master-name="AI Ops" data-pptx-layout="02_chapter" data-pptx-layout-name="Section">
   <!-- Background -->
-  <rect x="0" y="0" width="1280" height="720" fill="#FFFFFF"  id="layout-02_chapter-background" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
 
   <!-- Top Red Strip -->
   <rect x="0" y="0" width="1280" height="8" fill="#C00000" />
@@ -21,7 +21,9 @@
   <text x="640" y="340" font-family="Arial, sans-serif" font-size="160" font-weight="bold" fill="#F2F2F2" text-anchor="middle">{{CHAPTER_NUM}}</text>
 
   <!-- Chapter Title -->
-  <text x="640" y="420" font-family="'Microsoft YaHei', Arial, sans-serif" font-size="48" font-weight="bold" fill="#000000" text-anchor="middle" id="slot-02_chapter-title-1" data-pptx-placeholder="title">{{CHAPTER_TITLE}}</text>
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="140 380 1000 56">
+    <text x="640" y="420" font-family="'Microsoft YaHei', Arial, sans-serif" font-size="48" font-weight="bold" fill="#000000" text-anchor="middle" id="slot-02_chapter-title-1" data-pptx-placeholder-carrier="true">{{CHAPTER_TITLE}}</text>
+  </g>
 
   <!-- Decorative Lines -->
   <line x1="480" y1="450" x2="800" y2="450" stroke="#C00000" stroke-width="3" />
