@@ -892,7 +892,7 @@ Run:
 ```bash
 python .claude/skills/ppt-master/scripts/template_preview_pptx.py ".claude/skills/ppt-master/templates/decks/jangpm"
 ```
-Expected: exit 0, 산출 PPTX 경로 출력 (워크스페이스 `exports/` 아래).
+Expected: exit 0, 산출 PPTX 경로 출력 (워크스페이스 `exports/` 아래). (플랫 계약 라이브러리 덱은 `--visual-only` 플래그가 필요함 — 실행 시 확인됨)
 
 - [ ] **Step 2: 시각 대조**
 

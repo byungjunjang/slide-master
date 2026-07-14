@@ -121,7 +121,7 @@ jangpm 원본 체인(`Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', Arial,
 1. 등록: `python .claude/skills/ppt-master/scripts/register_template.py jangpm --kind deck` 및 `--kind brand` (인덱스 JSON이 단일 소스 — README는 템플릿을 열거하지 않으므로 README 수정 불요)
 2. 검증:
    - SVG 메타데이터를 `academic_defense` 셸과 나란히 비교(루트 키, 레이어, 슬롯 id 형식)
-   - `python .claude/skills/ppt-master/scripts/template_preview_pptx.py .claude/skills/ppt-master/templates/decks/jangpm` → `exports/`에 리뷰 덱 생성(리포지토리 ignore 대상), OfficeCLI 스크린샷으로 원본 `_preview/*.png` 대비 육안 대조
+   - `python .claude/skills/ppt-master/scripts/template_preview_pptx.py .claude/skills/ppt-master/templates/decks/jangpm` → `exports/`에 리뷰 덱 생성(리포지토리 ignore 대상), OfficeCLI 스크린샷으로 원본 `_preview/*.png` 대비 육안 대조 (플랫 계약 라이브러리 덱은 `--visual-only` 플래그가 필요함 — 실행 시 확인됨)
    - `register_template.py`가 수행하는 frontmatter/인덱스 정합 검사 통과 확인
 
 ## 7. 범위 밖 (명시)

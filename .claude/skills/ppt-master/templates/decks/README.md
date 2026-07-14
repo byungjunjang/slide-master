@@ -90,7 +90,7 @@ Bitmaps belong in `images/`; extracted runtime icons belong in `icons/`; templat
 1. Run [`workflows/create-template.md`](../../workflows/create-template.md) (default kind is `deck`)
 2. Choose the workspace root: library `.claude/skills/ppt-master/templates/decks/<id>/` or project `projects/<name>/`
 3. Validate: `python3 .claude/skills/ppt-master/scripts/svg_quality_checker.py "<template_workspace>/templates" --template-mode --format ppt169`
-4. Optional — when PowerPoint review is requested, export the review deck: `python3 .claude/skills/ppt-master/scripts/template_preview_pptx.py "<template_workspace>"`
+4. Optional — when PowerPoint review is requested, export the review deck: `python3 .claude/skills/ppt-master/scripts/template_preview_pptx.py "<template_workspace>" --visual-only` (flat-contract library decks require `--visual-only`)
 5. For library scope only, register: `python3 .claude/skills/ppt-master/scripts/register_template.py <id> --kind deck`
 
 The register step updates [`decks_index.json`](./decks_index.json) — the single source of truth for deck discovery.

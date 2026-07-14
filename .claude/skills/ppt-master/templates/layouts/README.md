@@ -87,7 +87,7 @@ Templates use `{{PLACEHOLDER}}` to mark replaceable content. New layouts should 
 1. Run [`workflows/create-template.md`](../../workflows/create-template.md) (default produces a deck; explicit "structure only / no identity" option produces a layout)
 2. Choose the workspace root: library `.claude/skills/ppt-master/templates/layouts/<id>/` or project `projects/<name>/`
 3. Validate: `python3 .claude/skills/ppt-master/scripts/svg_quality_checker.py "<template_workspace>/templates" --template-mode --format ppt169`
-4. Optional — when PowerPoint review is requested, export the review deck: `python3 .claude/skills/ppt-master/scripts/template_preview_pptx.py "<template_workspace>"`
+4. Optional — when PowerPoint review is requested, export the review deck: `python3 .claude/skills/ppt-master/scripts/template_preview_pptx.py "<template_workspace>" --visual-only` (flat-contract library decks require `--visual-only`)
 5. For library scope only, register: `python3 .claude/skills/ppt-master/scripts/register_template.py <id> --kind layout`
 
 The register step updates [`layouts_index.json`](./layouts_index.json) — the single source of truth for layout discovery.
