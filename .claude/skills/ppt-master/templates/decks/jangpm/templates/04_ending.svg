@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-layout="04_ending" data-pptx-layout-name="Ending">
+  <!-- Jangpm — 04 Ending -->
+
+  <rect width="1280" height="720" fill="#FAFAF9" id="layout-04_ending-background" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <!-- Accent rule -->
+  <rect x="56" y="140" width="80" height="3" fill="#4633E3"/>
+
+  <!-- Eyebrow -->
+  <text x="56" y="180"
+        font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="12.8"
+        letter-spacing="0.64"
+        fill="#6B7280">
+    {{CLOSING_LABEL}}
+  </text>
+
+  <!-- Primary closing message (Display) -->
+  <text x="56" y="340"
+        font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="56"
+        letter-spacing="-1.68"
+        fill="#1A1A1A"
+        id="slot-04_ending-title-1" data-pptx-placeholder="title">
+    {{CLOSING_HEADLINE}}
+  </text>
+
+  <!-- Secondary line (accent) -->
+  <text x="56" y="410"
+        font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="40"
+        letter-spacing="-0.8"
+        fill="#4633E3">
+    {{CLOSING_ACCENT}}
+  </text>
+
+  <!-- Contact / follow-up (Title) -->
+  <text x="56" y="470"
+        font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="18.4"
+        fill="#1A1A1A">
+    {{CONTACT_LINE}}
+  </text>
+
+  <!-- Divider -->
+  <line x1="56" y1="672" x2="1224" y2="672" stroke="#E5E7EB" stroke-width="1"/>
+
+  <!-- Presenter footer -->
+  <text x="56" y="696"
+        font-family="'Pretendard Medium', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="12.8"
+        fill="#9CA3AF">
+    {{PRESENTER}} · {{DATE}}
+  </text>
+</svg>

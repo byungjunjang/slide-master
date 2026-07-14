@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-layout="02_chapter" data-pptx-layout-name="Chapter">
+  <!-- Jangpm — 02 Chapter / Section Divider -->
+
+  <rect width="1280" height="720" fill="#FAFAF9" id="layout-02_chapter-background" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <!-- Chapter number (Display-sm, accent) -->
+  <text x="56" y="260"
+        font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="40"
+        letter-spacing="-0.8"
+        fill="#4633E3">
+    {{CHAPTER_NUMBER}}
+  </text>
+
+  <!-- Chapter label (uppercase eyebrow) -->
+  <text x="56" y="300"
+        font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="12.8"
+        letter-spacing="0.64"
+        fill="#6B7280">
+    {{CHAPTER_LABEL}}
+  </text>
+
+  <!-- Chapter title (Display) -->
+  <text x="56" y="400"
+        font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="56"
+        letter-spacing="-1.68"
+        fill="#1A1A1A"
+        id="slot-02_chapter-title-1" data-pptx-placeholder="title">
+    {{CHAPTER_TITLE}}
+  </text>
+
+  <!-- Supporting line (Title, secondary color) -->
+  <text x="56" y="450"
+        font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="18.4"
+        fill="#6B7280">
+    {{CHAPTER_SUMMARY}}
+  </text>
+
+  <!-- Structural divider -->
+  <line x1="56" y1="672" x2="1224" y2="672" stroke="#E5E7EB" stroke-width="1"/>
+
+  <!-- Page number (bottom right) -->
+  <text x="1224" y="696"
+        font-family="'Pretendard Medium', Pretendard, 'Malgun Gothic', sans-serif"
+        font-size="12.8"
+        text-anchor="end"
+        fill="#9CA3AF">
+    {{PAGE_NUM}}
+  </text>
+</svg>
