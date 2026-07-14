@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-layout="01_cover" data-pptx-layout-name="Cover">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="government_blue-master" data-pptx-master-name="Government Blue" data-pptx-layout="01_cover" data-pptx-layout-name="Cover">
     <!-- 模板: 封面页 - 政府蓝风格 (优化版) -->
 
     <defs>
@@ -26,6 +26,8 @@
         </pattern>
     </defs>
 
+    <!-- 母版背景 -->
+    <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
     <!-- 背景 -->
     <rect x="0" y="0" width="1280" height="720" fill="url(#coverBgGrad)"  id="layout-01_cover-background" data-pptx-layer="layout" data-pptx-editable="false"/>
     
@@ -54,14 +56,18 @@
     <rect x="0" y="260" width="8" height="180" fill="#00B4D8" />
 
     <!-- 主标题 -->
-    <text x="60" y="340" font-family="Microsoft YaHei, SimHei, sans-serif" font-size="52" font-weight="bold" fill="#FFFFFF" id="slot-01_cover-title-1" data-pptx-placeholder="title">
-        {{TITLE}}
-    </text>
+    <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="60 296 1160 60">
+        <text x="60" y="340" font-family="Microsoft YaHei, SimHei, sans-serif" font-size="52" font-weight="bold" fill="#FFFFFF" id="slot-01_cover-title-1" data-pptx-placeholder-carrier="true">
+            {{TITLE}}
+        </text>
+    </g>
 
     <!-- 副标题 -->
-    <text x="60" y="400" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26" fill="#90E0EF" id="slot-01_cover-subtitle-2" data-pptx-placeholder="subtitle">
-        {{SUBTITLE}}
-    </text>
+    <g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="60 372 1160 38">
+        <text x="60" y="400" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26" fill="#90E0EF" id="slot-01_cover-subtitle-2" data-pptx-placeholder-carrier="true">
+            {{SUBTITLE}}
+        </text>
+    </g>
 
     <!-- 分隔线 -->
     <line x1="60" y1="480" x2="400" y2="480" stroke="#00B4D8" stroke-width="2" stroke-opacity="0.8" />
