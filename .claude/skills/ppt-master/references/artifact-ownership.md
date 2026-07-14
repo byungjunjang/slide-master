@@ -25,7 +25,7 @@ Global artifact ownership rules for PPT Master projects.
 | `confirm_ui/recommendations.json` | Confirmation proposal | Strategist-authored confirmation payload | Confirm UI reads; rewritten between Stage 1, Stage 2, and Stage 3 |
 | `confirm_ui/result.json` | Confirmation result | User-confirmed values | Strategist treats final result as authoritative over recommendations |
 | `svg_output/` | Page-design author source | Main-agent handwritten SVG pages containing the complete visible design | Quality checker and native PPTX export read this as the canonical visual/page-layout source; templates and locks do not add missing visible objects at export |
-| `notes/total.md` | Speaker-note source | Complete notes before splitting | Step 6 writes; Step 7.1 splits |
+| `notes/total.md` | Speaker-note source (opt-in; absent on the default no-notes path) | Complete notes before splitting | Step 6 writes only when notes were requested; Step 7.1 splits |
 | `notes/slide_*.md` | Split notes | Per-slide notes generated from `total.md` | Derived by `total_md_split.py` |
 | `svg_final/` | Derived visual preview | Self-contained post-processed SVGs that may be opened directly or inserted as SVG pictures | Rebuild from `svg_output/` with `finalize_svg.py`; do not use as a supported PPTX source |
 | `exports/` | Delivery artifacts | Native DrawingML PPTX and its explicit native-object/narration variants | Step 7.3 writes final outputs from `svg_output/` |

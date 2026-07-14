@@ -50,8 +50,8 @@ Then jump to `### Step 6: Executor Phase` and run the documented pipeline:
 - Pre-generation Batch Read (every layout / chart SVG referenced in `spec_lock`)
 - Per-page `spec_lock` re-read + sequential page generation
 - Quality Check Gate
-- Speaker notes generation
-- Step 7: Post-processing & Export (`total_md_split` → `finalize_svg` → `svg_to_pptx`)
+- Speaker notes generation (only when requested in `design_spec.md §X`)
+- Step 7: Post-processing & Export (`total_md_split` when notes exist → `finalize_svg` → `svg_to_pptx`)
 
 The fresh session pays the cost of re-reading references (~14K tokens) but earns back substantially more headroom by dropping the planning session's accumulated context. Net win in both window pressure and reasoning budget per page.
 

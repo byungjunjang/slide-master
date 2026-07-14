@@ -349,7 +349,9 @@ Catalog read: 76 templates
 
 ## X. Speaker Notes Requirements
 
-One speaker note file per page, saved to `notes/`:
+> Opt-in — default is no speaker notes. When the user did not ask for notes / narration, write `None requested` here and nothing else; the Executor skips note generation and Step 7.1 is skipped.
+
+When requested — one speaker note file per page, saved to `notes/`:
 
 - **Filename**: match SVG name (e.g., `01_cover.md`)
 - **Content**: script key points, timing cues, transition phrases

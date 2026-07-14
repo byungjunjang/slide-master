@@ -56,6 +56,12 @@ python3 .claude/skills/ppt-master/scripts/project_manager.py init <project_name>
 python3 .claude/skills/ppt-master/scripts/project_manager.py import-sources <project_path> <source_files_or_dirs_or_URLs...> --move
 python3 .claude/skills/ppt-master/scripts/project_manager.py validate <project_path>
 
+# Environment preflight — run once after init so a long run never dies mid-pipeline (--needs-images for AI-image decks)
+python3 .claude/skills/ppt-master/scripts/preflight.py
+
+# Planning artifact gate — run right after design_spec.md + spec_lock.md are written; fix errors before generation
+python3 .claude/skills/ppt-master/scripts/validate_spec.py <project_path>
+
 # Icon selection — copy chosen library icons into <project>/icons/ (missing names reported + non-zero = re-pick)
 python3 .claude/skills/ppt-master/scripts/icon_sync.py <project_path> <lib/name> [<lib/name>...]
 
@@ -88,10 +94,13 @@ python3 .claude/skills/ppt-master/scripts/native_enhance_pptx.py validate <proje
 python3 .claude/skills/ppt-master/scripts/native_enhance_pptx.py apply <project_path>
 
 # Post-processing pipeline: run sequentially, one command at a time
-python3 .claude/skills/ppt-master/scripts/total_md_split.py <project_path>
+python3 .claude/skills/ppt-master/scripts/total_md_split.py <project_path>   # only when speaker notes were requested (notes are opt-in, default off)
 python3 .claude/skills/ppt-master/scripts/finalize_svg.py <project_path>
 python3 .claude/skills/ppt-master/scripts/svg_to_pptx.py <project_path>
 # Mergeable dy-stacked paragraph blocks collapse into one editable text frame by default; add --no-merge to keep every line as its own frame (strict line fidelity). See SKILL.md Step 7.3.
+
+# Final deck verification — stage parity/freshness, native PPTX integrity, plan + SVG re-check, optional OfficeCLI render
+python3 .claude/skills/ppt-master/scripts/verify_deck.py <project_path>
 ```
 
 ## Core Directories

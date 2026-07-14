@@ -733,7 +733,11 @@ The most common Strategist failure mode is missing the structural half — treat
 > 2. If still no fit: data-driven content → table layout; conceptual/illustrative → "AI-generated image" (Image_Generator handles); structural → "custom layout".
 > 3. Mark the page `no-template-match` in section VII with the fallback chosen and why. Do NOT silently substitute a close-but-wrong chart.
 
-### Speaker Notes Requirements (Default — no discussion needed)
+### Speaker Notes Requirements (Opt-in — default none)
+
+**Default — user did not ask for speaker notes / narration**: record `None requested` in `design_spec.md §X`; the Executor skips the Logic Construction Phase and Step 7.1 is skipped. This is not a confirmation field — do not ask.
+
+**When requested** (the user asked for speaker notes, a presentation script, narration, audio, or video export):
 
 - File naming: Recommended to match SVG names (`01_cover.svg` → `notes/01_cover.md`), also compatible with `notes/slide01.md`
 - Fill in the Design Spec: total presentation duration, notes style (formal / conversational / interactive), presentation purpose (inform / persuade / inspire / instruct / report)
@@ -849,7 +853,7 @@ This is what makes the axis meaningful: a `presentation` deck and a `text` deck 
 | VII. Visualization Reference List | Visualization type, reference template path, used-in pages, purpose |
 | VIII. Image Resource List | Filename, dimensions, ratio, purpose, status, generation description |
 | IX. Content Outline | Grouped by chapter; each page includes layout, title, core message (the page's one idea), content blocks (in the selected phrasing mode), visualization type (if applicable) |
-| X. Speaker Notes Requirements | File naming rules, content structure description |
+| X. Speaker Notes Requirements | Opt-in — `None requested` when the user did not ask (default); file naming rules + content structure description when requested |
 
 **Generation steps**:
 1. Read reference template: `templates/design_spec_reference.md`

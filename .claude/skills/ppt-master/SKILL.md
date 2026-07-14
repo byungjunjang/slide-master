@@ -85,6 +85,7 @@ description: >
 | `${SKILL_DIR}/scripts/source_to_md.py` | Unified source-to-Markdown dispatcher — default Step 1 entry for explicit file(s) or URL(s) |
 | `${SKILL_DIR}/scripts/pptx_intake.py` | Standard PPTX intake enrichment — canvas / identity / slide geometry / tables / native chart data / SmartArt structure |
 | `${SKILL_DIR}/scripts/project_manager.py` | Project init / validate / manage |
+| `${SKILL_DIR}/scripts/preflight.py` | Pre-pipeline environment gate — run once after Step 2 (`--needs-images` when the deck will generate AI images) so a long run never dies mid-pipeline |
 | `${SKILL_DIR}/scripts/icon_sync.py` | Copy chosen library icons into `<project>/icons/` at selection time; missing names reported + non-zero (re-pick gate) |
 | `${SKILL_DIR}/scripts/analyze_images.py` | Image analysis |
 | `${SKILL_DIR}/scripts/latex_render.py` | LaTeX formula rendering (manifest-driven PNG assets) |
@@ -92,10 +93,12 @@ description: >
 | `${SKILL_DIR}/scripts/slice_images.py` | Slice one AI illustration sheet into individual spot-illustration elements |
 | `${SKILL_DIR}/scripts/svg_authoring_view.py` | Create a lightweight non-destructive inspection projection of PPTX-imported SVGs; never a release source |
 | `${SKILL_DIR}/scripts/svg_quality_checker.py` | SVG quality check |
+| `${SKILL_DIR}/scripts/validate_spec.py` | Planning artifact gate — `design_spec.md` §IX/§VII + `spec_lock.md` coherence, run right after the Step 4 spec output |
 | `${SKILL_DIR}/scripts/preset_shape_svg.py` | Print one registry-backed native PowerPoint preset fragment to stdout for hand-authored SVG insertion |
 | `${SKILL_DIR}/scripts/total_md_split.py` | Speaker notes splitting |
 | `${SKILL_DIR}/scripts/finalize_svg.py` | SVG post-processing (unified entry) |
 | `${SKILL_DIR}/scripts/svg_to_pptx.py` | Export to PPTX |
+| `${SKILL_DIR}/scripts/verify_deck.py` | Final deck verification gate — stage parity/freshness, native PPTX integrity, plan + SVG re-check, optional OfficeCLI OpenXML validation + contact-sheet render (run after Step 7) |
 | `${SKILL_DIR}/scripts/native_enhance_pptx.py` | Existing PPTX enhancement project init / validation / direct OOXML patch export |
 | `${SKILL_DIR}/scripts/native_narration_pptx.py` | Backward-compatible entrypoint for existing PPTX notes / narration enhancement |
 | `${SKILL_DIR}/scripts/update_spec.py` | Propagate a `spec_lock.md` color / font_family change across all generated SVGs |
@@ -227,6 +230,12 @@ For each PPTX it writes `<stem>.identity.json` (canvas, theme palette/fonts, obs
 Multi-deck: several PPTX files may be imported into one main-pipeline project — each gets its own `<stem>.*` artifacts and a deck entry in `source_profile.json`. `source_profile.json` stays the single must-read index (one entry for a one-deck project, several for a combined-source project). Stems must be distinct; re-importing the same stem replaces that deck's entry. The beautify / template-fill workflows remain single-deck (1:1 to one chosen source deck) and read that deck's `<stem>.*` artifacts.
 
 > ⚠️ **MUST use `--move`** (not copy): all source files — Step 1's generated Markdown, original PDFs / MDs / images — go into `sources/` via `import-sources --move`. If Step 1 wrote Markdown beside the original sources, pass that source path/directory once. If Step 1 used `-o` to write Markdown elsewhere, pass both the original source path(s)/directory and the Markdown output path(s)/directory. After execution they no longer exist at the original location. Intermediate artifacts (e.g., `_files/`) are handled automatically.
+
+**Environment preflight (recommended)**: run once here so a long run never dies mid-pipeline on a missing dependency — resolve any FAIL before Step 4; warnings are informational:
+
+```bash
+python3 ${SKILL_DIR}/scripts/preflight.py            # add --needs-images when the deck will generate AI images
+```
 
 **✅ Checkpoint — Confirm project structure created successfully, `sources/` contains all source files, converted materials are ready. Proceed to Step 3.**
 
@@ -512,6 +521,12 @@ python3 ${SKILL_DIR}/scripts/analyze_images.py <project_path>/images
 - `<project_path>/design_spec.md` — human-readable design narrative
 - `<project_path>/spec_lock.md` — machine-readable execution contract (skeleton: `templates/spec_lock_reference.md`); Executor re-reads before every page
 
+**Spec validation (Mandatory — run immediately after writing both files)**: fix every reported error before the checkpoint — a planning defect found after 20 generated pages costs a whole-deck rewrite:
+
+```bash
+python3 ${SKILL_DIR}/scripts/validate_spec.py <project_path>
+```
+
 **✅ Checkpoint — Phase deliverables complete, auto-proceed to next step**:
 ```markdown
 ## ✅ Strategist Phase Complete
@@ -521,6 +536,7 @@ python3 ${SKILL_DIR}/scripts/analyze_images.py <project_path>/images
 - [x] Spec-refinement opt-in line appended (default OFF; only the user's explicit request enters the refine-spec workflow)
 - [x] Design Specification & Content Outline generated
 - [x] Execution lock (spec_lock.md) generated
+- [x] validate_spec.py passed (0 errors) on design_spec.md + spec_lock.md
 - [ ] **Next**: Auto-proceed to [Image_Generator / Executor] phase
 ```
 
@@ -655,9 +671,9 @@ python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 - **Structured template routes only — PPTX-structure warnings are the exception.** For each empty-Layout / framing-only-Layout / bare-Master / duplicate-layout-key warning, output one disposition line: either the fix applied (merge keys in `spec_lock.md pptx_layouts` + SVG roots, mark the missing slots/layers) or why the flagged state is intended (e.g. "P01 cover is a fixed composition, zero-slot by design"). Flat free-design and brand-only routes have no positive Master/Layout checkpoint; the checker instead enforces a complete flat lock and the absence of Master/Layout/layer/placeholder metadata. "0 errors" alone does not pass a structured template gate when such warnings remain undispositioned.
 - Run against `svg_output/` (not after `finalize_svg.py` — finalize rewrites SVG and masks violations).
 
-**Logic Construction Phase**: generate speaker notes → `<project_path>/notes/total.md`
+**Logic Construction Phase (opt-in)**: only when the user requested speaker notes / narration (recorded in `design_spec.md §X`), generate speaker notes → `<project_path>/notes/total.md`. **Default — no request → skip this phase entirely**: write no `notes/` files; Step 7.1 is skipped and export simply embeds no notes. A later narration/audio request generates notes on demand via [`generate-audio`](workflows/generate-audio.md).
 
-**✅ Checkpoint — Confirm all SVGs and notes are fully generated and quality-checked. Run the applicable conditional gates below, then proceed to Step 7**:
+**✅ Checkpoint — Confirm all SVGs (and notes, when requested) are fully generated and quality-checked. Run the applicable conditional gates below, then proceed to Step 7**:
 ```markdown
 ## ✅ Executor Phase Complete
 - [x] Live preview started before the first SVG and kept available at the reported URL
@@ -665,7 +681,7 @@ python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 - [x] All SVGs generated to svg_output/
 - [x] svg_quality_checker.py passed (0 errors)
 - [x] Structured-template PPTX warnings dispositioned one by one when applicable
-- [x] Speaker notes generated at notes/total.md
+- [x] Speaker notes generated at notes/total.md (only when requested; skipped by default)
 ```
 
 > **Chart pages?** If this deck contains data charts (bar / line / pie / radar / etc.), run the standalone [`verify-charts`](workflows/verify-charts.md) workflow before Step 7 to calibrate coordinates. AI models routinely introduce 10–50 px errors when mapping data to pixel positions; verify-charts eliminates that class of error. Skip if no chart pages.
@@ -676,7 +692,7 @@ python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 
 ### Step 7: Post-processing & Export
 
-🚧 **GATE**: Step 6 complete; all SVGs generated to `svg_output/`; speaker notes `notes/total.md` generated.
+🚧 **GATE**: Step 6 complete; all SVGs generated to `svg_output/`; speaker notes `notes/total.md` generated when the user requested them (default no-notes path has no `notes/` and satisfies this gate).
 
 🚧 **Image readiness GATE** (when Step 5 left ai rows in `Needs-Manual`): every expected file must exist at `project/images/<filename>` before running 7.1.
 
@@ -692,7 +708,7 @@ python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 Canonical three-command pipeline (this step is the workflow authority;
 `references/shared-standards.md` §5 points here):
 
-**Step 7.1** — Split speaker notes:
+**Step 7.1** — Split speaker notes (only when `notes/total.md` exists — skipped on the default no-notes path):
 ```bash
 python3 ${SKILL_DIR}/scripts/total_md_split.py <project_path>
 ```
@@ -703,7 +719,7 @@ python3 ${SKILL_DIR}/scripts/finalize_svg.py <project_path>
 ```
 This mandatory step writes self-contained visual-preview SVGs to `svg_final/`. Those files may be opened directly or manually inserted into PowerPoint as SVG pictures. Default raster handling embeds images at the rendered SVG size budget (`--image-scale 2`, `--max-dimension 2560`); opaque PNG photos may be written as JPEG, and transparent assets remain PNG. The existing EMF/WMF exception still applies: Office vector assets stay externally referenced for lossless native-PPTX passthrough, so the native PPTX remains the source of truth for pages that use them. Use `--no-compress` or a higher `--max-dimension` only for diagnostic / high-fidelity SVG previews.
 
-**Step 7.3** — Export PPTX (embeds speaker notes by default):
+**Step 7.3** — Export PPTX (embeds speaker notes when `notes/` files exist; no-notes decks export without notes):
 ```bash
 python3 ${SKILL_DIR}/scripts/svg_to_pptx.py <project_path>
 # Output (default-flow mode):
@@ -886,6 +902,12 @@ animation playback in Keynote or other presentation applications.
 
 > ❌ **NEVER** substitute `cp` for `finalize_svg.py` — finalize performs multiple critical processing steps
 > ❌ **NEVER** use `-s final` for a release export. It is a diagnostic comparison only; the supported native route reads `svg_output/`.
+
+**Final deck verification (recommended — before declaring the deck done)**: one command re-checks stage parity/freshness (stale finalize or export), native PPTX integrity (zip, per-slide editable DrawingML, page count), the planning artifacts, and SVG quality; when OfficeCLI is installed it also validates OpenXML and renders a contact sheet of the exported PPTX to `<project_path>/_pptx_render/<stem>-grid.png` — Read that PNG to eyeball overflow / collisions in the converted deck (auto-skips when OfficeCLI is absent):
+
+```bash
+python3 ${SKILL_DIR}/scripts/verify_deck.py <project_path>
+```
 
 > **Post-export annotation window**: the preview service from Step 6 typically remains running after export. If the user submitted annotations in the browser (during Executor or after export) and now asks to apply them — they may quote the browser prompt (`Changes saved to svg_output...` / `修改已保存到 svg_output...`), say "apply my annotations" / "应用注解" / equivalent — run [`live-preview`](workflows/live-preview.md) Step 2 to apply and re-export. Annotations submitted during generation are also handled here, not earlier.
 

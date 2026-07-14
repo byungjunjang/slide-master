@@ -258,7 +258,7 @@ Before drawing each page, look up its entry in `page_charts` to decide which cha
 - **Phased batch generation** (recommended):
   1. **Visual Construction Phase**: generate all SVG pages sequentially for visual consistency. Use layout judgment for chart marks during the draft. **MUST embed plot-area markers** per §3.1 below on every chart page — coordinate calibration is a post-generation step (see [`workflows/verify-charts.md`](../workflows/verify-charts.md)) that depends on these markers — and **native object metadata** per §3.2 on every eligible data-chart page. **Reach for native presets** per §3.0 as you draw each page: a block arrow, chevron, banner/ribbon, callout, standard flowchart node, or star is authored through `preset_shape_svg.py` at draw time — decided by the object's intent as you create it, never by scanning finished paths, and never committed to a bare `<path>`/`<polygon>` when a preset expresses it (a gradient fill/stroke or a pattern fill is the one paint exception — keep those ordinary SVG). **First-page gate (Mandatory)**: after completing the first page, run `python3 scripts/svg_quality_checker.py <project_path>/svg_output/<first_page>.svg` and fix every error before drawing page 2 — structural violations are systematic, and a first-page error repeated deck-wide costs a whole-deck rewrite.
   2. **Quality Check Gate**: run `python3 scripts/svg_quality_checker.py <project_path>` on `svg_output/`. Any `error` (banned features, viewBox mismatch, spec_lock drift, non-PPT-safe font, etc.) MUST be fixed on the offending page before proceeding — regenerate and re-check. Address `warning`s when straightforward. On a structured deck/layout template route, PPTX-structure warnings (empty Layout, framing-only Layout, bare Master, duplicate layout keys) are never acknowledge-and-release: list each one and either fix the page/lock or state per warning why the flagged state is intended (e.g. a zero-slot cover) before proceeding. Flat free-design/brand-only routes have no Master/Layout checkpoint. Do NOT defer to after `finalize_svg.py` — finalize rewrites SVG and masks some violations.
-  3. **Logic Construction Phase**: after SVGs pass the quality check, batch-generate speaker notes for narrative continuity.
+  3. **Logic Construction Phase (opt-in)**: only when `design_spec.md §X` records a speaker-notes request — after SVGs pass the quality check, batch-generate speaker notes for narrative continuity (§8). Default `None requested` → skip; write no `notes/` files.
 
 ### 3.0 Native Preset Shape Selection
 
@@ -530,6 +530,8 @@ If `spec_lock.md` is absent, consult [`strategist.md`](strategist.md) §g — do
 
 ## 8. Speaker Notes Generation Framework
 
+**Trigger**: `design_spec.md §X` records a speaker-notes request, or the user asks for notes / narration later (e.g. via [`generate-audio`](../workflows/generate-audio.md)). Default `None requested` → skip this entire section.
+
 ### Task 1. Generate Complete Speaker Notes Document
 
 After all SVG pages are finalized, enter Logic Construction Phase and write the full notes to `notes/total.md`. Batch-writing (not per-page) lets transitions plan coherently.
@@ -575,12 +577,12 @@ Auto-split `notes/total.md` into per-page files in `notes/`.
 
 ## 9. Next Steps After Completion
 
-> **Auto-continuation**: After Visual Construction Phase (all SVG pages) and Logic Construction Phase (all notes) are complete, the Executor proceeds directly to the post-processing pipeline.
+> **Auto-continuation**: After Visual Construction Phase (all SVG pages) and — when notes were requested — Logic Construction Phase are complete, the Executor proceeds directly to the post-processing pipeline.
 
 **Post-processing & Export** (canonical workflow: [`SKILL.md` Step 7](../SKILL.md)):
 
 ```bash
-# 1. Split speaker notes
+# 1. Split speaker notes (only when notes/total.md exists — skipped on the default no-notes path)
 python3 scripts/total_md_split.py <project_path>
 
 # 2. SVG post-processing (auto-embed icons/images and flatten positioned text)

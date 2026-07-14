@@ -27,10 +27,13 @@ python3 scripts/source_to_md/ppt_to_md.py <deck.pptx>
 python3 scripts/source_to_md/excel_to_md.py <workbook.xlsx>
 python3 scripts/project_manager.py init <project_name> --format ppt169
 python3 scripts/project_manager.py import-sources <project_path> <source_files_or_dirs...> --move
-python3 scripts/total_md_split.py <project_path>
+python3 scripts/preflight.py  # environment gate — resolve failures before the long run
+python3 scripts/validate_spec.py <project_path>  # after design_spec.md + spec_lock.md are written
+python3 scripts/total_md_split.py <project_path>  # only when speaker notes were requested (opt-in)
 python3 scripts/finalize_svg.py <project_path>
 python3 scripts/animation_config.py scaffold <project_path>  # optional object-level animation overrides
 python3 scripts/svg_to_pptx.py <project_path>
+python3 scripts/verify_deck.py <project_path>  # final verification gate
 ```
 
 Repository update:
@@ -49,6 +52,7 @@ python3 scripts/update_repo.py
 | PPTX transitions | `pptx_transitions.py` | [docs/pptx-transitions.md](./docs/pptx-transitions.md) |
 | PPTX animations | `pptx_animations.py`, `animation_config.py` | [docs/pptx-animations.md](./docs/pptx-animations.md) |
 | Spec maintenance | `update_spec.py` | [docs/update_spec.md](./docs/update_spec.md) |
+| Pipeline gates | `preflight.py` (environment, after project init), `validate_spec.py` (planning artifacts, after Step 4 spec output), `verify_deck.py` (final deck verification, after Step 7; optional OfficeCLI OpenXML + contact-sheet layer) | script docstrings |
 | Image tools | `image_gen.py`, `latex_render.py`, `analyze_images.py`, `gemini_watermark_remover.py` | [docs/image.md](./docs/image.md) |
 | Repo maintenance | `update_repo.py` | README install/update section |
 | Troubleshooting | validation, preview, export, dependency issues | [docs/troubleshooting.md](./docs/troubleshooting.md) |

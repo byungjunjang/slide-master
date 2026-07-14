@@ -23,7 +23,9 @@ This workflow is **independent**: it reads `notes/*.md` and queries the selected
   - Keys may live in the current process environment or the first `.env` found in this order: current working directory, skill directory (e.g. `~/.agents/skills/ppt-master/.env`), clone repo root, `~/.ppt-master/.env`
 - The deck is in a single dominant language (mixed-language decks: pick the dominant one — the AI uses judgment, not a heuristic).
 
-If `notes/*.md` are missing, run `total_md_split.py <project_path>` first.
+If `notes/*.md` are missing but `notes/total.md` exists, run `total_md_split.py <project_path>` first.
+
+If the deck has no notes at all (the default pipeline skips speaker notes unless requested), generate them now: write `notes/total.md` per [`executor-base.md`](../references/executor-base.md) §8 (reading `design_spec.md §IX` for per-page core messages), then run `total_md_split.py <project_path>`, then continue below.
 
 ---
 
