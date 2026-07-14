@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" data-pptx-layout="02_toc" data-pptx-layout-name="Agenda">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" data-pptx-master="medical_university-master" data-pptx-master-name="Medical University" data-pptx-layout="02_toc" data-pptx-layout-name="Agenda">
     <!-- 背景 -->
-    <rect width="1280" height="720" fill="#FFFFFF"  id="layout-02_toc-background" data-pptx-layer="layout" data-pptx-editable="false"/>
+    <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
 
     <!-- ==================== 页眉区域 ==================== -->
     <rect x="0" y="0" width="1280" height="70" fill="#0066B3" />
@@ -92,6 +92,8 @@
     <text x="40" y="695" fill="#999999" font-family="Microsoft YaHei, Arial, sans-serif" font-size="12">
         {{INSTITUTION}}
     </text>
-    <text x="1220" y="695" text-anchor="end" fill="#999999" font-family="Microsoft YaHei, Arial, sans-serif"
-        font-size="14" id="slot-02_toc-slide_number-1" data-pptx-placeholder="slide-number">{{PAGE_NUM}}</text>
+    <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="1" data-pptx-placeholder-bounds="1100 678 124 22">
+        <text x="1220" y="695" text-anchor="end" fill="#999999" font-family="Microsoft YaHei, Arial, sans-serif"
+            font-size="14" id="slot-02_toc-slide_number-1" data-pptx-placeholder-carrier="true">{{PAGE_NUM}}</text>
+    </g>
 </svg>

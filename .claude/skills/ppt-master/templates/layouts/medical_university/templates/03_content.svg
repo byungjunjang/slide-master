@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" data-pptx-layout="03_content" data-pptx-layout-name="Content">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" data-pptx-master="medical_university-master" data-pptx-master-name="Medical University" data-pptx-layout="03_content" data-pptx-layout-name="Content">
     <!-- 背景 -->
-    <rect width="1280" height="720" fill="#FFFFFF"  id="layout-03_content-background" data-pptx-layer="layout" data-pptx-editable="false"/>
+    <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
 
     <!-- ==================== 页眉区域 ==================== -->
     <!-- 医学蓝页眉背景 -->
@@ -10,10 +10,12 @@
     <rect x="0" y="0" width="6" height="70" fill="#FF6B35" />
 
     <!-- 章节编号 + 页面标题 -->
-    <text x="40" y="46" fill="#FFFFFF" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26"
-        font-weight="bold" id="slot-03_content-title-1" data-pptx-placeholder="title">
-        {{SECTION_NUM}} {{PAGE_TITLE}}
-    </text>
+    <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="40 18 1040 40">
+        <text x="40" y="46" fill="#FFFFFF" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26"
+            font-weight="bold" id="slot-03_content-title-1" data-pptx-placeholder-carrier="true">
+            {{SECTION_NUM}} {{PAGE_TITLE}}
+        </text>
+    </g>
 
     <!-- 右上角 Logo -->
     <rect x="1100" y="20" width="140" height="30" fill="none" />
@@ -25,9 +27,11 @@
     <!-- ==================== 核心观点条 ==================== -->
     <rect x="0" y="70" width="1280" height="50" fill="#E6F3FA" />
     <rect x="0" y="70" width="6" height="50" fill="#00A86B" />
-    <text x="40" y="102" fill="#333333" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" id="slot-03_content-body-2" data-pptx-placeholder="body">
-        {{KEY_MESSAGE}}
-    </text>
+    <g id="body-slot" data-pptx-placeholder="body" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="40 76 1200 40">
+        <text x="40" y="102" fill="#333333" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" id="slot-03_content-body-2" data-pptx-placeholder-carrier="true">
+            {{KEY_MESSAGE}}
+        </text>
+    </g>
 
     <!-- ==================== 内容区域 ==================== -->
     <!-- 
@@ -71,8 +75,10 @@
         font-size="12">
         {{SECTION_NAME}}
     </text>
-    <text x="1220" y="695" text-anchor="end" fill="#666666" font-family="Microsoft YaHei, Arial, sans-serif"
-        font-size="14" id="slot-03_content-slide_number-3" data-pptx-placeholder="slide-number">
-        {{PAGE_NUM}}
-    </text>
+    <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="3" data-pptx-placeholder-bounds="1100 678 124 22">
+        <text x="1220" y="695" text-anchor="end" fill="#666666" font-family="Microsoft YaHei, Arial, sans-serif"
+            font-size="14" id="slot-03_content-slide_number-3" data-pptx-placeholder-carrier="true">
+            {{PAGE_NUM}}
+        </text>
+    </g>
 </svg>

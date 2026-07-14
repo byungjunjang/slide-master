@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" data-pptx-layout="02_chapter" data-pptx-layout-name="Section">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" data-pptx-master="medical_university-master" data-pptx-master-name="Medical University" data-pptx-layout="02_chapter" data-pptx-layout-name="Section">
+    <!-- 母版背景 -->
+    <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
     <!-- 背景：深医学蓝，营造专业感和过渡感 -->
     <rect width="1280" height="720" fill="#004080"  id="layout-02_chapter-background" data-pptx-layer="layout" data-pptx-editable="false"/>
 
@@ -31,10 +33,12 @@
     <circle cx="530" cy="275" r="6" fill="#00A86B" />
 
     <!-- 章节标题：醒目白色 -->
-    <text x="380" y="360" fill="#FFFFFF" font-family="Microsoft YaHei, Arial, sans-serif" font-size="52"
-        font-weight="bold" id="slot-02_chapter-title-1" data-pptx-placeholder="title">
-        {{CHAPTER_TITLE}}
-    </text>
+    <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="380 316 844 60">
+        <text x="380" y="360" fill="#FFFFFF" font-family="Microsoft YaHei, Arial, sans-serif" font-size="52"
+            font-weight="bold" id="slot-02_chapter-title-1" data-pptx-placeholder-carrier="true">
+            {{CHAPTER_TITLE}}
+        </text>
+    </g>
 
     <!-- 章节描述/摘要：浅色 -->
     <text x="380" y="420" fill="#E6F3FA" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22">
