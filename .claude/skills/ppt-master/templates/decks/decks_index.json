@@ -1,4 +1,10 @@
 {
+  "jangpm": {
+    "summary": "Korean editorial lecture / report decks — 강의, 워크숍, 전략 브리핑, 분석 리포트",
+    "canvas_format": "ppt169",
+    "page_count": 4,
+    "primary_color": "#4633E3"
+  },
   "中国电信": {
     "summary": "China Telecom related briefings, 政企数字化方案, 转型规划, 内部汇报.",
     "canvas_format": "ppt169",
