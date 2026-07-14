@@ -1,58 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-layout="01_cover" data-pptx-layout-name="Cover">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="jangpm-master" data-pptx-master-name="Jangpm" data-pptx-layout="01_cover" data-pptx-layout-name="Cover">
   <!-- Jangpm — 01 Cover -->
 
-  <!-- Page background -->
-  <rect width="1280" height="720" fill="#FAFAF9" id="layout-01_cover-background" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="master-bg" width="1280" height="720" fill="#FAFAF9" data-pptx-layer="master" data-pptx-editable="false"/>
 
-  <!-- Accent rule (single editorial cue) -->
-  <rect x="56" y="140" width="80" height="3" fill="#4633E3"/>
+  <rect id="layout-accent-rule" x="56" y="140" width="80" height="3" fill="#4633E3" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <line id="layout-bottom-divider" x1="56" y1="672" x2="1224" y2="672" stroke="#E5E7EB" stroke-width="1" data-pptx-layer="layout" data-pptx-editable="false"/>
 
-  <!-- Eyebrow / program label -->
-  <text x="56" y="180"
-        font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
-        font-size="12.8"
-        letter-spacing="0.64"
-        fill="#6B7280">
-    {{EYEBROW}}
-  </text>
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="56 284 1168 68">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="340"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="56"
+          letter-spacing="-1.68"
+          fill="#1A1A1A">{{TITLE}}</text>
+  </g>
 
-  <!-- Primary title (Display) -->
-  <text x="56" y="340"
-        font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
-        font-size="56"
-        letter-spacing="-1.68"
-        fill="#1A1A1A"
-        id="slot-01_cover-title-1" data-pptx-placeholder="title">
-    {{TITLE}}
-  </text>
+  <g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="56 444 1168 30">
+    <text id="subtitle-carrier" data-pptx-placeholder-carrier="true" x="56" y="470"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="18.4"
+          fill="#1A1A1A">{{SUBTITLE}}</text>
+  </g>
 
-  <!-- Optional secondary line (Display-sm, accent) -->
-  <text x="56" y="410"
-        font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
-        font-size="40"
-        letter-spacing="-0.8"
-        fill="#4633E3">
-    {{TITLE_ACCENT}}
-  </text>
+  <g id="cover-eyebrow">
+    <text x="56" y="180"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12.8"
+          letter-spacing="0.64"
+          fill="#6B7280">{{EYEBROW}}</text>
+  </g>
 
-  <!-- Subtitle (Title) -->
-  <text x="56" y="470"
-        font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
-        font-size="18.4"
-        fill="#1A1A1A"
-        id="slot-01_cover-subtitle-2" data-pptx-placeholder="subtitle">
-    {{SUBTITLE}}
-  </text>
+  <g id="cover-title-accent">
+    <text x="56" y="410"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="40"
+          letter-spacing="-0.8"
+          fill="#4633E3">{{TITLE_ACCENT}}</text>
+  </g>
 
-  <!-- Presenter / date line (Body) -->
-  <text x="56" y="656"
-        font-family="Pretendard, 'Malgun Gothic', sans-serif"
-        font-size="15.2"
-        fill="#6B7280">
-    {{PRESENTER}} · {{DATE}}
-  </text>
-
-  <!-- Thin divider at the bottom edge (structural) -->
-  <line x1="56" y1="672" x2="1224" y2="672" stroke="#E5E7EB" stroke-width="1"/>
+  <g id="cover-footer">
+    <text x="56" y="656"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="15.2"
+          fill="#6B7280">{{PRESENTER}} · {{DATE}}</text>
+  </g>
 </svg>
