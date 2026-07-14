@@ -12,6 +12,9 @@ venv/
 projects/*
 !projects/README.md
 
+# Template library review artifacts (see templates/README.md — never copied by Step 3)
+.claude/skills/ppt-master/templates/*/*/exports/
+
 # Tool scratch
 .superpowers/
 .preview/
