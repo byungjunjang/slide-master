@@ -7,6 +7,10 @@
     "summary": "Google brand identity — multi-product corporate decks, developer events (Google I/O style), education and training in the Google ecosystem",
     "primary_color": "#4285F4"
   },
+  "jangpm": {
+    "summary": "Jangpm editorial identity — Korean lecture / report decks, 모노크롬 + 단일 인디고 액센트",
+    "primary_color": "#4633E3"
+  },
   "中国电建": {
     "summary": "POWERCHINA brand identity for engineering project reports, technical proposals, business negotiations, and corporate promotion",
     "primary_color": "#00418D"
