@@ -4,8 +4,9 @@ PPT Master - Environment Preflight
 
 Pre-pipeline environment gate. Run once after project init (SKILL.md Step 2)
 so a long deck run never dies mid-pipeline on a missing dependency. Fails
-loudly on toolchain gaps that would break Step 6/7; warns on gaps that only
-degrade optional surfaces (Confirm UI page, image API path, OfficeCLI render).
+loudly on toolchain gaps that would break Step 6/7 and on stale Codex stubs
+(.codex/skills drift — dual-host contract); warns on gaps that only degrade
+optional surfaces (Confirm UI page, image API path, OfficeCLI render).
 
 Usage:
     python3 scripts/preflight.py [options]
@@ -33,6 +34,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from console_encoding import configure_utf8_stdio  # noqa: E402
+from sync_codex_stubs import SYNC_CMD, stale_stub_paths  # noqa: E402
 
 # (module, pip name, why it is required)
 CORE_MODULES = (
@@ -143,6 +145,20 @@ def check_image_backend() -> list[str]:
     ]
 
 
+def check_codex_stubs() -> list[str]:
+    """Dual-host drift gate: .codex/skills stubs must match a fresh build from
+    the canonical .claude/skills tree (see AGENTS.md / CLAUDE.md cross-harness
+    note). Stale stubs mean Codex triggers on outdated skill frontmatter."""
+    stale = stale_stub_paths()
+    if not stale:
+        return []
+    sample = ", ".join(stale[:3]) + (", ..." if len(stale) > 3 else "")
+    return [
+        f".codex/skills Codex stubs are stale ({len(stale)} file(s): {sample}) "
+        f"— regenerate: {SYNC_CMD}"
+    ]
+
+
 def check_officecli() -> list[str]:
     if shutil.which("officecli"):
         return []
@@ -169,7 +185,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    failures = check_core_deps()
+    failures = check_core_deps() + check_codex_stubs()
     warnings = check_optional_deps() + check_fonts() + check_officecli()
     if args.needs_images:
         warnings += check_image_backend()

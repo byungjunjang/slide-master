@@ -54,7 +54,7 @@ python3 scripts/update_repo.py
 | Spec maintenance | `update_spec.py` | [docs/update_spec.md](./docs/update_spec.md) |
 | Pipeline gates | `preflight.py` (environment, after project init), `validate_spec.py` (planning artifacts, after Step 4 spec output), `verify_deck.py` (final deck verification, after Step 7; optional OfficeCLI OpenXML + contact-sheet layer) | script docstrings |
 | Image tools | `image_gen.py`, `latex_render.py`, `analyze_images.py`, `gemini_watermark_remover.py` | [docs/image.md](./docs/image.md) |
-| Repo maintenance | `update_repo.py` | README install/update section |
+| Repo maintenance | `update_repo.py`, `sync_codex_stubs.py` (regenerate `.codex/skills` Codex discovery stubs after editing canonical skill frontmatter; `--check` is enforced by `preflight.py`) | README install/update section; script docstrings |
 | Troubleshooting | validation, preview, export, dependency issues | [docs/troubleshooting.md](./docs/troubleshooting.md) |
 
 ## High-Frequency Commands
