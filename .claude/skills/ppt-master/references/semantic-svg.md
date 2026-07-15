@@ -6,6 +6,7 @@ PPT Master uses rendering-neutral compiler hints only where ordinary SVG cannot 
 
 | Marker | Placement | Purpose |
 |---|---|---|
+| `data-pptx-page-role` | Root `<svg>` | Name the page's role on a flat route so export can pick its baseline Layout name. |
 | `data-pptx-master` / `data-pptx-master-name` | Root `<svg>` | Bind the page to one named PowerPoint Slide Master. |
 | `data-pptx-layout` / `data-pptx-layout-name` | Root `<svg>` | Bind the page to one named Layout under that Master. |
 | `data-pptx-layer="master"` | Direct atomic child of root | Promote one fixed visual object to the named Master. |
@@ -15,7 +16,7 @@ PPT Master uses rendering-neutral compiler hints only where ordinary SVG cannot 
 
 The completed SVG remains the full visible page. Removing the metadata must not change browser rendering. Do not copy visible text, geometry, style, or asset values into metadata.
 
-**Hard rule — route boundary**: Free-design and brand-only pages use `pptx_structure.mode: flat` and omit every Master/Layout/layer/placeholder marker in this document. Deck/layout template pages declare their final Master and Layout before drawing begins; the structured exporter compiles that contract and never selects, clusters, distills, or visually infers it.
+**Hard rule — route boundary**: Free-design and brand-only pages use `pptx_structure.mode: flat` and omit every Master/Layout/layer/placeholder marker in this document — but they still declare the root `data-pptx-page-role` of §4.1. Deck/layout template pages declare their final Master and Layout before drawing begins and omit `data-pptx-page-role`; the structured exporter compiles that contract and never selects, clusters, distills, or visually infers it.
 
 **Hard rule — specialized metadata wins**: Use Master/Layout/placeholder metadata for native structure, `data-pptx-native` for chart/table reconstruction, and the imported/authored shape metadata defined in [`shared-standards.md`](./shared-standards.md) §§1.4–1.5. Do not duplicate those facts with `data-pptx-role`.
 
@@ -99,7 +100,36 @@ A Layout may contain no slot groups. Cover, poster, full-visual, or other fixed-
 
 ---
 
-## 4. Minimal Structural Roles
+## 4. Page and Structural Roles
+
+Two role markers: `data-pptx-page-role` names the whole page (root only), `data-pptx-role` marks one structural element.
+
+### 4.1 Page role — flat routes
+
+**Mandatory — every free-design / brand-only page**: the root `<svg>` carries `data-pptx-page-role`. It is the flat route's only structural marker: with no Master/Layout identity to bind, it is what export reads to give the slide a meaningful baseline PowerPoint Layout name.
+
+| Value | Baseline Layout name | Use for |
+|---|---|---|
+| `cover` | Cover | Deck cover |
+| `toc` | Agenda | Table of contents / agenda |
+| `section` | Section | Chapter / section opener |
+| `content` | Content | Ordinary content page |
+| `ending` | Closing | Closing / final-takeaway page |
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"
+     viewBox="0 0 1280 720" data-pptx-page-role="content">
+```
+
+| Requirement | Rule |
+|---|---|
+| Placement | Root `<svg>` only. The attribute on any other element is an error. |
+| Value | One canonical lowercase value from the table. Empty or non-kebab-case is an error; an unknown token warns. |
+| Route | Required on `flat` pages. **Forbidden on structured deck/layout template pages** — there the Master/Layout identity already names the Layout, and a page role would duplicate it. |
+
+> The checker requires it for any `svg_output/` / `svg_final/` page whose root has no `data-pptx-layout` — i.e. exactly the flat route.
+
+### 4.2 Structural roles
 
 Use `data-pptx-role` only when no specialized marker owns the behavior:
 
@@ -115,6 +145,12 @@ Do not add structural roles to ordinary titles, body copy, cards, KPIs, diagrams
 ---
 
 ## 5. Validation and Migration
+
+For free-design and brand-only (`flat`) projects, validation reports:
+
+- a missing root `data-pptx-page-role` (warning) — the page exports under a generic baseline Layout name;
+- an empty, non-kebab-case, or non-root `data-pptx-page-role` (error), and an unknown role token (warning);
+- any Master/Layout/layer/placeholder marker, which does not belong on this route.
 
 For structured deck/layout template projects, validation rejects:
 

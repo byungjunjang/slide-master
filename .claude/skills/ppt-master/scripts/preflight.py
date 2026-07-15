@@ -46,7 +46,10 @@ OPTIONAL_MODULES = (
     ("requests", "requests", "web image search / web_to_md unavailable"),
 )
 FONT_FAMILY = "Pretendard"
-FONT_SCAN_CAP = 5000
+# Per-directory guard against a pathological scan. Hitting it means "unknown",
+# never "not installed" — see font_installed().
+FONT_SCAN_CAP = 20000
+FONT_SUFFIXES = {".ttf", ".otf", ".ttc"}
 
 
 def _module_missing(module: str) -> bool:
@@ -79,11 +82,14 @@ def check_optional_deps() -> list[str]:
 
 
 def _font_dirs() -> list[Path]:
+    """Font directories, user-level first — that is where an install-local
+    family like Pretendard lands, so we find it before scanning the much
+    larger system directory."""
     home = Path.home()
     if sys.platform == "win32":
         dirs = [
-            Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
             home / "AppData" / "Local" / "Microsoft" / "Windows" / "Fonts",
+            Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
         ]
     elif sys.platform == "darwin":
         dirs = [home / "Library" / "Fonts", Path("/Library/Fonts"),
@@ -94,23 +100,32 @@ def _font_dirs() -> list[Path]:
     return [d for d in dirs if d.is_dir()]
 
 
-def font_installed(family: str = FONT_FAMILY) -> bool:
+def font_installed(family: str = FONT_FAMILY) -> Optional[bool]:
+    """Whether the family is installed. ``None`` means undetermined — a
+    directory exceeded the scan cap, so absence was never established."""
     needle = family.lower().replace(" ", "")
-    scanned = 0
+    truncated = False
     for d in _font_dirs():
-        for p in d.rglob("*"):
-            scanned += 1
-            if scanned > FONT_SCAN_CAP:
-                return False
-            if p.suffix.lower() in {".ttf", ".otf", ".ttc"} and \
+        for i, p in enumerate(d.rglob("*")):
+            if i >= FONT_SCAN_CAP:
+                truncated = True
+                break
+            if p.suffix.lower() in FONT_SUFFIXES and \
                     needle in p.stem.lower().replace(" ", "").replace("-", ""):
                 return True
-    return False
+    return None if truncated else False
 
 
 def check_fonts() -> list[str]:
-    if font_installed():
+    state = font_installed()
+    if state is True:
         return []
+    if state is None:
+        return [
+            f"could not determine whether '{FONT_FAMILY}' is installed — a font "
+            f"directory exceeded {FONT_SCAN_CAP} entries; verify manually if the "
+            f"deck renders with fallback fonts"
+        ]
     return [
         f"'{FONT_FAMILY}' font not found in system/user font directories — "
         f"decks render with fallback fonts in preview and export. Install from "
