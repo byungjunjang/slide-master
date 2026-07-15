@@ -4,5 +4,11 @@
     "canvas_format": "ppt169",
     "page_count": 4,
     "primary_color": "#4633E3"
+  },
+  "mckinsey": {
+    "summary": "McKinsey consulting-style strategy decks — 전략 보고서, 시장/산업 분석, 경영진 브리핑, 실행 로드맵",
+    "canvas_format": "ppt169",
+    "page_count": 5,
+    "primary_color": "#0F2A4A"
   }
 }

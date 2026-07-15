@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="mckinsey-master" data-pptx-master-name="McKinsey" data-pptx-layout="03_content" data-pptx-layout-name="Content">
+  <!-- McKinsey — 03 Content (action-title shell; body composed by Executor) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <line id="layout-title-rule" x1="44" y1="112" x2="1236" y2="112" stroke="#999999" stroke-width="1" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <line id="layout-footer-rule" x1="44" y1="676" x2="1236" y2="676" stroke="#D0D0D0" stroke-width="1" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="44 40 1192 68">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="44" y="68"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="32" font-weight="700"
+          letter-spacing="-0.64"
+          fill="#1A1A1A">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="source-slot" data-pptx-placeholder="footer" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="44 684 800 20">
+    <text id="source-carrier" data-pptx-placeholder-carrier="true" x="44" y="698"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12"
+          fill="#888888">{{SOURCE_LINE}}</text>
+  </g>
+
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="3" data-pptx-placeholder-bounds="1100 684 136 20">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1236" y="698"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12"
+          text-anchor="end"
+          fill="#888888">{{PAGE_NUM}}</text>
+  </g>
+
+  <g id="page-kicker">
+    <text x="44" y="32"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="13.3"
+          letter-spacing="0.6"
+          fill="#0F2A4A">{{KICKER}}</text>
+  </g>
+
+  <!-- CONTENT AREA (Executor fills this region freely) -->
+  <!-- x=44, y=136, w=1192, h=524 — below title rule, above footer rule -->
+</svg>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="mckinsey-master" data-pptx-master-name="McKinsey" data-pptx-layout="02_chapter" data-pptx-layout-name="Chapter">
+  <!-- McKinsey — 02 Chapter / Section Divider (dark navy) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-dark-bg" x="0" y="0" width="1280" height="720" fill="#0A1F3D" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-accent-rule" x="44" y="296" width="64" height="3" fill="#2E9BD6" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="44 320 1192 60">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="44" y="368"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="48" font-weight="700"
+          letter-spacing="-0.96"
+          fill="#FFFFFF">{{CHAPTER_TITLE}}</text>
+  </g>
+
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="3" data-pptx-placeholder-bounds="1100 684 136 20">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1236" y="698"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12"
+          text-anchor="end"
+          fill="#888888">{{PAGE_NUM}}</text>
+  </g>
+
+  <g id="chapter-number">
+    <text x="44" y="272"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="40" font-weight="700"
+          letter-spacing="-0.8"
+          fill="#2E9BD6">{{CHAPTER_NUMBER}}</text>
+  </g>
+
+  <g id="chapter-summary">
+    <text x="44" y="424"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="16"
+          fill="#4FB2E5">{{CHAPTER_SUMMARY}}</text>
+  </g>
+</svg>

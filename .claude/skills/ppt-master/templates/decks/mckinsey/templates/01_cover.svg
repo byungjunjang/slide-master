@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="mckinsey-master" data-pptx-master-name="McKinsey" data-pptx-layout="01_cover" data-pptx-layout-name="Cover">
+  <!-- McKinsey — 01 Cover -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-top-band" x="0" y="0" width="1280" height="8" fill="#0F2A4A" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-title-rule" x="44" y="248" width="64" height="4" fill="#0F2A4A" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <line id="layout-footer-hairline" x1="44" y1="664" x2="1236" y2="664" stroke="#D0D0D0" stroke-width="1" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="44 284 1192 60">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="44" y="332"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="48" font-weight="700"
+          letter-spacing="-0.96"
+          fill="#0F2A4A">{{TITLE}}</text>
+  </g>
+
+  <g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="44 368 1192 30">
+    <text id="subtitle-carrier" data-pptx-placeholder-carrier="true" x="44" y="392"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="18.7"
+          fill="#1A1A1A">{{SUBTITLE}}</text>
+  </g>
+
+  <g id="cover-kicker">
+    <text x="44" y="228"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="13.3"
+          letter-spacing="0.6"
+          fill="#0F2A4A">{{KICKER}}</text>
+  </g>
+
+  <g id="cover-confidentiality">
+    <text x="1236" y="44"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12"
+          text-anchor="end"
+          fill="#888888">{{CONFIDENTIALITY}}</text>
+  </g>
+
+  <g id="cover-presenter">
+    <text x="44" y="648"
+          font-family="'Pretendard Medium', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="13.3"
+          fill="#1A1A1A">{{PRESENTER}} · {{DATE}}</text>
+  </g>
+
+  <g id="cover-organization">
+    <text x="44" y="694"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12"
+          fill="#888888">{{ORGANIZATION}}</text>
+  </g>
+</svg>

@@ -11,12 +11,7 @@
 
 ## Page Layout Templates
 
-The `layouts/` directory contains pre-built page layout templates organized by design style:
-
-- **General**: Versatile modern style, clean and flexible
-- **Consultant**: Consulting style, professional and structured
-- **Consultant Top**: Top-tier consulting style (MBB-level)
-- **Academic Defense**: Academic defense style, research-oriented
+The `layouts/` directory contains structure-only page skeletons (canvas / page types / SVG roster, no locked identity). Available layouts are discovered through the index below — the index is the single source of truth; this README does not enumerate them.
 
 - **Human browsing**: [layouts/README.md](./layouts/README.md)
 - **Slim lookup (discovery only)**: [layouts/layouts_index.json](./layouts/layouts_index.json) — used to answer "what templates exist?". Step 3 triggers on an explicit directory path supplied by the user, not on names from this index.
@@ -32,6 +27,14 @@ A brand is structurally a layout template minus its page roster. Use a brand whe
 - **Human browsing**: [brands/README.md](./brands/README.md)
 - **Discovery index (no trigger)**: [brands/brands_index.json](./brands/brands_index.json) — answers "what brands exist?"; Step 3 still requires an explicit directory path from the user
 - **Creation workflow**: [`../workflows/create-brand.md`](../workflows/create-brand.md)
+
+## Deck Templates
+
+The `decks/` directory holds full reference decks: identity + structure bundles (color / typography / voice plus an SVG page roster and layout grammar). A deck locks both segments at SKILL.md Step 3; use a deck when the user wants a complete ready-made design system, a layout when only page structure should be fixed, and a brand when only identity should be locked. Decks follow the same explicit-path trigger and workspace routing as layouts and brands.
+
+- **Human browsing**: [decks/README.md](./decks/README.md)
+- **Discovery index (no trigger)**: [decks/decks_index.json](./decks/decks_index.json) — answers "what decks exist?"; Step 3 still requires an explicit directory path from the user
+- **Creation workflow**: [`../workflows/create-template.md`](../workflows/create-template.md)
 
 ## Visualization Templates
 

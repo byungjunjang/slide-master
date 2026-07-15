@@ -1,7 +1,7 @@
 ---
 deck_id: jangpm
 kind: deck
-native_structure_mode: template
+native_structure_mode: structured
 summary: Korean editorial lecture / report decks — 강의, 워크숍, 전략 브리핑, 분석 리포트
 canvas_format: ppt169
 page_count: 4

@@ -10,5 +10,9 @@
   "jangpm": {
     "summary": "Jangpm editorial identity — Korean lecture / report decks, 모노크롬 + 단일 인디고 액센트",
     "primary_color": "#4633E3"
+  },
+  "mckinsey": {
+    "summary": "McKinsey consulting-style identity — 전략 보고/분석 브리핑, 네이비 구조색 + 시안 포인트, 액션 타이틀 보이스",
+    "primary_color": "#0F2A4A"
   }
 }

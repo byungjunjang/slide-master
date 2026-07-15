@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="mckinsey-master" data-pptx-master-name="McKinsey" data-pptx-layout="04_ending" data-pptx-layout-name="Ending">
+  <!-- McKinsey — 04 Ending / Closing (dark navy, centered) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-dark-bg" x="0" y="0" width="1280" height="720" fill="#0A1F3D" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-accent-rule" x="608" y="284" width="64" height="3" fill="#2E9BD6" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="140 320 1000 60">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="640" y="368"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="48" font-weight="700"
+          letter-spacing="-0.96"
+          text-anchor="middle"
+          fill="#FFFFFF">{{CLOSING_MESSAGE}}</text>
+  </g>
+
+  <g id="closing-label">
+    <text x="640" y="264"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="13.3"
+          letter-spacing="0.6"
+          text-anchor="middle"
+          fill="#2E9BD6">{{CLOSING_LABEL}}</text>
+  </g>
+
+  <g id="closing-contact">
+    <text x="640" y="428"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="16"
+          text-anchor="middle"
+          fill="#4FB2E5">{{CONTACT_LINE}}</text>
+  </g>
+
+  <g id="closing-footer">
+    <text x="640" y="680"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12"
+          text-anchor="middle"
+          fill="#888888">{{PRESENTER}} · {{DATE}}</text>
+  </g>
+</svg>
