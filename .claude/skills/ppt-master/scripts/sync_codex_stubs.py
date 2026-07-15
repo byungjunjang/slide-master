@@ -146,6 +146,12 @@ def build_stubs(dst: Path) -> None:
                                        newline="\n")
 
 
+def _normalized(path: Path) -> bytes:
+    """File bytes with CRLF folded to LF, so a git autocrlf checkout does not
+    read as drift (content drift is what the gate exists to catch)."""
+    return path.read_bytes().replace(b"\r\n", b"\n")
+
+
 def stale_stub_paths() -> list[str]:
     """Relative paths that differ between .codex/skills and a fresh build.
     Empty list means the stubs are current. Used by --check and preflight."""
@@ -158,7 +164,7 @@ def stale_stub_paths() -> list[str]:
         stale = []
         for rel in sorted(fresh_files | dst_files, key=str):
             a, b = DST / rel, fresh / rel
-            if not a.is_file() or not b.is_file() or a.read_bytes() != b.read_bytes():
+            if not a.is_file() or not b.is_file() or _normalized(a) != _normalized(b):
                 stale.append(str(rel))
         return stale
 
