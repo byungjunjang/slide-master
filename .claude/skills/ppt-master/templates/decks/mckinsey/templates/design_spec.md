@@ -195,15 +195,15 @@ Full-bleed `--navy-deep`, centered composition: uppercase closing label + accent
 
 ### Evidence-page composition grammar (density doctrine)
 
-- **Two-zone minimum**: every evidence page is composed as exhibit zone + takeaway zone. The takeaway zone takes ONE of three forms — (a) `key-findings-rail` (right rail x=776→1236, separated by a 1px `#E8E8E8` hairline at x=758), (b) stacked takeaways right of the chart (the `chart-led-with-takeaway` pattern), (c) bottom verdict band. Single-zone pages are allowed only as declared exceptions: `stat-hero` or a full-bleed table
-- **Multi-exhibit pairing**: when the source provides both a trend and a breakdown, pair a chart (A) with a detail table (B). On rail-form pages the exhibit zone is x=44→740; on forms (b)/(c) exhibits use the full content width. Exhibit lettering `A ·` / `B ·` prefixes (15px/600 `#1A1A1A`) apply only when a page carries 2+ exhibits
-- **Detail-table promotion**: for multi-period / multi-entity quantitative content, a detail table (≥ 4 rows × 4 columns, §XII treatment, right-aligned numerics, 11px `#888888` footnote line) is the chart's first-choice companion — "chart + table" is the default form, not "chart or table"
+- **Two-zone minimum**: every evidence page is composed as exhibit zone + takeaway zone. The takeaway zone takes ONE of three forms — (a) `key-findings-rail` (right rail x=776→1236, separated by a 1px `#E8E8E8` hairline at x=758), (b) stacked takeaways right of the chart (the `chart-led-with-takeaway` pattern), (c) bottom verdict band. Single-zone pages are allowed only as declared exceptions: `stat-hero`, a full-width (x=44→1236) table, or a text pattern (`numbered-takeaway-stack`) adopted under the conditional density floor's switch
+- **Multi-exhibit pairing**: when the source provides both a trend and a breakdown, pair a chart (A) with a detail table (B). On rail-form (a) pages the exhibit zone is x=44→740; on form (b) exhibits share the left ≈60% chart zone (per chart-led-with-takeaway); on form (c) exhibits use the full content width. Exhibit lettering `A ·` / `B ·` prefixes (15px/600 `#1A1A1A`) apply only when a page carries 2+ exhibits
+- **Detail-table promotion**: for multi-period / multi-entity quantitative content, a detail table (≥ 4 rows × 4 columns, §XII treatment, right-aligned numerics, 12px `#888888` footnote line) is the chart's first-choice companion — "chart + table" is the default form, not "chart or table"
 - **Framework mandate (deck level)**: a strategy deck whose source contains prioritization / causality / phasing structure surfaces at least ONE framework exhibit (2×2, tree, process — see the content-shape mapping below). Omission must be justified by source shape; omission for convenience is an anti-pattern (§XIII)
 - **Conditional density floor** — 증거가 있으면 펼치고, 없으면 패턴을 바꾼다: an evidence page targets ≥ 12 data points when the source provides them. When the source is thin, switch to a text pattern (`numbered-takeaway-stack`) instead of padding a table. Fabricated figures and fake cells are absolutely forbidden
 
 ### `key-findings-rail` pattern
 
-Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 numbered findings (hanging number 24/700 `--navy` + finding title 16.5/600 `#1A1A1A` + 1–2 evidence lines 13.5/400 `#888888`, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 11.5 `#888888`, hairline above). A rail-format reduction of `numbered-takeaway-stack` — same lineage: NO card boxes, NO rounded containment
+Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 numbered findings (hanging number 24/700 `--navy` + finding title 16.5/600 `#1A1A1A` + 1–2 evidence lines 13.3/400 `#888888`, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18.7/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 12 `#888888`, hairline above). A rail-format reduction of `numbered-takeaway-stack` — same lineage: NO card boxes, NO rounded containment
 
 ### Content shape → first-choice pattern
 
@@ -280,7 +280,7 @@ Templates use `{{PLACEHOLDER}}` tokens:
 
 ### Charts
 
-- Series order: `#0F2A4A → #1F6FA8 → #4FB2E5`; the single focus series/bar takes `#2E9BD6` while others stay in the ladder or grayscale
+- Series order: `#0F2A4A → #1F6FA8 → #4FB2E5`; the single focus series/bar takes `#2E9BD6` while others stay in the ladder or grayscale — accent here is governed by the §III single-focus rule (the CAGR callout included)
 - Axis labels and tick text: 13.3/500 `#888888`; gridlines 1px `#D0D0D0`; zero-line 1px `#999999`
 - **No legend chrome** — inline labels at the end of each line / beside each bar; data labels on the chart, accent for the focus value
 - **CAGR callout convention**: bracket or arrow spanning the growth range + `+X.X%` in `#2E9BD6` 13.3/600 — the benchmark's signature growth annotation
@@ -310,7 +310,7 @@ Templates use `{{PLACEHOLDER}}` tokens:
 - [ ] Emoji or unicode glyph icons; icon pack mixing
 - [ ] Same pattern 3+ consecutive slides
 - [ ] 여러분 / 우리는 / 함께해요 direct address
-- [ ] Evidence page composed as a single zone without a declared exception (stat-hero / full-bleed table)
+- [ ] Evidence page composed as a single zone without a declared exception (stat-hero / full-width table / density-floor text-pattern switch)
 - [ ] Source has multi-period / multi-entity figures but the page shows only summary numbers with no detail table
 - [ ] Source contains prioritization / causality / phasing structure but the deck has zero framework exhibits
 - [ ] Fake cells or unlabeled estimates added to fill density
@@ -323,4 +323,4 @@ Templates use `{{PLACEHOLDER}}` tokens:
 2. deck kind이므로 Strategist가 identity + structure를 모두 잠근다; 확인 단계에서 template adherence(`strict` / `adaptive`)를 선택한다. Stage 2에서 이 스킨(색/타이포)이 추천 후보로 제시된다
 3. Executor는 `03_content.svg`의 콘텐츠 영역(x=44, y=136, w=1192, h=524)을 §VIII 문법으로 자유 구성하되 kicker / action title / title rule / source line / page-number 크롬을 보존한다
 4. Identity만 재사용하려면 brand 추출본 `.claude/skills/ppt-master/templates/brands/mckinsey/`을 다른 layout/deck과 융합한다
-5. **Delivery-purpose seeding**: 이 덱이 Step 3 템플릿으로 지정되면 Strategist는 Stage 1에서 `delivery_purpose: text`(read-close · dense)를 추천값으로 제시한다 — 컨설팅 덱은 발표용이 아니라 정독용 문서다. 사용자는 확인 단계에서 오버라이드할 수 있다(강제 아님). 주의: §IV가 이 덱의 타입 램프(Body 16px)를 잠그므로 `delivery_purpose`는 글자 크기가 아니라 페이지당 콘텐츠 분배량과 `page_rhythm`에만 작용한다. dense 페이지는 수용량이 크므로 같은 소스에서 페이지 수 추천(strategist.md §b)을 한 단계 낮게 잡는 경향을 허용한다 (예: 12–14 → 10–12)
+5. **Delivery-purpose seeding**: 이 덱이 Step 3 템플릿으로 지정되면 Strategist는 Stage 1에서 `delivery_purpose: text`(read-close · dense)를 추천값으로 제시한다 — 컨설팅 덱은 발표용이 아니라 정독용 문서다. 사용자는 확인 단계에서 오버라이드할 수 있다(강제 아님). 주의: §IV가 이 덱의 타입 램프(Body 16px)를 잠그므로 `delivery_purpose`는 글자 크기가 아니라 페이지당 콘텐츠 분배량·`page_rhythm`·페이지 수 추천에 작용한다. dense 페이지는 수용량이 크므로 같은 소스에서 페이지 수 추천(strategist.md §b)을 한 단계 낮게 잡는 경향을 허용한다 (예: 12–14 → 10–12)
