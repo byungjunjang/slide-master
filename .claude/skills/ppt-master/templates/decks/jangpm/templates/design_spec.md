@@ -197,6 +197,7 @@ ROW 2 LABEL    BODY TEXT
 | --- | --- | --- |
 | List of items with name + description (3–6) | ★ `ruled-list-with-eyebrow` | eyebrow + hairline rows |
 | Parallel concepts / pillars / categories (3–4) | ★ `columns-with-vertical-rules` | eyebrow + vertical-rule columns |
+| Headline metrics at a glance (exec summary, 4–8 KPIs) | `kpi-metric-grid` | 2×N white cards (rx 12, hairline border) — Caption label + Display-sm(40/800) value + semantic delta line (▲/▼, data-only green/red); exactly ONE card accent-soft highlighted per the card-differentiation rule |
 | Numeric evidence / growth / share / forecast | `chart-led-with-takeaway-stack` | left chart ≈60% + right 2–3 stacked takeaway cards |
 | Structured comparison (A vs B / matrix) | `table-with-adjacent-cards` | left table ≈55% + right mini-cards; one column accent-soft |
 | Time-ordered / step-ordered methodology | `process-with-callout-band` | numbered step row + bottom accent-soft rule-of-thumb band |
