@@ -671,6 +671,20 @@
       "desc_ko": "모든 페이지를 템플릿 SVG 로스터에 매핑하고 명시된 Master/Layout/Placeholder 계약을 그대로 유지합니다."
     }
   ],
+  "templates": [
+    {
+      "id": "free",
+      "label": "Free design",
+      "label_zh": "自由设计",
+      "label_en": "Free design",
+      "label_ja": "自由デザイン",
+      "label_ko": "자유 디자인",
+      "desc_zh": "不使用预置模板，按确认的风格从零设计整套页面。",
+      "desc_en": "No preset template — every page is designed fresh from the confirmed style.",
+      "desc_ja": "プリセットテンプレートを使わず、確認済みスタイルで全ページを新規デザインします。",
+      "desc_ko": "프리셋 템플릿 없이 확정된 스타일로 전 페이지를 새로 디자인합니다."
+    }
+  ],
   "delivery_purpose": [
     {
       "id": "text",

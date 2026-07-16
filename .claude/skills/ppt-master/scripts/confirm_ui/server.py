@@ -83,6 +83,8 @@ SESSION_NAME = 'session.json'
 # Static option universe served at /api/catalogs (canvas synced live from config).
 _CATALOGS_PATH = Path(__file__).resolve().parent / 'static' / 'catalogs.json'
 _ICON_LIBRARY_DIR = Path(__file__).resolve().parents[2] / 'templates' / 'icons'
+_DECKS_DIR = Path(__file__).resolve().parents[2] / 'templates' / 'decks'
+_DECKS_INDEX_PATH = _DECKS_DIR / 'decks_index.json'
 _AI_IMAGE_COMPARISON_DIR = Path(__file__).resolve().parents[2] / 'references' / 'ai-image-comparison'
 _ICON_PREVIEW_SAMPLES = {
     'chunk-filled': ('home', 'chart-line', 'users', 'target'),
@@ -656,14 +658,50 @@ def _shutdown_existing(lock_file: Path) -> int:
     return 0
 
 
+def _read_decks_index() -> dict:
+    """Read the deck library index; {} when missing/invalid (catalog degrades)."""
+    try:
+        data = json.loads(_DECKS_INDEX_PATH.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _template_catalog_entries() -> list[dict]:
+    """Deck entries for the Stage-1 template card, synced live from
+    ``decks_index.json`` — the single source of truth for the deck library —
+    so the card can never drift from the installed decks. The ``free`` entry
+    and its four-language labels stay in catalogs.json."""
+    entries = []
+    index = _read_decks_index()
+    for deck_id in sorted(index):
+        info = index[deck_id] if isinstance(index[deck_id], dict) else {}
+        entries.append({
+            'id': deck_id,
+            'label': deck_id,
+            'desc': info.get('summary', ''),
+            'canvas_format': info.get('canvas_format', ''),
+            'page_count': info.get('page_count'),
+            'primary_color': info.get('primary_color', ''),
+        })
+    return entries
+
+
 def _build_catalogs() -> dict:
     """Return the static catalog set with the canvas list synced live from
     ``config.CANVAS_FORMATS`` — the single source of truth for canvas formats —
     so the confirm page can never drift from the pipeline's real formats. The
     set of formats and their dimensions come from config; trilingual labels and
     use text are kept from catalogs.json (with a plain fallback for any new id).
+    The ``templates`` list is likewise synced from ``decks_index.json``: the
+    static ``free`` entry keeps its catalogs.json labels, deck entries are live.
     """
     data = json.loads(_CATALOGS_PATH.read_text(encoding='utf-8'))
+    static_templates = [
+        t for t in data.get('templates', [])
+        if isinstance(t, dict) and t.get('id') == 'free'
+    ]
+    data['templates'] = static_templates + _template_catalog_entries()
     try:
         import config  # scripts/ is on sys.path (injected at import time)
         formats = config.CANVAS_FORMATS
