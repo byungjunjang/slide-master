@@ -71,9 +71,12 @@ Navy structure + single cyan pointer. The ONLY hex values that may appear in any
 
 ### Color Rules
 
-- **Navy is structure, accent is pointer**: `#0F2A4A` carries chrome and hierarchy; `#2E9BD6` marks the one thing the reader must see. **Accent budget ≤ 2 events per content slide**
+- **Navy is structure, accent is pointer**: `#0F2A4A` carries chrome and hierarchy; `#2E9BD6` marks the one thing the reader must see
+- **Single-focus accent rule**: accent points at exactly ONE focus per page (entity / series / number / cell). Repetition across exhibits is allowed only when marking the SAME focus — the focus series in chart A and that entity's row in table B count as one focus; highlighting two different targets on one page is forbidden
+- **Verdict rule is a separate structural account**: the 2px accent rule of a verdict band is a fixed structural convention — max 1 per page, inside the takeaway zone, not counted against the data focus
+- **Everything else stays achromatic**: remaining hierarchy is carried by weight, navy, banding, and hairlines — never by additional accent events
 - **Grayscale first**: every slide must read in grayscale before blue is applied
-- **Chart ladder**: multi-series charts use `#0F2A4A → #1F6FA8 → #4FB2E5` in that order; `#2E9BD6` is reserved for the single focus series/bar. Multi-hue palettes are forbidden
+- **Chart ladder**: multi-series charts use `#0F2A4A → #1F6FA8 → #4FB2E5` in that order; `#2E9BD6` is reserved for the single focus series/bar — and only when that series/bar is the page's single focus. Multi-hue palettes are forbidden
 - **Traffic lights are data-only**: `--positive` / `--warning` / `--negative` only when color encodes a status the reader must decode, always paired with a text label or shape (legible without color) — never decorative
 - **Dark pages** (chapter / ending) use `--navy-deep` full-bleed with white Display type, `--accent` rules, `--blue-light` secondary text
 - **Forbidden**: gradients (`<linearGradient>` / `<radialGradient>`), drop shadows, glow, 3D effects
@@ -283,7 +286,7 @@ Templates use `{{PLACEHOLDER}}` tokens:
 ## XIII. Anti-Pattern Checklist (reject at authoring time)
 
 - [ ] Any hex outside §III table
-- [ ] Accent (`#2E9BD6`) events > 2 on one content slide
+- [ ] Accent (`#2E9BD6`) pointing at two different focuses on one page
 - [ ] Label-only or question-mark title on an evidence page
 - [ ] Evidence page without a `Source:` line
 - [ ] Traffic-light color without a paired text label
@@ -293,6 +296,10 @@ Templates use `{{PLACEHOLDER}}` tokens:
 - [ ] Emoji or unicode glyph icons; icon pack mixing
 - [ ] Same pattern 3+ consecutive slides
 - [ ] 여러분 / 우리는 / 함께해요 direct address
+- [ ] Evidence page composed as a single zone without a declared exception (stat-hero / full-bleed table)
+- [ ] Source has multi-period / multi-entity figures but the page shows only summary numbers with no detail table
+- [ ] Source contains prioritization / causality / phasing structure but the deck has zero framework exhibits
+- [ ] Fake cells or unlabeled estimates added to fill density
 
 ---
 
