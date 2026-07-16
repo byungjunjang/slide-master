@@ -516,6 +516,7 @@ _ANCHOR_RECOMMEND_KEYS = (
     'mode',
     'visual_style',
     'delivery_purpose',
+    'template',
     'template_adherence',
 )
 _ANCHOR_VALUE_KEYS = ('audience', 'content_divergence')
@@ -539,6 +540,40 @@ def _template_adherence_enabled(project_path: Path) -> bool:
         if match:
             return match.group(1) in {'layout', 'deck'}
     return False
+
+
+def _installed_template_info(project_path: Path) -> Optional[dict]:
+    """Describe the Step 3-installed template, or None when free design.
+
+    Installed copies carry no library id, so the display name is the spec's
+    first H1 (falling back to the kind). Drives the Stage-1 card's locked
+    (informational) state — an installed template cannot be changed from the
+    page.
+    """
+    spec_path = project_path / 'templates' / 'design_spec.md'
+    try:
+        lines = spec_path.read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return None
+    if not lines or lines[0].strip() != '---':
+        return None
+    kind = None
+    for line in lines[1:]:
+        stripped = line.strip()
+        if stripped == '---':
+            break
+        match = re.fullmatch(r'kind\s*:\s*["\']?(brand|layout|deck)["\']?', stripped)
+        if match:
+            kind = match.group(1)
+            break
+    if kind is None:
+        return None
+    name = kind
+    for line in lines:
+        if line.startswith('# '):
+            name = line[2:].strip() or kind
+            break
+    return {'kind': kind, 'name': name}
 
 
 def _merge_confirmed_choices(data: dict, result_file: Path) -> None:
@@ -990,6 +1025,11 @@ def create_app(
             _merge_confirmed_choices(data, result_file)
         template_adherence_enabled = _template_adherence_enabled(project_path)
         data['_template_adherence_enabled'] = template_adherence_enabled
+        installed = _installed_template_info(project_path)
+        data['_template_field'] = (
+            {'mode': 'locked', 'kind': installed['kind'], 'name': installed['name']}
+            if installed else {'mode': 'selector'}
+        )
         recommend = data.get('recommend')
         if template_adherence_enabled:
             if not isinstance(recommend, dict):
