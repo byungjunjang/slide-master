@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="naver-ir-master" data-pptx-master-name="Naver IR" data-pptx-layout="03b_content_segment" data-pptx-layout-name="Content Segment">
+  <!-- Naver IR — 03b Content · Segment (세그먼트 실적형: colored title + inline subtitle, chart left / KPI+bullets right) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <image id="layout-watermark" href="../images/naver-wordmark-gray.png" x="1130" y="40" width="86" height="18" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="64 44 240 40">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="64" y="74"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="30"
+          letter-spacing="-0.6"
+          fill="#03C75A">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="318 50 540 28">
+    <text id="subtitle-carrier" data-pptx-placeholder-carrier="true" x="318" y="72"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="16" font-weight="700"
+          fill="#000000">{{PAGE_SUBTITLE}}</text>
+  </g>
+
+  <!-- CONTENT AREA (Executor fills freely) -->
+  <!-- Two-column: chart zone x=64, y=124, w=520, h=470 (stacked quarterly bars, pale tints for past
+       quarters, saturated current quarter, totals above bars, YoY/TPV line with round markers, no gridlines);
+       right zone x=640, y=124, w=576 — KPI headline 21px/700 in segment color ("1Q26 YoY 14.7%, QoQ -0.6%")
+       then 개조식 bullets 16px with [세그먼트] bracket tags in the segment color.
+       Segment color = title fill: #03C75A core / #4E7599 finance / #4472C4 global. Max two accent hues. -->
+</svg>

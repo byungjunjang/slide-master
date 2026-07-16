@@ -16,5 +16,11 @@
     "canvas_format": "ppt169",
     "page_count": 5,
     "primary_color": "#0F2A4A"
+  },
+  "naver_ir": {
+    "summary": "NAVER IR 실적발표 스타일 — 분기 실적발표, 재무 보고, 투자자 미팅, 절제된 재무 데이터 덱",
+    "canvas_format": "ppt169",
+    "page_count": 7,
+    "primary_color": "#03C75A"
   }
 }

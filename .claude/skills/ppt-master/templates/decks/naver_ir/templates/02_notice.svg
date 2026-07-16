@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="naver-ir-master" data-pptx-master-name="Naver IR" data-pptx-layout="02_notice" data-pptx-layout-name="Notice">
+  <!-- Naver IR — 02 Notice (유의 사항 disclaimer; muted long-form paragraph) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <image id="layout-watermark" href="../images/naver-wordmark-gray.png" x="1130" y="40" width="86" height="18" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="64 44 1020 40">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="64" y="74"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="30"
+          letter-spacing="-0.6"
+          fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="body-slot" data-pptx-placeholder="body" data-pptx-placeholder-bounds="64 140 1020 520">
+    <text id="body-carrier" data-pptx-placeholder-carrier="true" x="64" y="172"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="15"
+          letter-spacing="-0.15"
+          fill="#7F7F7F">{{CONTENT_AREA}}</text>
+  </g>
+</svg>

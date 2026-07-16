@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="naver-ir-master" data-pptx-master-name="Naver IR" data-pptx-layout="03d_content_two_tables" data-pptx-layout-name="Content Two Column">
+  <!-- Naver IR — 03d Content · Two Column (현금·차입금/FCF형: two side-by-side table or table+chart panels) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <image id="layout-watermark" href="../images/naver-wordmark-gray.png" x="1130" y="40" width="86" height="18" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="64 44 1020 40">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="64" y="74"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="30"
+          letter-spacing="-0.6"
+          fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="col-left-title-slot" data-pptx-placeholder="body" data-pptx-placeholder-bounds="64 112 548 28">
+    <text id="col-left-title-carrier" data-pptx-placeholder-carrier="true" x="64" y="134"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="16" font-weight="700"
+          fill="#000000">{{COL_LEFT_TITLE}}</text>
+  </g>
+
+  <g id="col-right-title-slot" data-pptx-placeholder="body" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="668 112 548 28">
+    <text id="col-right-title-carrier" data-pptx-placeholder-carrier="true" x="668" y="134"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="16" font-weight="700"
+          fill="#000000">{{COL_RIGHT_TITLE}}</text>
+  </g>
+
+  <!-- CONTENT AREA (Executor fills freely) -->
+  <!-- Two columns under the column titles: left x=64, y=150, w=548, h=510; right x=668, y=150, w=548, h=510
+       (column gap 56). Each column stacks compact FinTables (13px, gray "단위: 십억 원" caption) and/or
+       a small bar chart; footnote definitions ("1) 순현금: …") sit at the column bottom in 11px #7F7F7F -->
+</svg>

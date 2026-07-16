@@ -18,5 +18,9 @@
   "mckinsey": {
     "summary": "McKinsey consulting-style identity — 전략 보고/분석 브리핑, 네이비 구조색 + 시안 포인트, 액션 타이틀 보이스",
     "primary_color": "#0F2A4A"
+  },
+  "naver": {
+    "summary": "NAVER corporate identity — IR/실적발표, 재무 보고, 네이버 관련 기업·서비스 자료",
+    "primary_color": "#03C75A"
   }
 }

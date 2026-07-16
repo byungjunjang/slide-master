@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="naver-ir-master" data-pptx-master-name="Naver IR" data-pptx-layout="04_ending" data-pptx-layout-name="Closing">
+  <!-- Naver IR — 04 Closing (full-bleed light green, centered thank-you message only) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-cover-bg" width="1280" height="720" fill="#5BDB7D" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="closing-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="240 334 800 52">
+    <text id="closing-carrier" data-pptx-placeholder-carrier="true" x="640" y="374"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="40"
+          letter-spacing="-0.8"
+          text-anchor="middle"
+          fill="#FFFFFF">{{CLOSING_MESSAGE}}</text>
+  </g>
+</svg>

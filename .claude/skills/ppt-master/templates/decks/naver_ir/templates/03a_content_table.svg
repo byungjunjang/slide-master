@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="naver-ir-master" data-pptx-master-name="Naver IR" data-pptx-layout="03a_content_table" data-pptx-layout-name="Content Table">
+  <!-- Naver IR — 03a Content · Table (실적요약/비용·손익/Appendix형: bullets + full-width financial table + footnote) -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <image id="layout-watermark" href="../images/naver-wordmark-gray.png" x="1130" y="40" width="86" height="18" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="64 44 1020 40">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="64" y="74"
+          font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="30"
+          letter-spacing="-0.6"
+          fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="footnote-slot" data-pptx-placeholder="footer" data-pptx-placeholder-bounds="64 672 900 26">
+    <text id="footnote-carrier" data-pptx-placeholder-carrier="true" x="64" y="690"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="11"
+          fill="#7F7F7F">{{FOOTNOTE}}</text>
+  </g>
+
+  <!-- CONTENT AREA (Executor fills freely) -->
+  <!-- x=64, y=110, w=1152, h=550 — 개조식 intro bullets (16px, 2 lines max) then full-width FinTable:
+       header band #F5F5F5, hairline rows #E5E5E5, green bold key rows #03C75A,
+       right-aligned tabular numerals, italic Y/Y·Q/Q delta columns,
+       2px #03C75A box around the current-quarter column group -->
+</svg>
