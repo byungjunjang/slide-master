@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="13_closing" data-pptx-layout-name="Closing">
+  <!-- Apple (Vitrine monochrome) — 13 Closing -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+  <rect id="layout-bg-parchment" width="1280" height="720" fill="#f5f5f7" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="240 256 800 116">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="640" y="348" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="104" letter-spacing="-3"
+          fill="#1d1d1f">{{BRAND_MARK}}</text>
+  </g>
+
+  <g id="closing-lead">
+    <text x="640" y="425" text-anchor="middle"
+          font-family="'Pretendard Light', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="26"
+          fill="#6e6e73">{{CLOSING_LINE}}</text>
+  </g>
+
+  <g id="page-foot">
+    <text x="640" y="682" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{CONTACT_LINE}}</text>
+  </g>
+</svg>

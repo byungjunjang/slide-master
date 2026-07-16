@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="07_quote" data-pptx-layout-name="Quote">
+  <!-- Apple (Vitrine monochrome) — 07 Quote -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+  <rect id="layout-bg-parchment" width="1280" height="720" fill="#f5f5f7" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="150 255 980 132">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="640" y="303" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="60" letter-spacing="-1.6"
+          fill="#1d1d1f">{{QUOTE}}</text>
+  </g>
+
+  <g id="quote-attribution">
+    <text x="640" y="442" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="19" letter-spacing="-0.3"
+          fill="#1d1d1f">{{ATTRIBUTION_NAME}}</text>
+    <text x="640" y="468" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="15" letter-spacing="-0.2"
+          fill="#6e6e73">{{ATTRIBUTION_ROLE}}</text>
+  </g>
+
+  <g id="page-foot">
+    <text x="64" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>
