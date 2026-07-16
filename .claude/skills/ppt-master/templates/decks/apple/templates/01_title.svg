@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="01_title" data-pptx-layout-name="Title">
+  <!-- Apple (Vitrine monochrome) — 01 Title -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="title-kicker">
+    <text x="640" y="186" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="14" letter-spacing="0.84"
+          fill="#6e6e73">{{KICKER}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="100 216 1080 240">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="640" y="317" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="112" letter-spacing="-3"
+          fill="#1d1d1f">{{TITLE}}</text>
+  </g>
+
+  <g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="320 480 640 76">
+    <text id="subtitle-carrier" data-pptx-placeholder-carrier="true" x="640" y="504" text-anchor="middle"
+          font-family="'Pretendard Light', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="28" letter-spacing="0.1"
+          fill="#6e6e73">{{SUBTITLE}}</text>
+  </g>
+
+  <g id="page-foot">
+    <text x="64" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>
