@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="04_split" data-pptx-layout-name="Split">
+  <!-- Apple (Vitrine monochrome) — 04 Split -->
+
+  <defs>
+    <pattern id="imgph-hatch" patternUnits="userSpaceOnUse" width="20" height="20"
+             patternTransform="rotate(45)" data-pptx-pattern="ltUpDiag">
+      <rect width="20" height="20" fill="#f5f5f7"/>
+      <rect width="10" height="20" fill="#ececef"/>
+    </pattern>
+  </defs>
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="split-image">
+    <rect x="0" y="0" width="600" height="720" fill="url(#imgph-hatch)"/>
+    <text x="300" y="364" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.08"
+          fill="#a8a8ad">product photograph</text>
+  </g>
+
+  <g id="split-kicker">
+    <text x="688" y="233"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="14" letter-spacing="0.84"
+          fill="#6e6e73">{{KICKER}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="688 263 492 118">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="688" y="307"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="56" letter-spacing="-1.4"
+          fill="#1d1d1f">{{TITLE}}</text>
+  </g>
+
+  <g id="body-slot" data-pptx-placeholder="body" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="688 407 420 95">
+    <text id="body-carrier" data-pptx-placeholder-carrier="true" x="688" y="430"
+          font-family="'Pretendard Light', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="21" letter-spacing="-0.2"
+          fill="#6e6e73">{{BODY}}</text>
+  </g>
+
+  <g id="page-foot">
+    <text x="688" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>
