@@ -1,5 +1,10 @@
 # Handoff — Confirm UI Stage 1 템플릿 선택 필드 (A안) 구현
 
+> **✅ [2026-07-16] 구현 완료** — A안(Stage 1 decks-only 템플릿 카드 + 지연 설치) + 절충안(경로 없는 명시 의사·덱 이름 언급 → 1회 좁힘 질문)이 구현·검증됨. 이 문서는 이력 보존용.
+> - 스펙: `docs/superpowers/specs/2026-07-16-stage1-template-field-design.md`
+> - 계획: `docs/superpowers/plans/2026-07-16-stage1-template-field.md`
+> - 커밋: `546c428`~`4e0d466` (구현 8건; 변경 파일 목록은 각 커밋 본문)
+
 - 작성일: 2026-07-14
 - 대상: 이 repo에서 A안을 구현할 다음 세션의 에이전트
 - 전제: **사용자가 create-template으로 템플릿을 몇 개 더 추가한 뒤** 착수한다 (템플릿이 jangpm 하나뿐인 동안은 선택 필드의 실익이 낮다는 판단으로 보류된 작업)
