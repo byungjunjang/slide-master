@@ -687,6 +687,44 @@ def _template_catalog_entries() -> list[dict]:
     return entries
 
 
+# Role sample text substituted into {{TOKEN}} slots when serving a deck cover
+# shell as a card preview. Fixed role copy, not project content — the same
+# principle as the visual_style previews (users compare visual treatment).
+_TEMPLATE_PREVIEW_TEXT = {
+    'zh': {'title': '演示文稿标题', 'subtitle': '副标题示例文字', 'date': '2026. 07', 'name': '演示者', 'generic': '示例文本'},
+    'en': {'title': 'Presentation Title', 'subtitle': 'Sample subtitle line', 'date': '2026. 07', 'name': 'Presenter', 'generic': 'Sample text'},
+    'ja': {'title': 'プレゼンテーションのタイトル', 'subtitle': 'サブタイトルの例', 'date': '2026. 07', 'name': '発表者', 'generic': 'サンプルテキスト'},
+    'ko': {'title': '프레젠테이션 제목', 'subtitle': '부제 예시 한 줄', 'date': '2026. 07', 'name': '발표자', 'generic': '샘플 텍스트'},
+}
+_TEMPLATE_TOKEN_RE = re.compile(r'\{\{([A-Za-z0-9_]+)\}\}')
+
+
+def _preview_token_text(token: str, texts: dict) -> str:
+    """Map a shell {{TOKEN}} name to role sample copy by keyword."""
+    name = token.upper()
+    if 'SUBTITLE' in name:
+        return texts['subtitle']
+    if 'TITLE' in name:
+        return texts['title']
+    if 'DATE' in name:
+        return texts['date']
+    if 'PRESENTER' in name or 'AUTHOR' in name or 'ORGANIZATION' in name:
+        return texts['name']
+    return texts['generic']
+
+
+def _render_template_preview(deck_id: str, lang: str) -> Optional[str]:
+    """Serve a deck's first roster shell with tokens substituted, or None."""
+    if deck_id not in _read_decks_index():
+        return None
+    shells = sorted((_DECKS_DIR / deck_id / 'templates').glob('*.svg'))
+    if not shells:
+        return None
+    texts = _TEMPLATE_PREVIEW_TEXT.get(lang, _TEMPLATE_PREVIEW_TEXT['en'])
+    raw = shells[0].read_text(encoding='utf-8')
+    return _TEMPLATE_TOKEN_RE.sub(lambda m: _preview_token_text(m.group(1), texts), raw)
+
+
 def _build_catalogs() -> dict:
     """Return the static catalog set with the canvas list synced live from
     ``config.CANVAS_FORMATS`` — the single source of truth for canvas formats —
@@ -895,6 +933,21 @@ def create_app(
     def get_icon_previews():
         """Serve real sample icons from templates/icons for the icon chooser."""
         resp = jsonify(_build_icon_previews())
+        resp.headers['Cache-Control'] = 'no-store'
+        return resp
+
+    @app.route('/api/template_preview/<deck_id>')
+    def get_template_preview(deck_id: str):
+        """Serve a token-substituted deck cover shell for the Stage-1 card.
+
+        deck_id is validated against the decks index (the Flask converter
+        already rejects path separators), so no path traversal is possible.
+        """
+        lang = request.args.get('lang') or 'en'
+        svg = _render_template_preview(deck_id, lang)
+        if svg is None:
+            return jsonify({'error': 'unknown deck or empty roster'}), 404
+        resp = app.response_class(svg, mimetype='image/svg+xml')
         resp.headers['Cache-Control'] = 'no-store'
         return resp
 
