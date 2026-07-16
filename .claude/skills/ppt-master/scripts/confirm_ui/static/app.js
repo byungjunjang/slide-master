@@ -30,6 +30,8 @@
             sec_pages: "Page count",
             sec_audience: "Target audience",
             sec_style: "Style objective",
+            sec_template: "Template",
+            template_locked_note: "Installed at Step 3 — shown for reference; not changeable here",
             sec_color: "Color scheme",
             sec_icons: "Icon usage",
             sec_type: "Typography",
@@ -142,6 +144,8 @@
             sec_pages: "ページ数",
             sec_audience: "想定読者",
             sec_style: "スタイルの狙い",
+            sec_template: "テンプレート",
+            template_locked_note: "Step 3でインストール済み — 参考表示のためここでは変更できません",
             sec_color: "配色",
             sec_icons: "アイコンの使用",
             sec_type: "タイポグラフィ",
@@ -254,6 +258,8 @@
             sec_pages: "페이지 수",
             sec_audience: "대상 청중",
             sec_style: "스타일 목표",
+            sec_template: "템플릿",
+            template_locked_note: "Step 3에서 설치됨 — 참고용 표시이며 여기서 변경할 수 없습니다",
             sec_color: "색상 구성",
             sec_icons: "아이콘 사용",
             sec_type: "타이포그래피",
@@ -366,6 +372,8 @@
             sec_pages: "页数",
             sec_audience: "目标受众",
             sec_style: "风格目标",
+            sec_template: "模板",
+            template_locked_note: "已在 Step 3 安装 — 仅供参考，此处不可更改",
             sec_color: "色彩方案",
             sec_icons: "图标使用",
             sec_type: "字体方案",
@@ -1177,6 +1185,113 @@
         host.appendChild(sec);
     }
 
+    // ---- Stage-1 template card (decks-only selector / locked info) --------
+    function templateFieldState() {
+        return (REC && REC._template_field) || { mode: "selector" };
+    }
+
+    function templateCatalog() {
+        return (CAT && CAT.templates) || [];
+    }
+
+    function freeDesignPreview() {
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">' +
+            '<rect width="1280" height="720" fill="#FFFFFF"/>' +
+            '<rect x="96" y="96" width="1088" height="528" rx="24" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="18 14"/>' +
+            '<rect x="180" y="200" width="420" height="40" rx="20" fill="#E2E8F0"/>' +
+            '<rect x="180" y="290" width="620" height="22" rx="11" fill="#EEF2F7"/>' +
+            '<rect x="180" y="336" width="540" height="22" rx="11" fill="#EEF2F7"/>' +
+            '<circle cx="1000" cy="420" r="90" fill="#F1F5F9"/>' +
+            '</svg>';
+    }
+
+    function templatePreviewNode(entry) {
+        var node = el("div", "option-preview option-preview-template");
+        node.setAttribute("aria-hidden", "true");
+        if (!entry || entry.id === "free") {
+            node.innerHTML = freeDesignPreview();
+            return node;
+        }
+        var img = document.createElement("img");
+        img.alt = "";
+        img.loading = "lazy";
+        img.src = "/api/template_preview/" + encodeURIComponent(entry.id) +
+            "?lang=" + encodeURIComponent(LANG);
+        img.onerror = function () { node.innerHTML = freeDesignPreview(); };
+        node.appendChild(img);
+        return node;
+    }
+
+    function adherenceVisible() {
+        if (templateFieldState().mode === "locked") return hasTemplateAdherence();
+        return !!(STATE.template && STATE.template !== "free");
+    }
+
+    function setTemplateSelection(id) {
+        STATE.template = id;
+        if (id && id !== "free") {
+            if (!STATE.template_adherence) {
+                STATE.template_adherence = recOrFirst("template_adherence", CAT.template_adherence);
+            }
+        } else {
+            delete STATE.template_adherence;
+        }
+        renderAll();
+    }
+
+    function renderTemplate(host) {
+        var field = templateFieldState();
+        var sec = section(0, "sec_template");
+        if (field.mode === "locked") {
+            var lockedCard = el("div", "template-card template-card-locked selected");
+            var lockedCopy = el("div", "template-card-copy");
+            lockedCopy.appendChild(el("div", "template-card-name", field.name || field.kind || ""));
+            lockedCopy.appendChild(el("div", "template-card-desc", t("template_locked_note")));
+            lockedCard.appendChild(lockedCopy);
+            sec.appendChild(lockedCard);
+        } else {
+            var row = el("div", "template-cards");
+            var recommended = recOrFirst("template", templateCatalog());
+            templateCatalog().forEach(function (entry) {
+                var card = el("div", "template-card");
+                card.appendChild(templatePreviewNode(entry));
+                var copy = el("div", "template-card-copy");
+                var nameRow = el("div", "template-card-name", optionLabel(entry));
+                if (entry.primary_color) {
+                    var dot = el("span", "template-color-dot");
+                    dot.style.background = entry.primary_color;
+                    nameRow.appendChild(dot);
+                }
+                copy.appendChild(nameRow);
+                var meta = [];
+                if (entry.canvas_format) meta.push(entry.canvas_format);
+                if (entry.page_count) meta.push(entry.page_count + "p");
+                if (meta.length) copy.appendChild(el("div", "template-card-meta", meta.join(" · ")));
+                var desc = optionDesc(entry);
+                if (desc) copy.appendChild(el("div", "template-card-desc", desc));
+                if (entry.id === recommended) {
+                    card.classList.add("recommended");
+                    copy.appendChild(el("span", "rec-badge", "★ " + t("recommended")));
+                }
+                card.appendChild(copy);
+                if ((STATE.template || "free") === entry.id) card.classList.add("selected");
+                card.addEventListener("click", function () { setTemplateSelection(entry.id); });
+                row.appendChild(card);
+            });
+            sec.appendChild(row);
+        }
+        if (adherenceVisible()) {
+            var adherenceField = el("div", "subfield");
+            adherenceField.appendChild(el("div", "subfield-label", t("sub_template_adherence")));
+            enumField(adherenceField, CAT.template_adherence,
+                recOrFirst("template_adherence", CAT.template_adherence),
+                function () { return STATE.template_adherence; },
+                function (v) { STATE.template_adherence = v; });
+            sec.appendChild(adherenceField);
+        }
+        host.appendChild(sec);
+    }
+
     function renderStyle(host) {
         var sec = section(4, "sec_style");
         sec.appendChild(el("div", "subfield-label", t("sub_mode")));
@@ -1188,15 +1303,6 @@
             function () { return STATE.visual_style; }, function (v) { STATE.visual_style = v; refreshDirectionPreview(); },
             { allowCustom: true, spectrum: REC && REC.visual_style_spectrum });
         sec.appendChild(sub2);
-        if (hasTemplateAdherence()) {
-            var templateField = el("div", "subfield");
-            templateField.appendChild(el("div", "subfield-label", t("sub_template_adherence")));
-            enumField(templateField, CAT.template_adherence,
-                recOrFirst("template_adherence", CAT.template_adherence),
-                function () { return STATE.template_adherence; },
-                function (v) { STATE.template_adherence = v; });
-            sec.appendChild(templateField);
-        }
         host.appendChild(sec);
     }
 
@@ -2159,6 +2265,7 @@
             renderCanvas(host);
             renderAudience(host);
             renderStyle(host);
+            renderTemplate(host);
         } else if (stage === 2) {
             if (previewHost) renderStylePreview(previewHost);
             renderPages(host);
@@ -2179,6 +2286,7 @@
             renderCanvas(host);
             renderAudience(host);
             renderStyle(host);
+            renderTemplate(host);
             renderPages(host);
             var legacyStyleGroup = el("div", "style-group");
             renderColor(legacyStyleGroup);
@@ -2217,7 +2325,13 @@
         STATE.content_divergence = (REC.content_divergence && REC.content_divergence.value) || "";  // free text; blank = balanced default
         STATE.mode = pick("mode", CAT.modes);
         STATE.visual_style = pick("visual_style", CAT.visual_styles);
-        if (hasTemplateAdherence()) {
+        var templateField = templateFieldState();
+        if (templateField.mode === "locked") {
+            STATE.template = templateField.name || templateField.kind || "installed";
+        } else {
+            STATE.template = recOrFirst("template", templateCatalog()) || "free";
+        }
+        if (adherenceVisible()) {
             STATE.template_adherence = pick("template_adherence", CAT.template_adherence);
         } else {
             delete STATE.template_adherence;
@@ -2298,6 +2412,7 @@
             mode: STATE.mode,
             visual_style: STATE.visual_style
         };
+        if (STATE.template) payload.template = STATE.template;
         if (STATE.template_adherence) payload.template_adherence = STATE.template_adherence;
         // Delivery purpose is PPT-only and rendered only on PPT canvases (§c).
         if (isPptCanvas(STATE.canvas)) payload.delivery_purpose = STATE.delivery_purpose;
@@ -2318,6 +2433,7 @@
             typography: STATE.typography,
             formula_policy: STATE.formula_policy
         };
+        if (STATE.template) payload.template = STATE.template;
         if (STATE.template_adherence) payload.template_adherence = STATE.template_adherence;
         if (isPptCanvas(STATE.canvas)) payload.delivery_purpose = STATE.delivery_purpose;
         normalizeTypographyForSubmit(payload);
