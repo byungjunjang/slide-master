@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="06_stat" data-pptx-layout-name="Stat">
+  <!-- Apple (Vitrine monochrome) — 06 Stat -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="stat-kicker">
+    <text x="640" y="114" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="14" letter-spacing="0.84"
+          fill="#6e6e73">{{KICKER}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="120 128 1040 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="640" y="174" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="52" letter-spacing="-1.2"
+          fill="#1d1d1f">{{TITLE}}</text>
+  </g>
+
+  <line id="stat-divider-1" x1="456" y1="330" x2="456" y2="518" stroke="#e0e0e0" stroke-width="1"/>
+  <line id="stat-divider-2" x1="824" y1="330" x2="824" y2="518" stroke="#e0e0e0" stroke-width="1"/>
+
+  <g id="stat-cell-1">
+    <text x="272" y="427" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="120" letter-spacing="-4"
+          fill="#1d1d1f">{{STAT_1_VALUE}}</text>
+    <text x="272" y="478" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="19" letter-spacing="-0.2"
+          fill="#6e6e73">{{STAT_1_LABEL}}</text>
+  </g>
+
+  <g id="stat-cell-2">
+    <text x="640" y="427" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="120" letter-spacing="-4"
+          fill="#1d1d1f">{{STAT_2_VALUE}}</text>
+    <text x="640" y="478" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="19" letter-spacing="-0.2"
+          fill="#6e6e73">{{STAT_2_LABEL}}</text>
+  </g>
+
+  <g id="stat-cell-3">
+    <text x="1008" y="427" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="120" letter-spacing="-4"
+          fill="#1d1d1f">{{STAT_3_VALUE}}</text>
+    <text x="1008" y="478" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="19" letter-spacing="-0.2"
+          fill="#6e6e73">{{STAT_3_LABEL}}</text>
+  </g>
+
+  <g id="page-foot">
+    <text x="64" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>
