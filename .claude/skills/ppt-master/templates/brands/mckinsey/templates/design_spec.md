@@ -42,7 +42,7 @@ primary_color: "#0F2A4A"
 | warning | `#F4C57A` | approx | Traffic light "at risk" — data context only |
 | negative | `#E04E5E` | approx | Traffic light "off track" — data context only |
 
-All values derived from the seulee26/mckinsey-pptx benchmark `theme.py` — third-party approximations, not official McKinsey brand values. Usage conventions that travel with the identity: navy is structure, accent is pointer with a budget of ≤ 2 events per slide; grayscale-first (slides must read without blue); charts use the navy ladder `#0F2A4A → #1F6FA8 → #4FB2E5` with `#2E9BD6` reserved for the single focus series, never multi-hue; traffic-light colors are data-meaning only and always pair with a text label; gradients / drop shadows / glow / 3D forbidden; corners square (radius ≤ 4px).
+All values derived from the seulee26/mckinsey-pptx benchmark `theme.py` — third-party approximations, not official McKinsey brand values. Usage conventions that travel with the identity: navy is structure, accent is pointer under a single-focus rule (accent marks exactly ONE focus per page; cross-exhibit repetition only for the same focus; a verdict band's 2px accent rule is a separate structural account, max 1 per page); grayscale-first (slides must read without blue); charts use the navy ladder `#0F2A4A → #1F6FA8 → #4FB2E5` with `#2E9BD6` reserved for the single focus series, never multi-hue; traffic-light colors are data-meaning only and always pair with a text label; gradients / drop shadows / glow / 3D forbidden; corners square (radius ≤ 4px).
 
 ## III. Typography
 
