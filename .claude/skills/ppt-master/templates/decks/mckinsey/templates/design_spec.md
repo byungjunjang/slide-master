@@ -203,7 +203,7 @@ Full-bleed `--navy-deep`, centered composition: uppercase closing label + accent
 
 ### `key-findings-rail` pattern
 
-Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 numbered findings (hanging number 24/700 `--navy` + finding title 16.5/600 `#1A1A1A` + 1–2 evidence lines 13.3/400 `#888888`, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18.7/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 12 `#888888`, hairline above). A rail-format reduction of `numbered-takeaway-stack` — same lineage: NO card boxes, NO rounded containment
+Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 bullet findings (minimal marker: one 6×6px `--navy` square flush at the rail's left edge, optically centered on the title's x-height — **no hanging numbers in the rail**; finding title 16.5/600 `#1A1A1A` indented 20px from the marker + 1–2 evidence lines 13.3/400 `#888888` at the same indent, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18.7/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 12 `#888888`, hairline above). A rail-format reduction of `numbered-takeaway-stack` — same lineage (NO card boxes, NO rounded containment) but deliberately quieter: hanging numbers stay a full-page `numbered-takeaway-stack` device; the rail carries sequence-free findings behind bullet marks
 
 ### Content shape → first-choice pattern
 
