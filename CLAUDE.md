@@ -76,10 +76,10 @@ python3 .claude/skills/ppt-master/scripts/analyze_images.py <project_path>/image
 python3 .claude/skills/ppt-master/scripts/latex_render.py <project_path>
 python3 .claude/skills/ppt-master/scripts/latex_render.py <project_path> --dry-run
 python3 .claude/skills/ppt-master/scripts/latex_render.py <project_path> --providers codecogs,quicklatex,mathpad,wikimedia
-# In-pipeline AI image generation — manifest mode (required, even for 1 image):
+# In-pipeline AI image generation — manifest mode (required, even for 1 image).
+# Ladder: codex backend (default, Codex CLI OAuth) → API backend (only when IMAGE_BACKEND + key configured) → web-sourcing switch → user-drop:
 python3 .claude/skills/ppt-master/scripts/image_gen.py --manifest <project_path>/images/image_prompts.json
-python3 .claude/skills/ppt-master/scripts/image_gen.py --render-md <project_path>/images/image_prompts.json
-# Out-of-pipeline one-off / debug / single-image fixup only (no manifest, no sidecar):
+# Out-of-pipeline one-off / debug / single-image fixup only (no manifest, no audit trail):
 python3 .claude/skills/ppt-master/scripts/image_gen.py "prompt" --aspect_ratio 16:9 --image_size 1K -o <project_path>/images
 # Spot illustrations — slice one AI grid sheet into individual elements (see image-generator.md §4.3):
 python3 .claude/skills/ppt-master/scripts/slice_images.py <project_path>/images/<sheet>.png --grid RxC --names a,b,c --trim --alpha

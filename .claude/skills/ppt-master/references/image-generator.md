@@ -130,9 +130,9 @@ For each `Acquire Via: ai` row in `design_spec.md §VIII`:
 
 The assembled prompt is **one cohesive paragraph**, not a bulleted list of tags. See §4 for the assembly template.
 
-### Step 4 — Write the manifest and execute the confirmed path
+### Step 4 — Write the manifest and execute the ladder
 
-Write `project/images/image_prompts.json` per §6. Then follow §7 Path Selection. `image_gen.py --manifest` is Path A only; confirmed `host-native` runs the host image tool directly, and confirmed `manual` renders the Markdown sidecar and hands off without API generation.
+Write `project/images/image_prompts.json` per §6. Then follow §7 Path Selection: codex (Path A, with diagnose-and-retry recovery) → API backend (Path B, only when a key is already configured) → web-sourcing switch → user-drop.
 
 ---
 
@@ -463,40 +463,53 @@ Write `project/images/image_prompts.json` with this shape:
 
 ## 7. Generation Execution
 
-> Prerequisite: §3 Steps 1-3 complete; `images/image_prompts.json` exists and validates. The manifest is the shared audit/source contract for all modes. It does **not** imply that `image_gen.py --manifest` should run; that command is Path A only.
+> Prerequisite: §3 Steps 1-3 complete; `images/image_prompts.json` exists and validates. The manifest is the machine execution/audit contract for the automated paths. It is never handed to the user as a prompt sheet, and no Markdown prompt sidecar is rendered.
 
 ### Path Selection (Deterministic)
 
-C (AI-generated) supports three implementation modes sharing one `image_prompts.json` source:
+C (AI-generated) resolves through one ladder — two automated engines, then two acquisition fallbacks:
 
-| Trigger | Mode | Mechanism |
-|---|---|---|
-| **Default** — always available; `IMAGE_BACKEND` unset falls back to the `codex` backend (Codex CLI, ChatGPT OAuth — no API key / `.env`) | **Path A**: `image_gen.py --manifest` | One command runs the whole manifest with concurrency; status writes back per item |
-| Path A fails AND host has a native image tool | **Path B**: Host-native tool | Agent invokes the host's image capability; outputs land at `project/images/<filename>` |
-| **Both Path A and Path B fail/unavailable** | **Offline Manual Mode** | Manifest stays on disk; user generates externally from `items[].prompt` and places files at `project/images/<filename>` |
+| Order | Path | Mechanism | Trigger |
+|---|---|---|---|
+| 1 | **Path A — codex** | `image_gen.py --manifest` with the default `codex` backend (Codex CLI, ChatGPT OAuth — no API key / `.env`) | Default; always tried first |
+| 2 | **Path B — API backend** | `image_gen.py --manifest` with an explicit `IMAGE_BACKEND` + provider API key | Only when a key is already configured; the lowest-priority generation engine |
+| 3 | **Web-sourcing switch** | Affected rows flip to `Acquire Via: web`; [`image-searcher.md`](./image-searcher.md) pipeline runs (keyless providers first) | Offered to the user when generation is unavailable |
+| 4 | **User-drop** | User places their chosen image files at `project/images/<filename>` | Terminal fallback |
 
-**Selection logic** — the confirmed user choice wins; absent one, fall back to the automatic A → B → C chain:
+**Selection logic** — the confirmed user choice wins; absent one, walk the ladder:
 
-0. **Confirmed override (wins)** — honor the confirmed image source. The **chat choice is canonical**; the Confirm UI is only a convenience surface that, when used, records the same choice to `<project>/confirm_ui/result.json` as `image_ai_path` (so there is no `result.json` on the chat path — read the choice from the conversation). From either channel, if the choice is set and not `auto`, honor it directly, **even when it contradicts `IMAGE_BACKEND`**:
-   - `api` → **Path A** (`image_gen.py --manifest`).
-   - `host-native` → **Path B** (host's native image tool) — skip A and do **not** run `image_gen.py --manifest`, *even if `IMAGE_BACKEND` is configured*.
-   - `manual` → **Offline Manual** (write prompts, render the Markdown sidecar, hand off; do **not** run `image_gen.py --manifest`).
-   ("use Codex's image tool" / "走接口生成" in chat = `host-native` / `api`.) If the chosen path turns out unavailable (e.g. `host-native` but the host has no image tool), fall through along the chain below from that point. Only when no source named a path (chat silent, and `image_ai_path` `auto` / absent) does the automatic chain decide.
-1. **Try Path A** — run `image_gen.py --manifest`. With `IMAGE_BACKEND` unset this uses the default `codex` backend (Codex CLI, ChatGPT OAuth — requires `codex login`, no API key); an explicit `IMAGE_BACKEND` selects another provider. If it fails twice in a row, fall to Path B.
-2. **Try Path B** — if Path A failed (e.g. Codex CLI missing or not logged in, and no API backend configured), and the host has a native image tool (Codex / Antigravity / Claude Code / similar), the agent invokes the host's image capability directly.
-3. **Fall to C (Offline Manual)** — if B is also unavailable (no host-native tool) or fails, write prompts to `images/image_prompts.json` and hand off to the user.
+0. **Confirmed override (wins)** — honor the confirmed image path. The **chat choice is canonical**; the Confirm UI is only a convenience surface that, when used, records the same choice to `<project>/confirm_ui/result.json` as `image_ai_path` (so there is no `result.json` on the chat path — read the choice from the conversation):
+   - `auto` / absent → walk the ladder below.
+   - `codex` → Path A only; on unrecovered failure skip Path B and go to step 4.
+   - `api` → Path B directly (requires `IMAGE_BACKEND` + key; unavailable → step 4).
+   - Legacy `host-native` → treat as `auto`. Legacy `manual` → skip generation; go straight to the user-drop handoff below.
+1. **Path A (codex)** — run `image_gen.py --manifest` with `IMAGE_BACKEND` unset. On failure, apply step 2 **before** falling through.
+2. **Path A recovery — diagnose, guide, retry**:
 
-**Hard rule**: Step 4 is execution, not re-decision. Never present an interactive choice between paths here — image strategy was locked in Strategist Step 4 h item.
+   | Failure signature | Action |
+   |---|---|
+   | `Codex CLI not found` | Print in chat: install `npm install -g @openai/codex`, then `codex login` (ChatGPT OAuth). Ask the user to confirm; on confirmation rerun the same manifest (idempotent — only `Pending` / `Failed` rows re-run). |
+   | auth / `401` / `login` | Print `codex login` guidance; same confirm-then-rerun. |
+   | Transient (network / rate limit) | The CLI already retries once per item; if the run still fails, fall through. |
 
-> All three modes share one output contract: file at `project/images/<filename>`. Step 6 SVG references are mode-agnostic.
+   The user may decline recovery ("skip" / "넘어가자") — then fall through to step 3.
+3. **Path B (API backend)** — only when `IMAGE_BACKEND` + the provider's API key are already present in the environment / `.env`. Never ask the user to sign up for an API key as a recovery step. No key → skip silently.
+4. **Web-sourcing switch (offer)** — ask the user once: "AI generation is unavailable — switch the unresolved rows to web sourcing?" On yes, flip those rows to `Acquire Via: web` and run the [`image-searcher.md`](./image-searcher.md) pipeline. On no, fall to step 5.
+5. **User-drop (terminal)** — mark affected rows `Needs-Manual` and run the handoff below.
 
-### Path A — `image_gen.py --manifest` (Default)
+**Hard rule**: Step 5 is execution, not re-decision. The only two user interactions in this ladder are the recovery confirmation (step 2) and the web-switch offer (step 4) — never present an interactive backend menu.
+
+> All paths share one output contract: file at `project/images/<filename>`. Step 6 SVG references are path-agnostic.
+
+### Path A — `image_gen.py --manifest` (codex backend, default)
 
 ```bash
 python3 scripts/image_gen.py \
   --manifest project/images/image_prompts.json \
   --output project/images
 ```
+
+With `IMAGE_BACKEND` unset, this runs the `codex` backend — Codex CLI's `image_gen` tool via ChatGPT OAuth (`codex login`); no API key or `.env` is needed. Path B reuses the exact same command with an explicit `IMAGE_BACKEND`.
 
 The CLI iterates `items[]` with adaptive concurrency, writes `status` back per item, and is **idempotent**: re-running only re-processes entries whose status is `Pending` or `Failed`.
 
@@ -547,57 +560,55 @@ Precedence:
 - Default 3 concurrent requests, halves on the first rate-limit response, minimum 1 (= serial fallback)
 - Rate-limited items requeue automatically; per-item failures are recorded with `last_error` and skipped
 - Interrupting mid-run is safe — completed items keep `status: Generated` and are skipped on re-run
-- On normal completion the Markdown sidecar is re-rendered automatically; if the run is interrupted, run `--render-md` manually to refresh the sidecar
 
-### Path B — Host-Native Image Tool
+### Path B — API Backend (lowest-priority generation engine)
 
-Triggered automatically when Path A fails (e.g. Codex CLI missing / not logged in and no API backend configured) **and** the host provides a native image generation tool (Codex, Antigravity, Claude Code's image tool, and similar). No user prompting required — the agent detects the host capability and proceeds. The user may also explicitly name this path to force it even when Path A is available.
+**Trigger**: Path A failed and its recovery was declined or did not resolve, **and** `IMAGE_BACKEND` + the matching provider API key are already present in the environment / `.env`. Also runs directly when the confirmed `image_ai_path` is `api`.
 
-- Agent invokes the host's native image tool directly; prompts come from `items[].prompt`
-- Do **not** run `image_gen.py --manifest` in Path B. That command is Path A and may use configured API/proxy backends even when the user confirmed host-native.
-- Still run `python3 scripts/image_gen.py --render-md project/images/image_prompts.json` so the human-readable sidecar exists without touching any backend.
-- **Batch for speed, mind the rate**: when the host can run independent tool calls in parallel (e.g. Claude Code issues independent calls concurrently), fire several generations together in modest groups — a few rows at a time (~3–4), not the whole manifest at once — so their latency overlaps without flooding the host's image quota. When the host only runs tools serially, generate one row at a time. This mirrors Path A's default concurrency of 3.
-- Outputs **must** land at `project/images/<filename-from-resource-list>`. Match the Image Resource List dimensions when the host supports arbitrary sizes. Hosts with **fixed native resolutions** (common — e.g. ~1672x941 landscape / ~1086x1448 portrait) generate at the closest native size and backfill the actual pixels into the resource list `Dimensions` column — same convention as formula rows ("actual dimensions from formula manifest") and slice rows ("dimensions filled after slicing"). Do **not** upscale the file to fake the requested size (interpolation adds no detail); minor display-side upscaling (up to ~1.3x in practice) surfaces as a quality-checker warning — acknowledge and release per the warning policy.
-- Mark each item's `status` `Generated` in the manifest the moment its file lands — as each completes, not in one pass at the end (so an interrupted batch leaves accurate state)
-- Executor downstream is path-agnostic — no spec change required between Path A and Path B
+- Same command as Path A — `image_gen.py --manifest` — with `IMAGE_BACKEND` (or `--backend`) selecting the provider; the environment table above applies.
+- **Forbidden — key acquisition as recovery**: never ask the user to sign up for or paste an API key to unblock this path. No configured key → skip silently to the web-sourcing switch.
 
-### Offline Manual Mode (C's third implementation mode)
+### Web-Sourcing Switch (generation unavailable)
 
-**Trigger**: Both Path A and Path B fail or are unavailable.
+**Trigger**: no generation engine succeeded (Path A unrecovered, Path B unavailable/failed).
 
-**Workflow** (no user prompting; system enters this mode automatically):
+Ask the user **once**: switch the unresolved `ai` rows to web sourcing? On yes:
 
-1. Verify `images/image_prompts.json` was written
-2. Set `status: "Needs-Manual"` on every affected item per [`image-base.md`](./image-base.md) §6
-3. Continue to Step 6 — SVG references `images/<filename>` optimistically; Step 7 entry verifies presence
-4. Print one consolidated handoff to the user:
-   - Filenames awaiting manual generation
-   - Pointer to `images/image_prompts.md` (paste-ready `### Image N:` block per item) or `image_prompts.json` (`items[].prompt`)
-   - Target placement: `project/images/<filename>` matching the resource list exactly
-   - Resume command: re-run Step 7 once all expected files exist
+1. Flip each unresolved row's `Acquire Via` to `web` in `design_spec.md §VIII`.
+2. Write/extend `images/image_queries.json` from each row's `Reference` intent and run the [`image-searcher.md`](./image-searcher.md) pipeline (keyless providers first; agent web search stage available).
+3. Rows the web pipeline also cannot resolve fall to user-drop below.
 
-**User-initiated**: When Strategist Step 4 captured "user wants manual generation" up front, Path A is skipped from the start; the workflow above runs as a planned mode.
+On no, go straight to user-drop.
 
-> The pipeline tolerates `Needs-Manual` rows end-to-end. The user can leave the project, generate offline at their own pace, then resume Step 7.
+### User-Drop Handoff (terminal fallback)
+
+**Trigger**: generation unavailable and the web-sourcing switch was declined or exhausted — or a legacy confirmed `manual` choice.
+
+1. Set `status: "Needs-Manual"` on every unresolved item per [`image-base.md`](./image-base.md) §6.
+2. Continue to Step 6 — SVG references `images/<filename>` optimistically; Step 7 entry verifies presence.
+3. Print one consolidated request to the user, one line per missing image: exact `filename`, `Purpose`, and recommended dimensions/ratio from the resource list.
+4. Ask the user to place their chosen images at `project/images/<filename>`. The images may come from anywhere the user owns or trusts — the pipeline does not dictate the source. Resume at the Step 7 image readiness gate once all expected files exist.
+
+**Forbidden — prompt-sheet handoff**: do not instruct the user to generate images from the manifest prompts, and do not render a Markdown prompt sidecar. `image_prompts.json` is a machine/audit artifact only.
+
+> The pipeline tolerates `Needs-Manual` rows end-to-end. The user can leave the project, gather images at their own pace, then resume Step 7.
 
 #### AI-specific Failure Handling (extends image-base.md §6)
 
-If Path A's backend fails twice in a row:
+If Path A fails:
 
-1. Do not halt. Automatically attempt to fall back to **Path B (Host-Native Tool)**.
-2. If Path B also fails or is unavailable, mark the row `Needs-Manual`.
-3. Report to user: filename, prompt used, error message.
-4. Fall through to **Offline Manual Mode** above.
+1. Do not halt. Diagnose per the recovery table (§ Path Selection step 2) — install/login guidance, confirm, rerun.
+2. If unrecovered, fall to **Path B** only when an API key is already configured.
+3. If no generation engine succeeds, offer the **web-sourcing switch**; declined or exhausted → mark rows `Needs-Manual` and run the **user-drop handoff**.
+4. Report to user per failed row: filename and error message.
 
-> If the alternate platform watermarks outputs (e.g. Gemini web), the repository includes `scripts/gemini_watermark_remover.py`.
-
-#### Guardrails (All Modes)
+#### Guardrails (All Paths)
 
 **Hard rule**:
 
 - Do not claim an image is generated without an actual file at the expected path
-- `Needs-Manual` is set after a failed attempt OR on entering Offline Manual Mode — not as a way to skip work that automation could have done
-- Status transitions are evidence-driven: `Pending` → `Generated` (file exists) or `Pending` → `Needs-Manual` (no automation, or attempt failed once)
+- `Needs-Manual` is set after the ladder is exhausted OR on entering user-drop — not as a way to skip work that automation could have done
+- Status transitions are evidence-driven: `Pending` → `Generated` (file exists) or `Pending` → `Needs-Manual` (ladder exhausted / user-drop)
 
 ---
 
@@ -637,7 +648,7 @@ Diagnose the failure category, adjust the **one specific dimension** responsible
 **Variant workflow**:
 
 1. Set the unsatisfactory item's `status` back to `Pending` and update its `prompt` in place
-2. Re-run the same confirmed path used for the original item: Path A may re-run `image_gen.py --manifest` (only that item is re-processed); Path B uses the host-native tool again for that item; Offline Manual re-renders the sidecar and hands off
+2. Re-run `image_gen.py --manifest` with the same backend that generated the original item (only that item is re-processed); for a user-drop row, ask the user to replace the file at `project/images/<filename>`
 3. To try multiple stylistic approaches, append additional items with distinct filenames (e.g. `cover_bg_v2.png`) rather than overwriting
 
 ---

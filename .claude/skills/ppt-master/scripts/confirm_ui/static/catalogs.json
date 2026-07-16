@@ -554,47 +554,39 @@
   "image_ai_path": [
     {
       "id": "auto",
-      "label": "Automatic Path A → Path B → Offline Manual",
-      "label_zh": "自动选择",
-      "label_en": "Automatic Path A → Path B → Offline Manual",
-      "label_ja": "自動選択（Path A → Path B → オフライン手動）",
-      "label_ko": "자동 선택 (Path A → Path B → 오프라인 수동)"
+      "label": "Automatic (codex → API → web/user-drop)",
+      "label_zh": "自动选择（codex → 接口 → 网络搜图/用户上传）",
+      "label_en": "Automatic (codex → API → web/user-drop)",
+      "label_ja": "自動選択（codex → API → ウェブ検索/ユーザー投入）",
+      "label_ko": "자동 선택 (codex → API → 웹 검색/사용자 업로드)",
+      "desc_zh": "默认走 codex 后端（Codex CLI OAuth，无需 API key）；失败时给出安装/登录指引并重试，仍不可用时才回落到已配置的接口后端，再回落到网络搜图或用户上传。",
+      "desc_en": "codex backend first (Codex CLI OAuth, no API key). On failure: install/login guidance + retry, then the configured API backend (lowest), then web sourcing or user-drop.",
+      "desc_ja": "まずcodexバックエンド（Codex CLI OAuth、APIキー不要）。失敗時はインストール/ログイン案内後に再試行し、それでも不可なら設定済みAPIバックエンド（最下位）、次にウェブ検索またはユーザー投入へ。",
+      "desc_ko": "codex 백엔드 우선(Codex CLI OAuth, API 키 불필요). 실패 시 설치/로그인 안내 후 재시도, 그래도 안 되면 구성된 API 백엔드(최하위), 이후 웹 검색 또는 사용자 업로드로 폴백."
+    },
+    {
+      "id": "codex",
+      "label": "codex only",
+      "label_zh": "仅 codex",
+      "label_en": "codex only",
+      "label_ja": "codexのみ",
+      "label_ko": "codex 전용",
+      "desc_zh": "强制使用 codex 后端（Codex CLI OAuth）；失败时不回落到接口后端，直接进入网络搜图/用户上传。",
+      "desc_en": "Force the codex backend (Codex CLI OAuth). On failure, skip the API backend and go straight to web sourcing / user-drop.",
+      "desc_ja": "codexバックエンド（Codex CLI OAuth）を強制使用。失敗時はAPIバックエンドを飛ばし、ウェブ検索/ユーザー投入へ。",
+      "desc_ko": "codex 백엔드(Codex CLI OAuth)를 강제 사용. 실패 시 API 백엔드를 건너뛰고 웹 검색/사용자 업로드로 이동."
     },
     {
       "id": "api",
-      "label": "Path A",
+      "label": "API backend",
       "label_zh": "接口后端",
-      "label_en": "Path A",
-      "label_ja": "Path A",
-      "label_ko": "Path A",
-      "desc_zh": "强制走接口后端，第 5 步运行 image_gen.py（需已配置 IMAGE_BACKEND）。",
-      "desc_en": "Force the API backend — image_gen.py runs in Step 5 (requires IMAGE_BACKEND).",
-      "desc_ja": "APIバックエンドを強制使用。ステップ5でimage_gen.pyを実行（IMAGE_BACKENDの設定が必要）。",
-      "desc_ko": "API 백엔드를 강제 사용 — 5단계에서 image_gen.py 실행 (IMAGE_BACKEND 설정 필요)."
-    },
-    {
-      "id": "host-native",
-      "label": "Path B",
-      "label_zh": "宿主原生工具",
-      "label_en": "Path B",
-      "label_ja": "Path B",
-      "label_ko": "Path B",
-      "desc_zh": "强制使用当前环境的原生图像工具生成（即使配置了 IMAGE_BACKEND 也跳过接口）；需宿主提供原生图像工具（Codex / Claude Code 等）。",
-      "desc_en": "Force the host's native image tool (skips the API even if IMAGE_BACKEND is set); requires a host with a native image tool (Codex / Claude Code / similar).",
-      "desc_ja": "現在の環境のネイティブ画像ツールを強制使用（IMAGE_BACKENDが設定されていてもAPIをスキップ）。ネイティブ画像ツールを持つホスト（Codex／Claude Codeなど）が必要。",
-      "desc_ko": "현재 환경의 네이티브 이미지 도구를 강제 사용 (IMAGE_BACKEND가 설정돼 있어도 API는 건너뜀). 네이티브 이미지 도구가 있는 호스트(Codex / Claude Code 등) 필요."
-    },
-    {
-      "id": "manual",
-      "label": "Offline Manual",
-      "label_zh": "离线手动",
-      "label_en": "Offline Manual",
-      "label_ja": "オフライン手動",
-      "label_ko": "오프라인 수동",
-      "desc_zh": "机制：写入图片提示词文件；用户在外部生成后放入项目图片目录。",
-      "desc_en": "Prompts written to images/image_prompts.json; user generates externally and places files in project/images/.",
-      "desc_ja": "images/image_prompts.jsonにプロンプトを書き出し、ユーザーが外部で生成した画像をproject/images/に配置する方式。",
-      "desc_ko": "프롬프트를 images/image_prompts.json에 기록하고, 사용자가 외부에서 생성한 이미지를 project/images/에 넣는 방식."
+      "label_en": "API backend",
+      "label_ja": "APIバックエンド",
+      "label_ko": "API 백엔드",
+      "desc_zh": "强制走接口后端（需已配置 IMAGE_BACKEND 与提供商 API key）。默认阶梯中优先级最低的生成引擎。",
+      "desc_en": "Force the API backend (requires IMAGE_BACKEND + provider API key). The lowest-priority generation engine in the default ladder.",
+      "desc_ja": "APIバックエンドを強制使用（IMAGE_BACKENDとプロバイダAPIキーの設定が必要）。既定ラダーでは最下位の生成エンジン。",
+      "desc_ko": "API 백엔드를 강제 사용 (IMAGE_BACKEND + 제공자 API 키 필요). 기본 사다리에서 우선순위가 가장 낮은 생성 엔진."
     }
   ],
   "formula_policy": [

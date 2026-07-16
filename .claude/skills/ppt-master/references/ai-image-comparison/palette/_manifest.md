@@ -1,6 +1,6 @@
 # Image Generation Prompts
 
-> Auto-generated from `image_prompts.json` by `image_gen.py --render-md`.
+> Historical gallery index generated from `image_prompts.json` (static reference asset).
 > Do not hand-edit — re-run the command to refresh.
 
 > Project: .claude/skills/ppt-master/references/ai-image-comparison/palette

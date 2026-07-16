@@ -40,11 +40,13 @@ Output files land directly under `project/images/`. Formula filenames should use
 
 Unified image generation entry point.
 
-This script is the **Path A** API/proxy executor for generated images. In the
-PPT pipeline, always check the confirmed `image_ai_path` before running manifest
-mode: `host-native` uses the host's image tool directly and must not run
-`image_gen.py --manifest`; use `image_gen.py --render-md` only for its
-read-only Markdown sidecar.
+This script is the single generation executor for `ai` rows: **Path A** runs it
+with the default `codex` backend (Codex CLI, ChatGPT OAuth), and **Path B**
+runs the same command with an explicit `IMAGE_BACKEND` + provider API key —
+the lowest-priority engine, used only when a key is already configured. In the
+PPT pipeline, always check the confirmed `image_ai_path` before running
+manifest mode: legacy `manual` skips generation entirely (user-drop handoff);
+see `references/image-generator.md` §7 for the full ladder.
 
 ```bash
 python3 scripts/image_gen.py "A modern futuristic workspace"

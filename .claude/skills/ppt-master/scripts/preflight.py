@@ -136,12 +136,16 @@ def check_fonts() -> list[str]:
 
 
 def check_image_backend() -> list[str]:
+    if shutil.which("codex"):
+        return []
     if os.environ.get("IMAGE_BACKEND", "").strip():
         return []
     return [
-        "IMAGE_BACKEND not set in the current environment (a .env may still "
-        "provide it at run time) — image_gen.py Path A (api) would be "
-        "unavailable; host-native Path B and manual mode still work"
+        "Codex CLI not found and IMAGE_BACKEND not set — image_gen.py Path A "
+        "(codex backend, ChatGPT OAuth) would fail at Step 5. Install: "
+        "npm install -g @openai/codex, then codex login. Remaining fallbacks: "
+        "Path B API backend (IMAGE_BACKEND + provider key in .env), web "
+        "sourcing, or user-supplied images (user-drop)"
     ]
 
 

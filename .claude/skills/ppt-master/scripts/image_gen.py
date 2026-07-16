@@ -356,28 +356,28 @@ def _confirmed_image_ai_path_for_manifest(manifest_path: str) -> str | None:
 
 
 def _guard_confirmed_non_api_path(manifest_path: str) -> None:
-    """Prevent accidental Path A execution after host-native/manual was confirmed."""
+    """Handle legacy confirmed image_ai_path values that predate the current ladder."""
     image_ai_path = _confirmed_image_ai_path_for_manifest(manifest_path)
     if image_ai_path not in {"host-native", "manual"}:
         return
     if image_ai_path == "host-native":
+        # Legacy value: the host-native path was removed. The manifest run
+        # (codex backend by default) is now the correct action — proceed.
         print(
-            "Error: confirmed image_ai_path is 'host-native'.\n"
-            "\n"
-            "Do NOT run image_gen.py --manifest for this project. That command is Path A\n"
-            "and may use the configured API/proxy backend. Use the host's native image\n"
-            "generation tool with prompts from images/image_prompts.json, save outputs to\n"
-            "images/<filename>, update each item status to Generated, then run:\n"
-            "  python3 scripts/image_gen.py --render-md images/image_prompts.json\n"
+            "Note: confirmed image_ai_path 'host-native' is a legacy value; "
+            "the host-native path was removed. Proceeding with the manifest "
+            "run (codex backend by default).\n"
         )
-    else:
-        print(
-            "Error: confirmed image_ai_path is 'manual'.\n"
-            "\n"
-            "Do NOT run image_gen.py --manifest for this project. Render the Markdown\n"
-            "sidecar and hand images/image_prompts.md to the user for external generation:\n"
-            "  python3 scripts/image_gen.py --render-md images/image_prompts.json\n"
-        )
+        return
+    print(
+        "Error: confirmed image_ai_path is 'manual' (legacy value).\n"
+        "\n"
+        "Do NOT run image_gen.py --manifest for this project. The user chose to\n"
+        "supply images directly (user-drop). List each unresolved row's filename,\n"
+        "purpose, and recommended size in chat, and ask the user to place their\n"
+        "chosen images at project/images/<filename>. Resume at the Step 7 image\n"
+        "readiness gate once the files exist.\n"
+    )
     sys.exit(1)
 
 
@@ -599,85 +599,6 @@ def _resolve_concurrency(cli_value: int | None) -> int:
     return DEFAULT_MANIFEST_CONCURRENCY
 
 
-def render_manifest_md(manifest: dict) -> str:
-    """Render a manifest into the paste-ready Markdown view.
-
-    The output is a read-only snapshot of the JSON manifest, intended as a
-    fallback so a user can copy `Prompt` blocks into ChatGPT / Midjourney
-    when `--manifest` cannot run (no key, no backend, network down).
-    """
-    lines: list[str] = []
-    lines.append("# Image Generation Prompts")
-    lines.append("")
-    lines.append("> Auto-generated from `image_prompts.json` by `image_gen.py --render-md`.")
-    lines.append("> Do not hand-edit — re-run the command to refresh.")
-    lines.append("")
-
-    project = manifest.get("project")
-    generated_at = manifest.get("generated_at")
-    color_scheme = manifest.get("color_scheme") or {}
-    anchor = manifest.get("deck_style_anchor")
-
-    if project:
-        lines.append(f"> Project: {project}")
-    if generated_at:
-        lines.append(f"> Generated: {generated_at}")
-    if color_scheme:
-        cs = " | ".join(
-            f"{k.capitalize()} {v}" for k, v in color_scheme.items()
-        )
-        lines.append(f"> Color scheme: {cs}")
-    if anchor:
-        lines.append(f"> Deck Style Anchor: {anchor}")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-
-    for i, item in enumerate(manifest["items"], start=1):
-        lines.append(f"### Image {i}: {item['filename']}")
-        lines.append("")
-        lines.append("| Attribute | Value |")
-        lines.append("|---|---|")
-        for label, key in (
-            ("Purpose", "purpose"),
-            ("Type", "type"),
-            ("Aspect ratio", "aspect_ratio"),
-            ("Image size", "image_size"),
-            ("Status", "status"),
-        ):
-            value = item.get(key)
-            if value:
-                lines.append(f"| {label} | {value} |")
-        if item.get("last_error"):
-            lines.append(f"| Last error | {item['last_error']} |")
-        lines.append("")
-        lines.append("**Prompt**:")
-        lines.append("")
-        lines.append(item["prompt"])
-        lines.append("")
-        if item.get("alt_text"):
-            lines.append("**Alt Text**:")
-            lines.append(f"> {item['alt_text']}")
-            lines.append("")
-        lines.append("---")
-        lines.append("")
-
-    return "\n".join(lines).rstrip() + "\n"
-
-
-def render_manifest_md_to_file(manifest_path: str, manifest: dict | None = None) -> str:
-    """Render the manifest's Markdown sidecar next to the JSON file.
-
-    Returns the written path. If `manifest` is omitted, it is loaded from
-    `manifest_path` first.
-    """
-    if manifest is None:
-        manifest = load_manifest(manifest_path)
-    md_path = str(Path(manifest_path).with_suffix(".md"))
-    Path(md_path).write_text(render_manifest_md(manifest), encoding="utf-8")
-    return md_path
-
-
 def main() -> None:
     """Run the CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -730,31 +651,10 @@ def main() -> None:
             "Auto-halves on rate-limit; 1 is the serial fallback."
         ),
     )
-    parser.add_argument(
-        "--render-md", dest="render_md", default=None, metavar="IMAGE_PROMPTS_JSON",
-        help=(
-            "Render <json>'s read-only Markdown sidecar (image_prompts.md) "
-            "next to the manifest, then exit. No backend / network needed."
-        ),
-    )
-
     args = parser.parse_args()
 
     if args.list_backends:
         _print_backend_list()
-        return
-
-    if args.render_md:
-        if not os.path.isfile(args.render_md):
-            print(f"Error: manifest file not found: {args.render_md}")
-            sys.exit(1)
-        try:
-            manifest = load_manifest(args.render_md)
-        except ValueError as e:
-            print(f"Error: {e}")
-            sys.exit(1)
-        md_path = render_manifest_md_to_file(args.render_md, manifest)
-        print(f"Rendered Markdown sidecar: {md_path}")
         return
 
     if args.manifest:
@@ -796,8 +696,6 @@ def main() -> None:
         except KeyboardInterrupt:
             print("\n\nInterrupted by user. Partial progress preserved in manifest.")
             sys.exit(130)
-        md_path = render_manifest_md_to_file(args.manifest, manifest)
-        print(f"Rendered Markdown sidecar: {md_path}")
         sys.exit(1 if failed else 0)
 
     try:

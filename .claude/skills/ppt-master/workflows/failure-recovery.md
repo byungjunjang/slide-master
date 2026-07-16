@@ -19,7 +19,7 @@ Central recovery rules for common PPT Master failures. Route-specific workflow f
 | Confirm UI Stage 1 completed then interrupted | Yes until Stage 2 is written/confirmed | Read existing Stage 1 `result.json`, write Stage 2 recommendations, then `--wait-only --wait-stage stage2` | Usually no | Step 4 Stage 2 write/wait |
 | Missing final confirmation | Yes | None | User must confirm or change the values | Step 4 final confirmation |
 | Formula rendering provider failure | No if fallback succeeds; yes if selected formulas remain missing | Provider fallback chain; otherwise mark affected rows manual only if acceptable | Only if rendered formula files are required and unavailable | Step 4 formula rendering / Step 7 image readiness gate |
-| AI image generation failure | No | Retry once through the confirmed path, then mark row `Needs-Manual` | Only when missing files are required before export | Step 5 / Step 7 image readiness gate |
+| AI image generation failure | No | Diagnose Path A (codex): CLI missing / not logged in → print install (`npm install -g @openai/codex`) / `codex login` guidance and rerun after the user confirms; then Path B API backend only if a key is already configured; then offer the web-sourcing switch; finally mark row `Needs-Manual` (user-drop) | Codex install/login fix, web-switch consent, or supplying files before export | Step 5 / Step 7 image readiness gate |
 | Web image search/download failure | No | Adjust query/source per image-searcher rules, then mark `Needs-Manual` if unresolved | Only if the resource is required and no acceptable substitute exists | Step 5 |
 | Slice sheet missing | Yes for derived slice rows | Wait for parent sheet; run `slice_images.py`; rerun image analysis | Yes when sheet was manual/offline | Step 5 slice handling / Step 7 image readiness gate |
 | Residual `Pending` or `Failed` image row before Executor | Yes | Re-run path or mark `Needs-Manual` | Only if file must be supplied manually | Step 5 terminal-state check |
@@ -30,7 +30,7 @@ Central recovery rules for common PPT Master failures. Route-specific workflow f
 | `svg_quality_checker.py` error | Yes | Fix the affected SVG, then rerun checker | No unless required asset is missing | Step 6 Visual Construction |
 | `svg_quality_checker.py` warning | No | Fix when straightforward; otherwise acknowledge residual risk | No | Step 6 warning handling |
 | Missing `notes/total.md` (only when notes were requested in `design_spec.md §X`; absence is normal on the default no-notes path) | Yes | Generate speaker notes before Step 7 | No | Step 6 Logic Construction |
-| Step 7 image readiness missing manual files | Yes | None for manual assets; list required filenames and prompts | Yes | Step 7 image readiness gate |
+| Step 7 image readiness missing manual files | Yes | None for user-drop assets; list each missing image's filename, purpose, and recommended size | Yes — user places chosen images at `images/<filename>` | Step 7 image readiness gate |
 | `total_md_split.py` failure | Yes | Fix notes format/path, rerun only Step 7.1 | Usually no | Step 7.1 |
 | `finalize_svg.py` failure | Yes | Fix SVG/assets, rerun Step 7.2 | Only if source asset is missing | Step 7.2 |
 | `svg_to_pptx.py` failure | Yes | Fix conversion issue, rerun Step 7.3 | Only if required artifact is missing | Step 7.3 |

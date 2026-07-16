@@ -61,7 +61,27 @@ openverse → wikimedia → pexels (if PEXELS_API_KEY set) → pixabay (if PIXAB
 
 Keyed providers without an API key are silently skipped — not an error.
 
-**Validation**: For polished visual decks, configure at least one keyed provider before using `Acquire Via: web`.
+**Hard rule — keyless first**: the web path never requires an API key. Zero-config providers run first; keyed providers are the lowest-priority stage and only run when their key is already configured — never ask the user to sign up for one. When the script chain is exhausted, the agent web search stage (§3.1) runs **before** `Needs-Manual`.
+
+### 3.1 Agent Web Search Stage (keyless — Google-grade coverage)
+
+**Trigger**: the script provider chain returned nothing acceptable for a row, or an exact-entity subject (landmark / person / product / venue) is outside the free providers' coverage.
+
+The agent searches the open web itself using the host's web tools (e.g. Claude Code `WebSearch` / `WebFetch` — Google-grade index, no user API key), locates a concrete candidate image URL, then downloads it through the existing manual-URL route so provenance lands in the manifest:
+
+```bash
+python3 scripts/image_search.py --from-url <image-url> --filename <name>.jpg -o <project_path>/images
+```
+
+| Rule | Behavior |
+|---|---|
+| Source preference | Official/press/newsroom pages, institutional releases, Wikimedia file pages, or pages that state a free license — in that order. Avoid stock-aggregator watermarks and unattributed reposts. |
+| License | A page that visibly states a forbidden license (§1 auto-rejected list) is rejected. Otherwise the download records `license_tier: manual` — rights verification stays with the user. |
+| User approval | Surface each agent-found image's `source_page_url` in chat and get the user's approval before treating the row as final. Approval may be batched per acquisition pass. |
+| Resolution | Prefer originals (for Wikimedia thumbs, strip `/thumb/` and the `Npx-` prefix). |
+| Terminal | No acceptable candidate after the agent pass → mark the row `Needs-Manual`. |
+
+> Note: this stage is agent behavior, not an `image_search.py` provider — the script's role is the `--from-url` download + manifest record.
 
 ---
 
@@ -321,7 +341,7 @@ Extends [`image-base.md`](./image-base.md) §6.
 
 | Situation | Behavior |
 |---|---|
-| No candidates from any provider in either stage | Mark row `Needs-Manual`. Suggest: shorter query, drop `--strict-no-attribution`, or set keyed provider's API key. |
+| No candidates from any provider in either stage | Run the agent web search stage (§3.1) before giving up. Still nothing → mark row `Needs-Manual`. Suggest: shorter query or drop `--strict-no-attribution`. |
 | Single candidate fails to download (HTTP 403/404) | Dispatcher auto-falls through to the next ranked candidate. No user action. |
 | All candidates from one provider fail | Dispatcher moves to the next provider in the chain. |
 | Keyed provider has no API key | Silently skipped. Not an error. |

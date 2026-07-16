@@ -404,15 +404,16 @@ The script renders PNGs into `images/`, trying `codecogs`, `quicklatex`, `mathpa
 
 **Plan illustration shape from placement, not from a square default.** Before writing the sheet row, group the planned spot illustrations by intended placement shape: compact object, tall side accent, wide banner/vignette, or another explicit shape family. Do not ask for generic "small illustrations" with no shape intent. If one deck needs incompatible shapes, write separate sheet intents instead of forcing every element into one implied square set; Image_Generator owns the exact sheet ratio and grid.
 
-**When recommending C** — surface its three implementation modes so the user knows "no API key" is a supported state:
+**When recommending C** — surface its resolution ladder so the user knows "no API key" is a supported state:
 
-| Mode | Trigger | Mechanism |
-|---|---|---|
-| **Path A** | Default — always available. `IMAGE_BACKEND` unset uses the `codex` backend (Codex CLI, ChatGPT OAuth via `codex login`; no API key / `.env`); explicit `IMAGE_BACKEND` selects an API provider | `image_gen.py` runs in Step 5 |
-| **Path B** | Path A fails (e.g. Codex CLI missing / not logged in, no API backend configured) AND host has a native image tool (Codex / Antigravity / Claude Code / similar) — auto-selected, no user prompting needed | Host-native generation |
-| **Offline Manual** | Path A fails AND host has no native image tool | Prompts written to `images/image_prompts.json`; user generates externally and places files in `project/images/` |
+| Order | Path | Trigger | Mechanism |
+|---|---|---|---|
+| 1 | **Path A — codex** | Default — `IMAGE_BACKEND` unset uses the `codex` backend (Codex CLI, ChatGPT OAuth via `codex login`; no API key / `.env`) | `image_gen.py --manifest` runs in Step 5; on failure the agent prints install/login guidance and retries after the user fixes it |
+| 2 | **Path B — API backend** | Path A unrecovered AND `IMAGE_BACKEND` + provider key already configured — the lowest-priority generation engine | Same `image_gen.py --manifest` with the explicit backend |
+| 3 | **Web-sourcing switch** | No generation engine available; user accepts the offer | Rows flip to `Acquire Via: web`; [`image-searcher.md`](./image-searcher.md) pipeline (keyless first) |
+| 4 | **User-drop** | Everything above unavailable or declined | Agent lists each missing image's filename / purpose / size; user places chosen images at `project/images/<filename>` |
 
-Selection is automatic in Step 5 (A → B → Manual). Detailed contract: [`image-generator.md`](./image-generator.md) §7 Path Selection (Deterministic).
+Selection is automatic in Step 5. Detailed contract: [`image-generator.md`](./image-generator.md) §7 Path Selection (Deterministic).
 
 Selections may be mixed at the row level — e.g. a deck can use C for hero illustrations while sourcing D for supporting team photos.
 
