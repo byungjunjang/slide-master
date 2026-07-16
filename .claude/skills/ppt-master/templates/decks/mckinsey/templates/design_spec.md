@@ -151,7 +151,7 @@ Navy top band (8px full-width) + uppercase kicker + navy title rule block + Disp
 
 ### 2. Agenda (02_toc.svg)
 
-Action-title chrome without the full-width rule (short navy bar instead) + ruled agenda rows: hanging navy number (Display-sm) + item title (Title 18.7/600) + one-line description (Body 16/400 secondary). 3–5 rows; hairline between rows.
+Action-title chrome without the full-width rule (short navy bar instead) + ruled agenda rows: hanging navy number (Display-sm) + item title (Title 18.7/600) + one-line description (Body 16/400 secondary). 3–5 rows; hairline between rows. **The agenda is the deck's only numbered surface** — see §VIII hanging-numbers rule.
 
 ### 3. Chapter (02_chapter.svg)
 
@@ -183,33 +183,40 @@ Full-bleed `--navy-deep`, centered composition: uppercase closing label + accent
 
 ### Signature pattern ★
 
-**`numbered-takeaway-stack`** ★ — executive-summary grammar: 3–5 full-sentence findings, each with a hanging navy number (Display-sm `--navy`), a bold one-line finding (Title 18.7/600), 1–2 supporting lines (Body 16/400 `#888888`), separated by hairlines (`#E8E8E8`). NO card boxes, NO rounded containment.
+**`keyword-kicker-stack`** ★ — executive-summary grammar: 3–5 full-sentence findings, each anchored by a 4px navy left bar (`--navy`, spanning kicker → support lines), a classification kicker (Label 13.3/600, letter-spacing 0.6, `#888888` — a 2–5 character taxonomy tag such as 채널 정체 / 시장 기회 / 최적 대안, never a sequence number), a bold one-line finding (Title 18.7/600), 1–2 supporting lines (Body 16/400 `#888888`), separated by hairlines (`#E8E8E8`). NO card boxes, NO rounded containment, NO hanging numbers.
 
 ```
-01   시장 성장은 프리미엄 세그먼트에 집중된다        ← 18.7/600 #1A1A1A
-     프리미엄 세그먼트 CAGR 12% vs 전체 3%          ← 16/400 #888888
+채널 정체                                          ← 13.3/600 #888888 kicker
+▐ 주력 유통 채널은 구조적으로 정체됐다               ← 18.7/600 #1A1A1A (▐ = 4px navy bar)
+  B2B2C 채널 3년 CAGR 1.2%, 수수료율 23%→27%       ← 16/400 #888888
 ──────────────────────────────────────            ← <line stroke="#E8E8E8"/>
-02   경쟁사는 이미 채널 전환을 완료했다
-     ...
+시장 기회
+▐ 식품 구독 시장은 진입 창이 열려 있다
+  ...
 ```
+
+**`ballot-stack`** — resolution / board-asks grammar: 3–5 approval items, each with an 18×18px square outline (2px `--navy` stroke, no fill — a ballot box; never draw a checkmark inside), item title (Title 18.7/600), a right-edge category tag (13.3/600 `--navy`, letter-spacing 0.6, anchored at x=1236: 전략 / 투자 / 조직 / 일정), 1 supporting line (Body 16/400 `#888888`), hairlines between items. Use for board asks, decision requests, and approval checklists — the ballot square carries the "to be resolved" semantics that a number cannot.
+
+**Hanging numbers are agenda-only (hard rule)**: the Display-sm (40/700 `--navy`) hanging number is reserved for the agenda page (`02_toc.svg`) — the deck's only numbered surface. On every other page, sequence/emphasis is carried by keyword kickers, ballot squares, short navy rules (28×4px above column headers), or the rail's 6×6px square marks — never `01 / 02 / 03` text. The legacy `numbered-takeaway-stack` pattern is superseded by `keyword-kicker-stack`.
 
 ### Evidence-page composition grammar (density doctrine)
 
-- **Two-zone minimum**: every evidence page is composed as exhibit zone + takeaway zone. The takeaway zone takes ONE of three forms — (a) `key-findings-rail` (right rail x=776→1236, separated by a 1px `#E8E8E8` hairline at x=758), (b) stacked takeaways right of the chart (the `chart-led-with-takeaway` pattern), (c) bottom verdict band. Single-zone pages are allowed only as declared exceptions: `stat-hero`, a full-width (x=44→1236) table, or a text pattern (`numbered-takeaway-stack`) adopted under the conditional density floor's switch
+- **Two-zone minimum**: every evidence page is composed as exhibit zone + takeaway zone. The takeaway zone takes ONE of three forms — (a) `key-findings-rail` (right rail x=776→1236, separated by a 1px `#E8E8E8` hairline at x=758), (b) stacked takeaways right of the chart (the `chart-led-with-takeaway` pattern), (c) bottom verdict band. Single-zone pages are allowed only as declared exceptions: `stat-hero`, a full-width (x=44→1236) table, or a text pattern (`keyword-kicker-stack`) adopted under the conditional density floor's switch
 - **Multi-exhibit pairing**: when the source provides both a trend and a breakdown, pair a chart (A) with a detail table (B). On rail-form (a) pages the exhibit zone is x=44→740; on form (b) exhibits share the left ≈60% chart zone (per `chart-led-with-takeaway`); on form (c) exhibits use the full content width. Exhibit lettering `A ·` / `B ·` prefixes (15px/600 `#1A1A1A`) apply only when a page carries 2+ exhibits
 - **Detail-table promotion**: for multi-period / multi-entity quantitative content, a detail table (≥ 4 rows × 4 columns, §XII treatment, right-aligned numerics, 12px `#888888` footnote line) is the chart's first-choice companion — "chart + table" is the default form, not "chart or table"
 - **Framework mandate (deck level)**: a strategy deck whose source contains prioritization / causality / phasing structure surfaces at least ONE framework exhibit (2×2, tree, process — see the content-shape mapping below). Omission must be justified by source shape; omission for convenience is an anti-pattern (§XIII)
-- **Conditional density floor** — 증거가 있으면 펼치고, 없으면 패턴을 바꾼다: an evidence page targets ≥ 12 data points when the source provides them. When the source is thin, switch to a text pattern (`numbered-takeaway-stack`) instead of padding a table. Fabricated figures and fake cells are absolutely forbidden
+- **Conditional density floor** — 증거가 있으면 펼치고, 없으면 패턴을 바꾼다: an evidence page targets ≥ 12 data points when the source provides them. When the source is thin, switch to a text pattern (`keyword-kicker-stack`) instead of padding a table. Fabricated figures and fake cells are absolutely forbidden
 
 ### `key-findings-rail` pattern
 
-Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 bullet findings (minimal marker: one 6×6px `--navy` square flush at the rail's left edge, optically centered on the title's x-height — **no hanging numbers in the rail**; finding title 16.5/600 `#1A1A1A` indented 20px from the marker + 1–2 evidence lines 13.3/400 `#888888` at the same indent, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18.7/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 12 `#888888`, hairline above). A rail-format reduction of `numbered-takeaway-stack` — same lineage (NO card boxes, NO rounded containment) but deliberately quieter: hanging numbers stay a full-page `numbered-takeaway-stack` device; the rail carries sequence-free findings behind bullet marks
+Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 bullet findings (minimal marker: one 6×6px `--navy` square flush at the rail's left edge, optically centered on the title's x-height — **no hanging numbers in the rail**; finding title 16.5/600 `#1A1A1A` indented 20px from the marker + 1–2 evidence lines 13.3/400 `#888888` at the same indent, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18.7/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 12 `#888888`, hairline above). A rail-format reduction of `keyword-kicker-stack` — same lineage (NO card boxes, NO rounded containment) but deliberately quieter: the rail carries sequence-free findings behind 6×6px square marks (hanging numbers are agenda-only deck-wide)
 
 ### Content shape → first-choice pattern
 
 | Content shape | First choice | Composition |
 | --- | --- | --- |
-| Executive summary / key findings (3–5) | ★ `numbered-takeaway-stack` | hanging numbers + hairline rows |
+| Executive summary / key findings (3–5) | ★ `keyword-kicker-stack` | navy left bar + classification kicker + hairline rows |
+| Board asks / resolutions / approval checklist | `ballot-stack` | square-outline ballot + right category tag + hairline rows |
 | Status / KPI assessment | `traffic-light-table` | `templates/charts/consulting_table.svg`, `harvey_balls_table.svg`; status circle + label |
 | Prioritization / portfolio (2 axes) | 2×2 matrix / bubble | `templates/charts/matrix_2x2.svg`, `quadrant_bubble_scatter.svg` |
 | Phased roadmap / plan | gantt / chevron / timeline | `templates/charts/gantt_chart.svg`, `chevron_process.svg`, `timeline.svg` |
@@ -272,7 +279,7 @@ Templates use `{{PLACEHOLDER}}` tokens:
 - Usage: `<use data-icon="tabler-outline/<name>" x="…" y="…" width="…" height="…" fill="none" stroke="currentColor" stroke-width="2"/>` — `finalize_svg.py` resolves the glyph; do NOT inline SVG content
 - Search before use: `ls .claude/skills/ppt-master/templates/icons/tabler-outline/ | grep <keyword>` — cite verified filenames only
 - **Bare icons only**: no circle wrappers, no colored badges. Sizes: 24–28px in rows/cards, 16px inline
-- Number badges (01–04, plain navy text) are the default sequential marker — not icon circles
+- Sequential number badges are **agenda-only**; on every other page taxonomy is carried by keyword kickers, ballot squares, 6×6px square marks, or short navy rules (28×4px) — not icon circles, not `01–04` text
 
 ---
 
@@ -310,6 +317,7 @@ Templates use `{{PLACEHOLDER}}` tokens:
 - [ ] Emoji or unicode glyph icons; icon pack mixing
 - [ ] Same pattern 3+ consecutive slides
 - [ ] 여러분 / 우리는 / 함께해요 direct address
+- [ ] Hanging numbers or `01 / 02 / 03` sequence text on any page except the agenda (`02_toc.svg`)
 - [ ] Evidence page composed as a single zone without a declared exception (stat-hero / full-width table / density-floor text-pattern switch)
 - [ ] Source has multi-period / multi-entity figures but the page shows only summary numbers with no detail table
 - [ ] Source contains prioritization / causality / phasing structure but the deck has zero framework exhibits

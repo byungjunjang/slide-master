@@ -73,4 +73,4 @@ All values derived from the seulee26/mckinsey-pptx benchmark `theme.py` — thir
 
 - Preference: stroke
 
-> `tabler-outline` line-art, 2px stroke, bare icons only — no circle wrappers, no colored badges, no pack mixing, no emoji. Icons are rare in this identity: prefer rules, tables, and charts; plain navy number markers (01–04) are the default sequential device.
+> `tabler-outline` line-art, 2px stroke, bare icons only — no circle wrappers, no colored badges, no pack mixing, no emoji. Icons are rare in this identity: prefer rules, tables, and charts. Sequential number markers are agenda-only in the paired deck; elsewhere taxonomy is carried by keyword kickers (13.3/600 labels), ballot squares (18px outline), 6×6px square marks, or short navy rules (28×4px).
