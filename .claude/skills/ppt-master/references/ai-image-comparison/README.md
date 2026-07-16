@@ -3,7 +3,7 @@
 PPT Master's AI images are governed by three orthogonal dimensions: **rendering (visual style) × palette (color behavior) × type (internal composition)**.
 This directory uses **controlled-variable comparison** — vary one dimension while holding the other two fixed — so you can see exactly what each dimension contributes.
 
-> This is **not** an example project (see `examples/` for those). It is a dimension-selection reference for the Strategist role and end users when picking AI image parameters.
+> This is **not** an example project. It is a dimension-selection reference for the Strategist role and end users when picking AI image parameters.
 
 ## The three comparison sets
 
@@ -17,7 +17,7 @@ Each subdirectory contains:
 
 - `_subject.md` — the controlled variables and the subject used for this set
 - `_manifest.json` — generation manifest (status=Pending), runnable via `image_gen.py --manifest`
-- `<dimension>.png` — the generated image for each rendering / palette / type
+- `<dimension>.jpg` — the committed 640×360 preview (JPEG q85) for each rendering / palette / type; the Confirm UI renders these as small thumbnails, so full-size PNGs are not kept in the repo
 
 > `page_role: hero_page` images don't pick an `image_type` — they use the four composition primitives in [`image-generator.md`](../image-generator.md) §4.1 directly (single-subject / portrait / typographic / atmospheric). The 11 types in `type/` are for local infographic blocks only.
 
@@ -52,7 +52,21 @@ python3 .claude/skills/ppt-master/scripts/image_gen.py \
     --backend openai
 ```
 
-Generated images land in the corresponding subdirectory. Each item's `status` in the manifest is updated in place to `Generated` / `Failed` / `Needs-Manual`. Re-running only retries `Pending` and `Failed` items — `Generated` items are skipped.
+Generated images land in the corresponding subdirectory as full-size PNGs. Each item's `status` in the manifest is updated in place to `Generated` / `Failed` / `Needs-Manual`. Re-running only retries `Pending` and `Failed` items — `Generated` items are skipped.
+
+The Confirm UI serves a fresh PNG as-is, but the committed artifact is the 640×360 JPEG preview. After regenerating, re-encode and drop the PNGs:
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+from PIL import Image
+root = Path('.claude/skills/ppt-master/references/ai-image-comparison')
+for p in sorted(root.rglob('*.png')):
+    Image.open(p).convert('RGB').resize((640, 360), Image.LANCZOS) \
+        .save(p.with_suffix('.jpg'), 'JPEG', quality=85, optimize=True)
+    p.unlink()
+PY
+```
 
 ## How to use
 

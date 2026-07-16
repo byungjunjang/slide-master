@@ -46,7 +46,7 @@ Templates are organized into three kinds, each in its own directory:
 - [`templates/layouts/README.md`](../.claude/skills/ppt-master/templates/layouts/README.md) — structure-only patterns (canvas / page structure / page types / SVG roster), no identity; academic_defense, government_blue/red, ai_ops, medical_university, pixel_retro, psychology_attachment
 - [`templates/decks/README.md`](../.claude/skills/ppt-master/templates/decks/README.md) — full identity + structure references (including the middle segment); China Merchants Bank, Power Construction Corporation of China, Chongqing University, China Telecom
 
-Full data model + fusion / conflict-resolution rules: [`docs/zh/templates-architecture.md`](./zh/templates-architecture.md) (Chinese only for now).
+Full data model + fusion / conflict-resolution rules: [`docs/templates-architecture.md`](./templates-architecture.md).
 
 ### Free design vs template
 

@@ -1,6 +1,6 @@
 # Image Tools
 
-> Architecture rationale (why provider-specific config keys instead of a generic `IMAGE_API_KEY`, why permissive license filter with strict-mode escape hatch, why external refs in dev but two divergent embedding strategies for delivery): see [docs/technical-design.md "Image Acquisition & Embedding"](../../../../docs/technical-design.md#image-acquisition--embedding).
+> Architecture rationale (why provider-specific config keys instead of a generic `IMAGE_API_KEY`, why permissive license filter with strict-mode escape hatch, why external refs in dev but two divergent embedding strategies for delivery): see [docs/technical-design.md "Image Acquisition & Embedding"](../../../../../docs/technical-design.md#image-acquisition--embedding).
 
 Image tools cover formula rendering, prompt-based AI generation, web image search, image inspection, and Gemini watermark removal.
 

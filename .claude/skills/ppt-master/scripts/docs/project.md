@@ -1,6 +1,6 @@
 # Project Tools
 
-> Architecture rationale (why `import-sources` defaults are asymmetric for in-repo vs out-of-repo files): see [docs/technical-design.md "Project Structure & Lifecycle"](../../../../docs/technical-design.md#project-structure--lifecycle).
+> Architecture rationale (why `import-sources` defaults are asymmetric for in-repo vs out-of-repo files): see [docs/technical-design.md "Project Structure & Lifecycle"](../../../../../docs/technical-design.md#project-structure--lifecycle).
 
 Project tools create, validate, and inspect the standard PPT Master workspace.
 
@@ -80,7 +80,7 @@ Use this for repository-wide health checks before release or cleanup.
 
 ## `generate_examples_index.py`
 
-Rebuild `examples/README.md` automatically.
+Rebuild `examples/README.md` automatically. (The `examples/` library ships with the upstream project and is not bundled in this repo — the tool is a no-op without it.)
 
 ```bash
 python3 scripts/generate_examples_index.py

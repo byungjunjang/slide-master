@@ -53,8 +53,9 @@ a deck from a document/topic/template):
    run `validate_spec.py <project_path>` and fix every error before generating
    any SVG.
 6. **Images:** honor the confirmed image source (`result.json.image_usage`).
-   The `host-native` AI path maps to **Codex's built-in `image_gen` tool** —
-   save outputs to the exact `images/<filename>` targets from §VIII. On
+   The default `codex` AI path maps to **Codex's built-in `image_gen` tool**
+   (a legacy `host-native` confirmation reads as `auto`) — save outputs to the
+   exact `images/<filename>` targets from §VIII. On
    acquisition failure: retry once → mark `Needs-Manual` → report and continue
    (failure-recovery contract) — never a silent substitute image.
 7. **Quality gates:** run `svg_quality_checker.py` on page 1 before drawing

@@ -4,7 +4,7 @@
 
 Single source of truth for what layouts exist: [`layouts_index.json`](./layouts_index.json) (`layout_id → { summary, canvas_format, page_count, page_types }`). This README explains the kind; it does **not** enumerate layouts.
 
-Full data model: [`docs/zh/templates-architecture.md`](../../../../docs/zh/templates-architecture.md).
+Full data model: [`docs/templates-architecture.md`](../../../../../docs/templates-architecture.md).
 
 ---
 

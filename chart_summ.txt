@@ -1,0 +1,12 @@
+column_chart -> Pick for single-series category value comparison, 3-8 categories. Skip for >12 long-label items (use horizontal_bar_chart) or multi-series (use grouped_bar_chart).
+consulting_table -> Pick for high-density tables with embedded micro bar visuals (consulting/financial reports). Skip for plain text data (use basic_table).
+grouped_bar_chart -> Pick for 2-4 series side-by-side across the same categories (e.g. YoY/QoQ). Skip if showing composition within each category (use stacked_bar_chart).
+quadrant_bubble_scatter -> Pick for 2×2 portfolio where items are plotted as bubbles sized by a third metric — BCG Growth × Share with Stars/Cash Cows/Question Marks/Dogs, revenue-weighted portfolio matrix. Skip for textual named quadrants (use qu
+matrix_2x2 -> Pick for items plotted on Impact x Effort or similar generic 2-axis prioritization. Skip for named-quadrant text frameworks (use quadrant_text_bullets) or bubble-sized portfolios (use quadrant_bubble_scatter).
+vertical_pillars -> Pick for 1×3 / 1×4 / 1×5 vertical column layout where each pillar = one independent category with title + bullets — PEST (Political/Economic/Social/Technological), four-pillar strategy overview, side-by-side independent 
+harvey_balls_table -> Pick for qualitative scoring grid using 0-100% Harvey balls (vendor/skill assessment). Skip for binary checkmarks (use feature_matrix_table) or numeric values (use basic_table).
+gantt_chart -> Pick for project schedule with 6-12 tasks, durations, and dependencies. Skip for simple milestones without duration (use timeline) or vertical roadmap (use roadmap_vertical).
+chevron_process -> Pick for 3-6 phase methodology with chunky arrow-chain progression and deliverables per phase. Skip for <=2 phases or non-linear flow (use process_flow), or chain ending in an aggregate outcome wedge (use chevron_chain_w
+kpi_cards -> Pick for 4-8 standalone numeric metrics shown as overview cards (2x2 or 1x4) — exec summary opener, dashboard headline, quarterly recap, results-at-a-glance. Skip if metrics have target baselines (use bullet_chart) or si
+waterfall_chart -> Pick for stepwise additive/subtractive breakdown bridging a starting value to an ending value. Skip if no running total (use column_chart).
+line_chart -> Pick for 1-3 time-series on a continuous axis showing direction. Skip if cumulative volume matters (use area_chart) or different units (use dual_axis_line_chart).

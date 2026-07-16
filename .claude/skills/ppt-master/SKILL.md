@@ -276,7 +276,7 @@ There is no fuzzy resolution into an install. A deck-id mention or explicit temp
 
 #### Three template kinds
 
-The architecture has three independent reference bundles. Full schema in [`docs/zh/templates-architecture.md`](../../docs/zh/templates-architecture.md). Summary:
+The architecture has three independent reference bundles. Full schema in [`docs/templates-architecture.md`](../../../docs/templates-architecture.md). Summary:
 
 | Kind | Physical dir | Contains | Frontmatter |
 |---|---|---|---|

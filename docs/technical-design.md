@@ -1,7 +1,5 @@
 # Technical Design
 
-[English](./technical-design.md) | [Chinese](./zh/technical-design.md)
-
 ---
 
 ## Design Philosophy — AI as Your Designer, Not Your Finisher

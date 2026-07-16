@@ -1,7 +1,5 @@
 # Why PPT Master
 
-[English](./why-ppt-master.md) | [Chinese](./zh/why-ppt-master.md)
-
 ---
 
 There are dozens of AI presentation tools. This page explains what PPT Master does differently — and where it's not the right choice.
@@ -59,8 +57,6 @@ The choice is yours. PPT Master doesn't make that decision for you.
 ### Consulting-Grade Design System
 
 Three built-in styles: General (training, tech talks), Consultant (business reports, data visualization), and Consultant Top (MBB level — investment memos, strategic plans, government briefings).
-
-The [examples/](../examples/) directory contains all example projects, spanning government fiscal analysis, AI architecture design, Zen philosophy, pixel-art gaming, editorial reports, and more.
 
 ### Full Source-Document Input
 

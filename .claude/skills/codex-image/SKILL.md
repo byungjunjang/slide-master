@@ -16,10 +16,9 @@ allowed-tools:
 Generate images using OpenAI's `gpt-image-2` model through Codex CLI.
 **No API key required** — uses Codex OAuth (ChatGPT login) authentication.
 
-OpenAI Codex CLI의 내장 `image_gen` 도구를 통해 `gpt-image-2` 모델로 이미지를 생성한다.
-**API 키 불필요** — Codex OAuth(ChatGPT 로그인) 인증 사용.
+> User-facing quoted messages below are bilingual (EN / KO) — print the variant matching the user's chat language.
 
-## How it works / 동작 원리
+## How it works
 
 ```
 User prompt → Claude Code (/codex-image)
@@ -31,13 +30,10 @@ User prompt → Claude Code (/codex-image)
 
 > **Important**: OAuth tokens cannot call OpenAI REST API directly (returns 401).
 > Must go through `codex exec` which handles auth internally.
->
-> OAuth 토큰으로 OpenAI REST API 직접 호출 불가 (401 반환).
-> 반드시 `codex exec` 경유 — Codex가 내부적으로 인증 처리.
 
 ---
 
-## Step 1 — Verify Codex CLI & Auth / Codex CLI 및 인증 확인
+## Step 1 — Verify Codex CLI & Auth
 
 ```bash
 which codex 2>/dev/null && codex --version 2>/dev/null || echo "NOT_FOUND"
@@ -55,35 +51,31 @@ If not "Logged in":
 > "Codex login required. Run `codex login` in terminal. OAuth login enables image generation without API key."
 > "Codex 로그인 필요. 터미널에서 `codex login` 실행. OAuth 로그인하면 API 키 없이 이미지 생성 가능."
 
-## Step 2 — Parse Arguments / 인자 파싱
+## Step 2 — Parse Arguments
 
 Extract from `$ARGUMENTS`:
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--size` | `1024x1024`, `1024x1536`, `1536x1024`, `auto` | `1024x1024` | Image dimensions / 이미지 크기 |
-| `--quality` | `low`, `medium`, `high`, `auto` | `auto` | Generation quality / 생성 품질 |
-| `--out` | directory path | project root | Save location / 저장 위치 |
-| `--filename` | name without extension | `codex-image-<timestamp>` | Output filename stem / 출력 파일명 (확장자 제외) |
-| `-n` | 1–10 | `1` | Number of images / 생성 장수 |
+| `--size` | `1024x1024`, `1024x1536`, `1536x1024`, `auto` | `1024x1024` | Image dimensions |
+| `--quality` | `low`, `medium`, `high`, `auto` | `auto` | Generation quality |
+| `--out` | directory path | project root | Save location |
+| `--filename` | name without extension | `codex-image-<timestamp>` | Output filename stem |
+| `-n` | 1–10 | `1` | Number of images |
 
-Remaining text → image prompt / 나머지 텍스트 → 이미지 프롬프트
+Remaining text → image prompt.
 
 If prompt is empty, ask via AskUserQuestion:
 > "What image should I generate? Enter a prompt."
 > "어떤 이미지를 생성할까? 프롬프트를 입력해줘."
 
-## Step 2.5 — Background normalization (avoid the transparency checkerboard) / 배경 정규화
+## Step 2.5 — Background normalization (avoid the transparency checkerboard)
 
 > **Known `gpt-image-2` failure mode.** When a prompt asks for a `transparent background`,
 > `gpt-image-2` does NOT return true alpha — it **paints a literal gray-and-white
 > checkerboard** (the pattern editors use to *display* transparency) into the RGB pixels.
 > The result looks broken on any real backdrop. This skill therefore never passes a
 > transparency request straight through.
->
-> **알려진 `gpt-image-2` 버그.** 프롬프트가 `transparent background`를 요청하면 실제 알파
-> 투명도가 아니라 **회색·흰색 체커보드 무늬를 픽셀로 그려 넣는다**(편집기가 투명도를 *표시*할
-> 때 쓰는 격자). 어떤 배경에 올려도 깨져 보인다. 그래서 이 스킬은 투명 요청을 그대로 넘기지 않는다.
 
 Strip transparency phrasing from the prompt before generating (the Step 4 task carries a
 hard background rule as a second guard, so this is belt-and-suspenders):
@@ -101,7 +93,7 @@ If the user genuinely needs a cut-out asset, tell them `gpt-image-2` (via the co
 `image_gen` tool) cannot emit reliable alpha; generate on a **flat solid color** and remove
 the background afterward with an image editor. Do NOT request "transparent" to get it.
 
-## Step 3 — Determine Save Path / 저장 경로 결정
+## Step 3 — Determine Save Path
 
 ```bash
 _PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
@@ -111,14 +103,14 @@ _TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 _FILENAME="${_FILENAME_ARG:-codex-image-${_TIMESTAMP}}"
 ```
 
-- If `--out` specified, use that path / `--out` 지정 시 해당 경로 사용
-- If `--filename` specified, that stem is used as-is / `--filename` 지정 시 해당 stem 그대로 사용
+- If `--out` specified, use that path
+- If `--filename` specified, that stem is used as-is
 - Single image (default stem): `codex-image-<timestamp>.png`
 - Single image (`--filename foo`): `foo.png`
 - Multiple (`-n > 1`): `<stem>-1.png`, `<stem>-2.png`, ...
-- Never overwrite existing files / 기존 파일 덮어쓰기 금지 (named outputs included — 같은 `--filename`을 다시 쓰려면 기존 파일을 먼저 지우거나 `--out`을 바꿔야 함)
+- Never overwrite existing files (named outputs included — reusing a `--filename` requires deleting the existing file first or changing `--out`)
 
-## Step 4 — Generate Image / 이미지 생성
+## Step 4 — Generate Image
 
 ```bash
 codex exec "Perform the following tasks:
@@ -139,19 +131,19 @@ codex exec "Perform the following tasks:
 
 timeout: 120000ms (2 min)
 
-### Required flags / 필수 플래그
+### Required flags
 
-- `-s workspace-write` — file write permission / 파일 쓰기 권한
-- `--skip-git-repo-check` — works outside git repos / git 레포 외부에서도 실행 가능
+- `-s workspace-write` — file write permission
+- `--skip-git-repo-check` — works outside git repos
 
-### Internal flow (Codex side) / 내부 동작 흐름
+### Internal flow (Codex side)
 
 1. Codex calls built-in `image_gen` tool (gpt-image-2)
 2. Image saved to `~/.codex/generated_images/<session-id>/ig_*.png`
 3. Codex copies file to specified project path
 4. Reports file path and size
 
-## Step 5 — Display Result / 결과 출력
+## Step 5 — Display Result
 
 ```
 ═══════════════════════════════════════════════
@@ -168,15 +160,14 @@ Auth: OAuth (ChatGPT)
 ```
 
 **Always display the generated image using the Read tool.**
-**생성된 이미지를 반드시 Read 도구로 표시한다.**
 
-## Step 6 — Follow-up / 후속 안내
+## Step 6 — Follow-up
 
 - "Run `/codex-image` again to generate another image."
 - For Next.js projects: suggest moving to `public/images/` if needed.
-- **ppt-master integration**: this project's PPT pipeline generates images through `image_gen.py --manifest` whose default backend `codex` (`scripts/image_backends/backend_codex.py`) uses the same `codex exec` + `image_gen` mechanism as this skill — no API key or `.env` needed, only `codex login`. Use `/codex-image` directly for one-off images outside the pipeline (e.g. re-rolling a single asset with `--out <project>/images --filename <slot>`). / ppt-master 파이프라인은 `image_gen.py --manifest`의 기본 백엔드 `codex`로 이미지를 생성하며, 이 스킬과 동일하게 `codex exec`를 사용한다 (API 키·`.env` 불필요, `codex login`만 필요). 파이프라인 밖에서 단발 이미지가 필요할 때 `/codex-image`를 직접 사용.
+- **ppt-master integration**: this project's PPT pipeline generates images through `image_gen.py --manifest` whose default backend `codex` (`scripts/image_backends/backend_codex.py`) uses the same `codex exec` + `image_gen` mechanism as this skill — no API key or `.env` needed, only `codex login`. Use `/codex-image` directly for one-off images outside the pipeline (e.g. re-rolling a single asset with `--out <project>/images --filename <slot>`).
 
-## Error Handling / 에러 처리
+## Error Handling
 
 | Error | Message |
 |-------|---------|
@@ -186,9 +177,9 @@ Auth: OAuth (ChatGPT)
 | Rate limit | "API rate limited. Wait and retry." / "API 호출 제한. 잠시 후 재시도." |
 | Trust error | Check `--skip-git-repo-check` flag or add project to `~/.codex/config.toml` |
 
-## Rules / 규칙
+## Rules
 
-- Always use the Read tool to display generated images / 생성된 이미지는 반드시 Read로 표시
-- Never overwrite existing files — always use timestamped filenames / 기존 파일 덮어쓰기 금지
-- OAuth only — do not attempt direct REST API calls with OAuth token (returns 401) / OAuth 토큰으로 REST API 직접 호출 금지
-- Verify prompt intent before generating / 생성 전 프롬프트 의도 확인
+- Always use the Read tool to display generated images
+- Never overwrite existing files — always use timestamped filenames
+- OAuth only — do not attempt direct REST API calls with OAuth token (returns 401)
+- Verify prompt intent before generating

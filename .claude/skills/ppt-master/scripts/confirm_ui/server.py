@@ -832,17 +832,24 @@ def _ai_comparison_items(kind: str) -> list[dict[str, str]]:
     items = []
     for item in data.get('items', []):
         filename = item.get('filename')
-        if not isinstance(filename, str) or not filename.endswith('.png'):
+        if not isinstance(filename, str):
             continue
-        if not re.fullmatch(r'[A-Za-z0-9_.-]+\.png', filename):
-            continue
-        if not (_AI_IMAGE_COMPARISON_DIR / kind / filename).exists():
+        if not re.fullmatch(r'[A-Za-z0-9_.-]+\.(png|jpg)', filename):
             continue
         item_id = Path(filename).stem
+        # Committed previews are 640x360 JPEGs; a freshly regenerated
+        # full-size PNG (manifest recipe output) also serves until re-encoded.
+        actual = next(
+            (name for name in (f'{item_id}.jpg', f'{item_id}.png')
+             if (_AI_IMAGE_COMPARISON_DIR / kind / name).exists()),
+            None,
+        )
+        if actual is None:
+            continue
         items.append({
             'id': item_id,
             'label': item.get('type') or item_id,
-            'filename': filename,
+            'filename': actual,
             'purpose': item.get('purpose') or '',
             'alt_text': item.get('alt_text') or '',
         })
@@ -1001,7 +1008,7 @@ def create_app(
         """Serve reference images for generated-image strategy candidates."""
         if kind not in {'rendering', 'palette', 'type'}:
             return jsonify({'error': 'invalid comparison kind'}), 404
-        if not re.fullmatch(r'[A-Za-z0-9_.-]+\.png', filename or ''):
+        if not re.fullmatch(r'[A-Za-z0-9_.-]+\.(png|jpg)', filename or ''):
             return jsonify({'error': 'invalid comparison filename'}), 404
         return send_from_directory(_AI_IMAGE_COMPARISON_DIR / kind, filename)
 

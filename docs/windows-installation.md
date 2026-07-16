@@ -12,8 +12,6 @@ Python is the only hard requirement.
 
 2. **⚠️ CRITICAL: Check "Add python.exe to PATH"** during installation — this is the single most common mistake on Windows. Skipping this will break every step that follows.
 
-   ![Python installer — check Add to PATH](assets/windows-python-path.png)
-
 3. After installation, open **PowerShell** (search "PowerShell" in Start menu) and verify:
 
    ```powershell

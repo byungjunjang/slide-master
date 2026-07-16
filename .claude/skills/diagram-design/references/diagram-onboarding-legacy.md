@@ -20,12 +20,12 @@ Create visual diagrams as self-contained HTML files with inline SVG and CSS, fol
 
 **Before generating your first diagram in a new project, verify the style guide has been customized.**
 
-Open [`references/style-guide.md`](references/style-guide.md) and check the default tokens. If they're still the shipped defaults (paper `#faf7f2`, ink `#1c1917`, accent `#b5523a` rust), **pause and ask the user**:
+Open [`style-guide.md`](style-guide.md) and check the default tokens. If they're still the shipped defaults (paper `#faf7f2`, ink `#1c1917`, accent `#b5523a` rust), **pause and ask the user**:
 
 > *"This is your first Schematic in this project. The style guide is still at the default (neutral stone + rust). Do you want to customize it to match your brand first? Options: (a) run onboarding — I'll pull colors and fonts from your website, (b) paste your tokens manually, (c) proceed with the default for now."*
 
 Then branch:
-- **(a)** → follow [`references/onboarding.md`](references/onboarding.md) to fetch the site, extract palette + fonts, propose a diff, and write `style-guide.md`.
+- **(a)** → follow [`onboarding.md`](onboarding.md) to fetch the site, extract palette + fonts, propose a diff, and write `style-guide.md`.
 - **(b)** → accept the user's tokens and write them into `style-guide.md` under a new "Custom tokens" section.
 - **(c)** → proceed; optionally remind the user they can run onboarding later.
 
@@ -37,7 +37,7 @@ Don't silently ship default-skinned diagrams into a branded project — that's t
 
 ## 5. Design System
 
-**The design system is skinnable.** All colors, typography, and tokens live in a single source of truth — [`references/style-guide.md`](references/style-guide.md). This file describes semantic roles (`paper`, `ink`, `muted`, `accent`, `link`, …). The default skin is a cool editorial palette (white-smoke paper, jet-black ink, atomic-tangerine accent, blue-slate muted, silver hairlines); to apply your own brand, either edit `style-guide.md` directly or run the URL-based flow described in [`references/onboarding.md`](references/onboarding.md).
+**The design system is skinnable.** All colors, typography, and tokens live in a single source of truth — [`style-guide.md`](style-guide.md). This file describes semantic roles (`paper`, `ink`, `muted`, `accent`, `link`, …). The default skin is a cool editorial palette (white-smoke paper, jet-black ink, atomic-tangerine accent, blue-slate muted, silver hairlines); to apply your own brand, either edit `style-guide.md` directly or run the URL-based flow described in [`onboarding.md`](onboarding.md).
 
 > When specs below or in type references mention "ink", "accent", "muted", etc., look up the current hex value in `style-guide.md`.
 
@@ -86,8 +86,8 @@ Don't silently ship default-skinned diagrams into a branded project — that's t
 ## 6. Core SVG Primitives
 
 Universal building blocks. Type-specialized primitives (lifeline, activation bar, region) live in the relevant `references/type-*.md`. Optional primitives:
-- Editorial callouts → [primitive-annotation.md](references/primitive-annotation.md)
-- Hand-drawn variant → [primitive-sketchy.md](references/primitive-sketchy.md)
+- Editorial callouts → [primitive-annotation.md](primitive-annotation.md)
+- Hand-drawn variant → [primitive-sketchy.md](primitive-sketchy.md)
 
 ### Background
 
@@ -225,9 +225,9 @@ Every diagram ships in three variants (see `assets/`):
 | **Minimal light** (default) | `template.html`, `example-<type>.html` | Screenshot-ready. Diagram + title. Warm paper. |
 | **Minimal dark** | `template-dark.html`, `example-<type>-dark.html` | Dark mode sites, slides, high-contrast posts. |
 | **Full editorial** | `template-full.html`, `example-<type>-full.html` | Long-form posts where the diagram is the hero. |
-| **Consultant special** (quadrant only) | `example-quadrant-consultant.html` | BCG/McKinsey-style 2×2 scenario matrix. Clinical sans-serif, white bg, bold blue double-ended axes, named scenario cells. See [type-quadrant.md](references/type-quadrant.md#consultant-special-2x2-scenario-matrix). |
+| **Consultant special** (quadrant only) | `example-quadrant-consultant.html` | BCG/McKinsey-style 2×2 scenario matrix. Clinical sans-serif, white bg, bold blue double-ended axes, named scenario cells. See [type-quadrant.md](type-quadrant.md#consultant-special-2x2-scenario-matrix). |
 
-**Sketchy variant** (optional, applied to any of the above) — see [primitive-sketchy.md](references/primitive-sketchy.md). SVG turbulence filter wobbles strokes for a hand-drawn feel. Good for essays, not for technical docs.
+**Sketchy variant** (optional, applied to any of the above) — see [primitive-sketchy.md](primitive-sketchy.md). SVG turbulence filter wobbles strokes for a hand-drawn feel. Good for essays, not for technical docs.
 
 ### To create a new diagram
 

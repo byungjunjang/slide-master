@@ -1,7 +1,5 @@
 # FAQ
 
-[English](./faq.md) | [Chinese](./zh/faq.md)
-
 ---
 
 ## Q: What source formats does PPT Master accept?

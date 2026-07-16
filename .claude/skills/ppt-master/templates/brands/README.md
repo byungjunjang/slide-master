@@ -2,7 +2,7 @@
 
 This directory holds **brand-only templates**: identity bundles (color / typography / logo / voice / icon style) without an SVG page roster. Strategist locks the brand's identity segment as truth; Executor designs pages freely under those constraints.
 
-Brand is one of three template kinds in the library — alongside [`layouts/`](../layouts/) (structure-only) and [`decks/`](../decks/) (complete identity + structure). Full data model: [`docs/zh/templates-architecture.md`](../../../../docs/zh/templates-architecture.md).
+Brand is one of three template kinds in the library — alongside [`layouts/`](../layouts/) (structure-only) and [`decks/`](../decks/) (complete identity + structure). Full data model: [`docs/templates-architecture.md`](../../../../../docs/templates-architecture.md).
 
 ## How brands are consumed
 

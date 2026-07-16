@@ -616,7 +616,7 @@
     var CAT = null;     // catalogs.json — finite option universe
     var REC = null;     // recommendations.json — AI picks + candidates
     var ICON_PREVIEWS = {};  // /api/icon-previews — real SVG samples from templates/icons
-    var AI_IMAGE_COMPARISON = {};  // /api/ai-image-comparison — reference PNG options
+    var AI_IMAGE_COMPARISON = {};  // /api/ai-image-comparison — reference preview options
     var STATE = {};
     var REC_ALIASES = {
         icons: {
@@ -718,7 +718,9 @@
         var value = String(id || "").trim();
         if (!value || value === "custom") return "";
         if (!/^[A-Za-z0-9_.-]+$/.test(value)) return "";
-        return "/ai-image-comparison/" + kind + "/" + encodeURIComponent(value) + ".png";
+        var item = comparisonItem(kind, value);
+        var filename = (item && item.filename) || (value + ".jpg");
+        return "/ai-image-comparison/" + kind + "/" + encodeURIComponent(filename);
     }
 
     function appendImageStrategyPreviews(card, candidate) {
