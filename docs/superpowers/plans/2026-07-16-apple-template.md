@@ -97,7 +97,7 @@
 **Interfaces:**
 - Produces: 이후 모든 SVG 태스크의 시각 대조 기준 PNG. 파일명 = HTML 파일명 그대로(`TitleSlide.png` 등).
 
-- [ ] **Step 1: 렌더 스크립트 작성**
+- [x] **Step 1: 렌더 스크립트 작성**
 
 `<scratchpad>`는 세션 스크래치패드 디렉터리(시스템 프롬프트에 명시된 경로)를 사용한다.
 
@@ -124,12 +124,12 @@ with sync_playwright() as p:
     browser.close()
 ```
 
-- [ ] **Step 2: 실행 및 검증**
+- [x] **Step 2: 실행 및 검증**
 
 Run: `python3 "<scratchpad>/apple_ds_ref/render_ref.py"`
 Expected: `captured ...` 13행 출력, PNG 13개 생성.
 
-- [ ] **Step 3: 캡처 품질 확인**
+- [x] **Step 3: 캡처 품질 확인**
 
 `TitleSlide.png`와 `DonutChartSlide.png`를 Read(멀티모달)로 열어 텍스트/도형이 정상 렌더됐는지 확인. 빈 화면이면 `wait_for_timeout`을 1000으로 올려 재실행.
 
@@ -145,11 +145,11 @@ Expected: `captured ...` 13행 출력, PNG 13개 생성.
 - Consumes: 스펙 §3–§4, 공통 팩트 시트, Task 1 스크린샷.
 - Produces: `[TEMPLATE_BRIEF_CONFIRMED]` 선언 — Task 3 이후의 모든 최종 파일 쓰기 전제조건.
 
-- [ ] **Step 1: 브리프 요약 제시**
+- [x] **Step 1: 브리프 요약 제시**
 
 create-template.md Step 3 형식에 맞춰 사용자에게 제시: kind=deck, template_id=apple, scope=library, canvas=ppt169, 로스터 13장(팩트 시트 표), 아이덴티티 요약(모노크롬 팔레트/Pretendard 래더/단일 그림자), 대표 스크린샷 2~3장 첨부.
 
-- [ ] **Step 2: 사용자 확인 대기**
+- [x] **Step 2: 사용자 확인 대기**
 
 사용자가 승인하면 응답에 `[TEMPLATE_BRIEF_CONFIRMED]`를 명시하고 다음 태스크로. 수정 요청 시 브리프를 고쳐 재제시(최종 디렉터리는 아직 건드리지 않는다).
 
@@ -164,16 +164,16 @@ create-template.md Step 3 형식에 맞춰 사용자에게 제시: kind=deck, te
 - Consumes: 스펙 §2–§4, 공통 팩트 시트.
 - Produces: 이후 SVG 태스크가 준수할 스펙 문서. frontmatter `deck_id: apple`, 로스터 파일명 13개(§VIII)는 SVG 태스크의 파일명과 정확히 일치해야 한다.
 
-- [ ] **Step 1: 프리플라이트 — 충돌 확인**
+- [x] **Step 1: 프리플라이트 — 충돌 확인**
 
 Run: `ls .claude/skills/ppt-master/templates/decks/apple 2>&1; ls .claude/skills/ppt-master/templates/brands/apple 2>&1`
 Expected: 둘 다 "No such file or directory" (존재하면 중단하고 사용자에게 update/replace/새 id 질의 — create-brand.md 규칙).
 
-- [ ] **Step 2: 참조 문서 확인**
+- [x] **Step 2: 참조 문서 확인**
 
 `templates/decks/mckinsey/templates/design_spec.md`(구조 모델)와 `templates/design_spec_reference.md`를 읽고 섹션 골격을 파악한다.
 
-- [ ] **Step 3: design_spec.md 작성**
+- [x] **Step 3: design_spec.md 작성**
 
 frontmatter(정확히):
 
@@ -191,11 +191,11 @@ primary_color: "#1D1D1F"
 
 본문 섹션(mckinsey 골격 준용): §I 개요(Vitrine 오리지널 시스템 출처 명기 — Apple 고유 자산 아님, 워드마크/로고 미포함), §II 캔버스, §III 컬러(Global Constraints의 허용 HEX 표 + 악센트 금지 + "강조 = 서피스 반전" 규칙), §IV 타이포(Pretendard 래더 300/400/600/700·500 금지·원본 자간 표 + **한글 자간 ½ 완화 규칙**), §V 페이지 구조(마진·푸터 크롬·white/parchment 교대 리듬), §VI 페이지 타입(13종 각 1문단), §VII 시각화 방침(모노크롬 차트 문법: 단일 강조=최농도 잉크 1개, 나머지 그레이 래더 `#6e6e73→#c7c7cc→#d2d2d7`, 헤어라인 그리드, chart-design 스킬 연동), §VIII SVG 로스터(01_title~13_closing 파일명+용도 표), §IX 스페이싱(8px 베이스, 페이지별 마진 표), §X Placeholder(imgph = `ltUpDiag` 프리셋 해칭 패턴, 실사진 교체 지점, 라벨 리터럴 규칙), §XI 아이콘(씬 모노라인 1.5px round, 콘텐츠 타일 최소주의), §XII 보이스&톤(선언형 헤드라인+마침표 케이던스, 문장 케이스, 이모지 금지), §XIII 안티패턴 체크리스트(악센트색/500웨이트/카드 그림자/그라디언트/Title Case/이모지).
 
-- [ ] **Step 4: 스펙 대조 검증**
+- [x] **Step 4: 스펙 대조 검증**
 
 design_spec.md의 로스터 파일명 13개가 이 계획의 File Structure와 1:1인지, frontmatter 7개 필드가 위와 정확히 같은지 눈으로 검증.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/design_spec.md
@@ -212,11 +212,11 @@ git commit -m "apple deck: design spec (Vitrine monochrome port, 13-page roster)
 **Interfaces:**
 - Produces: 이후 모든 SVG가 복제할 **공통 계약**: 루트 속성 `data-pptx-master="apple-master" data-pptx-master-name="Apple"` + 페이지별 `data-pptx-layout`/`data-pptx-layout-name`, master 레이어(`id="master-bg"` 흰 rect, `data-pptx-layer="master" data-pptx-editable="false"`), 푸터 크롬, title placeholder slot 패턴.
 
-- [ ] **Step 1: 저작 규칙 확인**
+- [x] **Step 1: 저작 규칙 확인**
 
 `references/template-designer.md`와 `references/shared-standards.md` §6.4(그림자)·§7(구조 메타데이터)을 읽는다. mckinsey `01_cover.svg`를 참조 모델로 연다.
 
-- [ ] **Step 2: 01_title.svg 작성**
+- [x] **Step 2: 01_title.svg 작성**
 
 아래 코드를 기준으로 작성(baseline은 Step 3에서 보정):
 
@@ -263,16 +263,16 @@ git commit -m "apple deck: design spec (Vitrine monochrome port, 13-page roster)
 
 토큰에는 원본 샘플 카피를 넣지 않는다 — `{{TOKEN}}` 그대로가 템플릿 계약이다(mckinsey 방식).
 
-- [ ] **Step 3: 렌더 대조**
+- [x] **Step 3: 렌더 대조**
 
 Task 1 스크립트를 변형해 이 SVG를 PNG로 렌더(`page.goto(svg_path.as_uri())`)한 뒤 `TitleSlide.png`와 나란히 Read로 열어 비교. 기준: 세로 배치(키커/타이틀/서브 중심선), 마진, 크기 감각이 ±4px 이내. 어긋나면 y값 보정 후 재렌더.
 
-- [ ] **Step 4: 단일 파일 품질 확인**
+- [x] **Step 4: 단일 파일 품질 확인**
 
 Run: `python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse('.claude/skills/ppt-master/templates/decks/apple/templates/01_title.svg'); print('well-formed')"`
 Expected: `well-formed`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/01_title.svg
@@ -290,15 +290,15 @@ git commit -m "apple deck: 01_title template (establishes master/layout contract
 - Consumes: Task 4의 공통 계약(루트 속성·master-bg·푸터 블록을 그대로 복제, `data-pptx-layout`만 페이지별로 변경).
 - Produces: parchment 서피스 패턴 — master-bg 아래에 `<rect id="layout-bg-parchment" width="1280" height="720" fill="#f5f5f7" data-pptx-layer="layout" data-pptx-editable="false"/>`.
 
-- [ ] **Step 1: 03_section.svg 작성** — 팩트 시트 03 적용. 구조는 01_title과 동일 골격에서: parchment layout-bg 추가, kicker(y≈250)+`{{TITLE}}` 96px ls−2.6 title slot(2행 중앙, baseline ≈ 340/440), 푸터 `{{PAGE_LABEL}}`.
+- [x] **Step 1: 03_section.svg 작성** — 팩트 시트 03 적용. 구조는 01_title과 동일 골격에서: parchment layout-bg 추가, kicker(y≈250)+`{{TITLE}}` 96px ls−2.6 title slot(2행 중앙, baseline ≈ 340/440), 푸터 `{{PAGE_LABEL}}`.
 
-- [ ] **Step 2: 07_quote.svg 작성** — 팩트 시트 07 적용: `{{QUOTE}}` 60px ls−1.6 title slot(중앙, max-w 980 → bounds "150 260 980 132"), 이름/직함 토큰 텍스트 2행(gap 6, 인용 아래 44px).
+- [x] **Step 2: 07_quote.svg 작성** — 팩트 시트 07 적용: `{{QUOTE}}` 60px ls−1.6 title slot(중앙, max-w 980 → bounds "150 260 980 132"), 이름/직함 토큰 텍스트 2행(gap 6, 인용 아래 44px).
 
-- [ ] **Step 3: 13_closing.svg 작성** — 팩트 시트 13 적용: `{{BRAND_MARK}}` 104px ls−3 중앙(title slot), `{{CLOSING_LINE}}` 300 26px 2행, 푸터는 중앙 단일 `{{CONTACT_LINE}}`(x=640 anchor middle).
+- [x] **Step 3: 13_closing.svg 작성** — 팩트 시트 13 적용: `{{BRAND_MARK}}` 104px ls−3 중앙(title slot), `{{CLOSING_LINE}}` 300 26px 2행, 푸터는 중앙 단일 `{{CONTACT_LINE}}`(x=640 anchor middle).
 
-- [ ] **Step 4: 렌더 대조** — 3장을 각각 렌더해 `SectionSlide.png`/`QuoteSlide.png`/`ClosingSlide.png`와 비교(±4px), well-formed 확인(Task 4 Step 4 명령을 파일별 반복).
+- [x] **Step 4: 렌더 대조** — 3장을 각각 렌더해 `SectionSlide.png`/`QuoteSlide.png`/`ClosingSlide.png`와 비교(±4px), well-formed 확인(Task 4 Step 4 명령을 파일별 반복).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/0{3,7}_*.svg .claude/skills/ppt-master/templates/decks/apple/templates/13_closing.svg
@@ -316,13 +316,13 @@ git commit -m "apple deck: parchment centered pages (section, quote, closing)"
 - Consumes: Task 4 공통 계약.
 - Produces: 헤어라인 행 패턴(agenda)과 세로 구분선 스탯 패턴(stat) — 08_comparison이 헤어라인 행 패턴을 재사용.
 
-- [ ] **Step 1: 02_agenda.svg 작성** — 팩트 시트 02 적용: 헤더(kicker y≈110, `{{TITLE}}` 52px title slot y≈180), 행 4개 — 각 행: `<line>` 헤어라인(x 120→1160, y=262/350/438/526) + `{{ITEM_n_TITLE}}` 600 36px(x=120, 헤어라인 아래 baseline +54) + `{{ITEM_n_TAG}}` 400 17px `#6e6e73`(x=1160 anchor end, 동일 baseline).
+- [x] **Step 1: 02_agenda.svg 작성** — 팩트 시트 02 적용: 헤더(kicker y≈110, `{{TITLE}}` 52px title slot y≈180), 행 4개 — 각 행: `<line>` 헤어라인(x 120→1160, y=262/350/438/526) + `{{ITEM_n_TITLE}}` 600 36px(x=120, 헤어라인 아래 baseline +54) + `{{ITEM_n_TAG}}` 400 17px `#6e6e73`(x=1160 anchor end, 동일 baseline).
 
-- [ ] **Step 2: 06_stat.svg 작성** — 팩트 시트 06 적용: 중앙 헤더, 스탯 3셀(중심 x ≈ 320/640/960 — 렌더 대조로 보정), 셀 사이 세로 헤어라인 2개(y 330→560), `{{STAT_n_VALUE}}` 120px ls−4 + `{{STAT_n_LABEL}}` 19px max-w 240 중앙 정렬.
+- [x] **Step 2: 06_stat.svg 작성** — 팩트 시트 06 적용: 중앙 헤더, 스탯 3셀(중심 x ≈ 320/640/960 — 렌더 대조로 보정), 셀 사이 세로 헤어라인 2개(y 330→560), `{{STAT_n_VALUE}}` 120px ls−4 + `{{STAT_n_LABEL}}` 19px max-w 240 중앙 정렬.
 
-- [ ] **Step 3: 렌더 대조 + well-formed** — `AgendaSlide.png`/`StatSlide.png` 대비.
+- [x] **Step 3: 렌더 대조 + well-formed** — `AgendaSlide.png`/`StatSlide.png` 대비.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/02_agenda.svg .claude/skills/ppt-master/templates/decks/apple/templates/06_stat.svg
@@ -340,7 +340,7 @@ git commit -m "apple deck: agenda and stat pages"
 - Consumes: Task 4 공통 계약.
 - Produces: imgph 플레이스홀더 패턴 + 시스템 유일 그림자 필터 `id="shadow-product"` — 08_comparison이 imgph(그림자 없는 변형)를 재사용.
 
-- [ ] **Step 1: 그림자 필터 정의(09에서만)**
+- [x] **Step 1: 그림자 필터 정의(09에서만)**
 
 ```xml
 <defs>
@@ -350,13 +350,13 @@ git commit -m "apple deck: agenda and stat pages"
 </defs>
 ```
 
-- [ ] **Step 2: 04_split.svg 작성** — 팩트 시트 04: `<defs>`에 imgph-hatch 패턴(공통 팩트 시트 정의 그대로) → imgph rect(0,0,600,720, rx0, `fill="url(#imgph-hatch)"`, **그림자 없음** — 원본도 split은 무그림자) + 라벨 텍스트(x=300 y=364 middle), 우측 텍스트 스택(kicker/`{{TITLE}}` 56px title slot/`{{BODY}}` 300 21px), 푸터 좌단 x=688.
+- [x] **Step 2: 04_split.svg 작성** — 팩트 시트 04: `<defs>`에 imgph-hatch 패턴(공통 팩트 시트 정의 그대로) → imgph rect(0,0,600,720, rx0, `fill="url(#imgph-hatch)"`, **그림자 없음** — 원본도 split은 무그림자) + 라벨 텍스트(x=300 y=364 middle), 우측 텍스트 스택(kicker/`{{TITLE}}` 56px title slot/`{{BODY}}` 300 21px), 푸터 좌단 x=688.
 
-- [ ] **Step 3: 09_image.svg 작성** — 팩트 시트 09: `<defs>`에 imgph-hatch 패턴 + shadow-product 필터 → 중앙 헤더 + imgph rect(120,270,1040,362, rx12, `fill="url(#imgph-hatch)"`) `filter="url(#shadow-product)"` + 라벨.
+- [x] **Step 3: 09_image.svg 작성** — 팩트 시트 09: `<defs>`에 imgph-hatch 패턴 + shadow-product 필터 → 중앙 헤더 + imgph rect(120,270,1040,362, rx12, `fill="url(#imgph-hatch)"`) `filter="url(#shadow-product)"` + 라벨.
 
-- [ ] **Step 4: 렌더 대조 + well-formed** — `SplitSlide.png`/`ImageSlide.png` 대비. 그림자가 rect 아래·우측으로 부드럽게 퍼지는지 확인.
+- [x] **Step 4: 렌더 대조 + well-formed** — `SplitSlide.png`/`ImageSlide.png` 대비. 그림자가 rect 아래·우측으로 부드럽게 퍼지는지 확인.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/04_split.svg .claude/skills/ppt-master/templates/decks/apple/templates/09_image.svg
@@ -373,13 +373,13 @@ git commit -m "apple deck: split and image pages (single system shadow)"
 **Interfaces:**
 - Consumes: Task 4 공통 계약, Task 5 parchment 패턴(05), Task 6 헤어라인 행 + Task 7 imgph 패턴(08).
 
-- [ ] **Step 1: 05_feature_grid.svg 작성** — 팩트 시트 05: parchment layout-bg, 중앙 헤더, 3열(중심 x=280/640/1000) — 각 열: `<circle r="28" fill="#ffffff">` + 원본 24×24 아이콘 패스를 26px로 스케일(`transform="translate(cx-13, y) scale(1.0833)"`, stroke 1.5 round) + `{{FEAT_n_TITLE}}` 600 26px + `{{FEAT_n_BODY}}` 400 17px max-w 300(2~3행 tspan). 원본 아이콘 패스 3종은 `FeatureGridSlide.html` 26~38행에서 그대로 복사.
+- [x] **Step 1: 05_feature_grid.svg 작성** — 팩트 시트 05: parchment layout-bg, 중앙 헤더, 3열(중심 x=280/640/1000) — 각 열: `<circle r="28" fill="#ffffff">` + 원본 24×24 아이콘 패스를 26px로 스케일(`transform="translate(cx-13, y) scale(1.0833)"`, stroke 1.5 round) + `{{FEAT_n_TITLE}}` 600 26px + `{{FEAT_n_BODY}}` 400 17px max-w 300(2~3행 tspan). 원본 아이콘 패스 3종은 `FeatureGridSlide.html` 26~38행에서 그대로 복사.
 
-- [ ] **Step 2: 08_comparison.svg 작성** — 팩트 시트 08: `<defs>`에 imgph-hatch 패턴 → 중앙 헤더, 2열(x=120/676, 폭 492) — 각 열: imgph(h180 rx12, `fill="url(#imgph-hatch)"`, 그림자 없음) + `{{OPTION_x_NAME}}` 600 34px + 스펙 3행(헤어라인 + `{{SPEC_x_n_KEY}}` `#6e6e73` / `{{SPEC_x_n_VALUE}}` 600 잉크 anchor end).
+- [x] **Step 2: 08_comparison.svg 작성** — 팩트 시트 08: `<defs>`에 imgph-hatch 패턴 → 중앙 헤더, 2열(x=120/676, 폭 492) — 각 열: imgph(h180 rx12, `fill="url(#imgph-hatch)"`, 그림자 없음) + `{{OPTION_x_NAME}}` 600 34px + 스펙 3행(헤어라인 + `{{SPEC_x_n_KEY}}` `#6e6e73` / `{{SPEC_x_n_VALUE}}` 600 잉크 anchor end).
 
-- [ ] **Step 3: 렌더 대조 + well-formed** — `FeatureGridSlide.png`/`ComparisonSlide.png` 대비.
+- [x] **Step 3: 렌더 대조 + well-formed** — `FeatureGridSlide.png`/`ComparisonSlide.png` 대비.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/05_feature_grid.svg .claude/skills/ppt-master/templates/decks/apple/templates/08_comparison.svg
@@ -397,20 +397,20 @@ git commit -m "apple deck: feature grid and comparison pages"
 - Consumes: Task 4 공통 계약. 원본 HTML의 인라인 SVG(BarChart 28~53행, LineChart 28~47행, DonutChart 23~34행)를 캔버스 좌표로 평행이동해 이식.
 - Produces: `chart-plot-area` 마커 3개 — verify-charts 워크플로와 chart-design 스킬이 소비.
 
-- [ ] **Step 1: 10_bar_chart.svg 작성** — 팩트 시트 10의 좌표 그대로. 차트 요소 전체를 `<g id="chart-body">`로 묶고 그룹 직전 줄에 `<!-- chart-plot-area: 180,270,1160,550 -->`. 샘플 데이터(18/22/28/35/24/30, Jan~Jun)는 실데이터 교체 전 시연용으로 유지. 헤더 제목은 `{{TITLE}}` title slot, 레전드 라벨은 `{{LEGEND_PEAK}}`/`{{LEGEND_OTHERS}}`.
+- [x] **Step 1: 10_bar_chart.svg 작성** — 팩트 시트 10의 좌표 그대로. 차트 요소 전체를 `<g id="chart-body">`로 묶고 그룹 직전 줄에 `<!-- chart-plot-area: 180,270,1160,550 -->`. 샘플 데이터(18/22/28/35/24/30, Jan~Jun)는 실데이터 교체 전 시연용으로 유지. 헤더 제목은 `{{TITLE}}` title slot, 레전드 라벨은 `{{LEGEND_PEAK}}`/`{{LEGEND_OTHERS}}`.
 
-- [ ] **Step 2: 11_line_chart.svg 작성** — 팩트 시트 11 좌표 그대로(dashed 먼저, solid+점 나중 = 원본 페인트 순서). 레전드 라벨 토큰은 `{{LEGEND_SERIES_A}}`(solid)/`{{LEGEND_SERIES_B}}`(dashed). 마커 동일 형식.
+- [x] **Step 2: 11_line_chart.svg 작성** — 팩트 시트 11 좌표 그대로(dashed 먼저, solid+점 나중 = 원본 페인트 순서). 레전드 라벨 토큰은 `{{LEGEND_SERIES_A}}`(solid)/`{{LEGEND_SERIES_B}}`(dashed). 마커 동일 형식.
 
-- [ ] **Step 3: 12_donut_chart.svg 작성** — 팩트 시트 12: dasharray 값 계산 — 둘레 854.5 기준 45%=384.5 / 30%=256.4 / 17%=145.3 / 8%=68.4, offset 누적 0/−384.5/−640.9/−786.1(음수, 원본 방식). 그룹 `transform="rotate(-90 330 420)"`. 레전드 행 4개 토큰(`{{SEG_n_NAME}}`/`{{SEG_n_VALUE}}`). 도넛 마커는 팩트 시트의 donut 형식 그대로.
+- [x] **Step 3: 12_donut_chart.svg 작성** — 팩트 시트 12: dasharray 값 계산 — 둘레 854.5 기준 45%=384.5 / 30%=256.4 / 17%=145.3 / 8%=68.4, offset 누적 0/−384.5/−640.9/−786.1(음수, 원본 방식). 그룹 `transform="rotate(-90 330 420)"`. 레전드 행 4개 토큰(`{{SEG_n_NAME}}`/`{{SEG_n_VALUE}}`). 도넛 마커는 팩트 시트의 donut 형식 그대로.
 
-- [ ] **Step 4: 마커 존재 검증**
+- [x] **Step 4: 마커 존재 검증**
 
 Run: `grep -c "chart-plot-area" .claude/skills/ppt-master/templates/decks/apple/templates/1{0,1,2}_*.svg`
 Expected: 각 파일 1.
 
-- [ ] **Step 5: 렌더 대조 + well-formed** — 3장을 원본 PNG와 대비. 특히 도넛 세그먼트 시작각(12시)과 바 차트 피크 강조 확인.
+- [x] **Step 5: 렌더 대조 + well-formed** — 3장을 원본 PNG와 대비. 특히 도넛 세그먼트 시작각(12시)과 바 차트 피크 강조 확인.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/1{0,1,2}_*.svg
@@ -428,12 +428,12 @@ git commit -m "apple deck: chart pages with chart-plot-area markers"
 - Consumes: 13장 전체 + design_spec.md.
 - Produces: 체커 통과 상태의 로스터 — Task 11 등록 전제조건.
 
-- [ ] **Step 1: 품질 체커 실행**
+- [x] **Step 1: 품질 체커 실행**
 
 Run: `python3 .claude/skills/ppt-master/scripts/svg_quality_checker.py ".claude/skills/ppt-master/templates/decks/apple/templates" --template-mode --format ppt169`
 Expected: 오류 0. 오류 발생 시 메시지 단위로 수정 → 재실행 루프.
 
-- [ ] **Step 2: 금지 패턴 grep 스위프**
+- [x] **Step 2: 금지 패턴 grep 스위프**
 
 ```bash
 grep -rn 'font-weight="500"\|Pretendard Medium' .claude/skills/ppt-master/templates/decks/apple/templates/ ; \
@@ -442,9 +442,9 @@ grep -rhoE '(fill|stroke|flood-color)="#[0-9a-fA-F]+"' .claude/skills/ppt-master
 ```
 Expected: 첫째·둘째 명령 출력 0행(= 500 웨이트 없음, 그림자는 09_image에만). 셋째 명령의 유니크 색 목록이 Global Constraints 허용 HEX 15종의 부분집합인지 눈으로 대조(대소문자 무시).
 
-- [ ] **Step 3: 13장 일괄 렌더 시각 대조** — 13장 SVG를 모두 렌더해 원본 PNG와 페이지별 비교. 스펙 §6 기준: 서피스 모드/골격/타이포 위계/모노크롬/차트 문법 보존.
+- [x] **Step 3: 13장 일괄 렌더 시각 대조** — 13장 SVG를 모두 렌더해 원본 PNG와 페이지별 비교. 스펙 §6 기준: 서피스 모드/골격/타이포 위계/모노크롬/차트 문법 보존.
 
-- [ ] **Step 4: Commit (수정이 있었다면)**
+- [x] **Step 4: Commit (수정이 있었다면)**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/apple/templates/
@@ -458,22 +458,22 @@ git commit -m "apple deck: quality-checker and visual-parity fixes"
 **Files:**
 - Modify: `.claude/skills/ppt-master/templates/decks/decks_index.json` (스크립트가 수정)
 
-- [ ] **Step 1: dry-run**
+- [x] **Step 1: dry-run**
 
 Run: `python3 .claude/skills/ppt-master/scripts/register_template.py apple --kind deck --dry-run`
 Expected: apple 항목 추가 미리보기(summary/canvas_format/page_count=13/primary_color="#1D1D1F").
 
-- [ ] **Step 2: 등록 실행**
+- [x] **Step 2: 등록 실행**
 
 Run: `python3 .claude/skills/ppt-master/scripts/register_template.py apple --kind deck`
 Expected: decks_index.json에 apple 항목 기록.
 
-- [ ] **Step 3: 검증**
+- [x] **Step 3: 검증**
 
 Run: `python3 -c "import json;print(json.load(open('.claude/skills/ppt-master/templates/decks/decks_index.json',encoding='utf-8'))['apple'])"`
 Expected: `{'summary': ..., 'canvas_format': 'ppt169', 'page_count': 13, 'primary_color': '#1D1D1F'}` (인덱스는 `deck_id → dict` 평면 구조).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/decks/decks_index.json
@@ -491,20 +491,20 @@ git commit -m "apple deck: register in decks index"
 **Interfaces:**
 - Consumes: Task 3의 deck design_spec.md 아이덴티티 세그먼트(§III 컬러/§IV 타이포/§XII 보이스/§XI 아이콘).
 
-- [ ] **Step 1: create-brand 규칙 확인** — `workflows/create-brand.md`의 Step 4(스펙 작성)와 기존 `templates/brands/anthropic/templates/design_spec.md`(형식 모델)를 읽는다.
+- [x] **Step 1: create-brand 규칙 확인** — `workflows/create-brand.md`의 Step 4(스펙 작성)와 기존 `templates/brands/anthropic/templates/design_spec.md`(형식 모델)를 읽는다.
 
-- [ ] **Step 2: brand design_spec.md 작성**
+- [x] **Step 2: brand design_spec.md 작성**
 
 frontmatter: `brand_id: apple` / `kind: brand` / `summary: Apple 계열 모노크롬 미니멀 아이덴티티 — 잉크 단일 시그널, 서피스 반전 강조, 조용한 프리미엄 보이스` / `primary_color: "#1D1D1F"`.
 
 필수 6섹션: §I Brand Overview(Vitrine 출처 + deck `templates/decks/apple/`과의 쌍 관계 명기), §II Color Scheme(deck §III에서 이관, 전 필드 provenance `[fact]` — colors_and_type.css 직독), §III Typography(Pretendard 래더 + 자간 규칙 + 한글 완화), §IV Logo(로고 파일 미보유 — `{{BRAND_MARK}}` 텍스트 슬롯 운용 명기), §V Voice & Tone(선언형·마침표 케이던스·문장 케이스·이모지 금지), §VI Icon Style(씬 모노라인 1.5px round).
 
-- [ ] **Step 3: 등록 및 검증**
+- [x] **Step 3: 등록 및 검증**
 
 Run: `python3 .claude/skills/ppt-master/scripts/register_template.py apple --kind brand --dry-run` → 확인 후 `python3 .claude/skills/ppt-master/scripts/register_template.py apple --kind brand`
 Expected: brands_index.json에 apple 항목.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .claude/skills/ppt-master/templates/brands/apple/ .claude/skills/ppt-master/templates/brands/brands_index.json
@@ -517,7 +517,7 @@ git commit -m "apple brand: identity preset extracted from apple deck"
 
 **Files:** 없음 (검증만)
 
-- [ ] **Step 1: 스펙 §6 체크리스트 실행** — 6개 항목을 하나씩 확인하고 결과를 사용자에게 보고:
+- [x] **Step 1: 스펙 §6 체크리스트 실행** — 6개 항목을 하나씩 확인하고 결과를 사용자에게 보고:
 1. 품질 체커 오류 0 (Task 10 Step 1 재실행)
 2. 13장 시각 대조 통과 (Task 10 Step 3 결과 인용)
 3. 그림자 = 09_image 1곳뿐 (Task 10 Step 2 grep 재실행)
@@ -525,4 +525,4 @@ git commit -m "apple brand: identity preset extracted from apple deck"
 5. 양쪽 인덱스에 apple 등록 (Task 11/12 Step 3 재실행)
 6. 워크스페이스 계약: `templates/design_spec.md` + SVG 13장 존재, `images/`·`icons/`·`exports/` 부재 확인 — `ls .claude/skills/ppt-master/templates/decks/apple/ .claude/skills/ppt-master/templates/decks/apple/templates/`
 
-- [ ] **Step 2: 미충족 항목이 있으면** 해당 태스크로 돌아가 수정 후 재검증. 전부 통과면 완료 보고(등록된 두 인덱스 항목과 대표 렌더 2장 첨부).
+- [x] **Step 2: 미충족 항목이 있으면** 해당 태스크로 돌아가 수정 후 재검증. 전부 통과면 완료 보고(등록된 두 인덱스 항목과 대표 렌더 2장 첨부).
