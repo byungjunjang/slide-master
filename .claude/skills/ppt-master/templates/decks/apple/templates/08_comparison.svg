@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="08_comparison" data-pptx-layout-name="Comparison">
+  <!-- Apple (Vitrine monochrome) — 08 Comparison -->
+
+  <defs>
+    <pattern id="imgph-hatch" patternUnits="userSpaceOnUse" width="20" height="20"
+             patternTransform="rotate(45)" data-pptx-pattern="ltUpDiag">
+      <rect width="20" height="20" fill="#f5f5f7"/>
+      <rect width="10" height="20" fill="#ececef"/>
+    </pattern>
+  </defs>
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="comparison-kicker">
+    <text x="640" y="94" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="14" letter-spacing="0.84"
+          fill="#6e6e73">{{KICKER}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="120 108 1040 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="640" y="150" text-anchor="middle"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="52" letter-spacing="-1.2"
+          fill="#1d1d1f">{{TITLE}}</text>
+  </g>
+
+  <g id="option-a">
+    <rect x="120" y="266" width="492" height="180" rx="12" fill="url(#imgph-hatch)"/>
+    <text x="366" y="360" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.08"
+          fill="#a8a8ad">product image</text>
+    <text x="120" y="494"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="34" letter-spacing="-0.7"
+          fill="#1d1d1f">{{OPTION_A_NAME}}</text>
+
+    <line x1="120" y1="524" x2="612" y2="524" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="120" y="554"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#6e6e73">{{SPEC_A_1_KEY}}</text>
+    <text x="612" y="554" text-anchor="end"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#1d1d1f">{{SPEC_A_1_VALUE}}</text>
+
+    <line x1="120" y1="573" x2="612" y2="573" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="120" y="603"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#6e6e73">{{SPEC_A_2_KEY}}</text>
+    <text x="612" y="603" text-anchor="end"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#1d1d1f">{{SPEC_A_2_VALUE}}</text>
+
+    <line x1="120" y1="622" x2="612" y2="622" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="120" y="652"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#6e6e73">{{SPEC_A_3_KEY}}</text>
+    <text x="612" y="652" text-anchor="end"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#1d1d1f">{{SPEC_A_3_VALUE}}</text>
+  </g>
+
+  <g id="option-b">
+    <rect x="668" y="266" width="492" height="180" rx="12" fill="url(#imgph-hatch)"/>
+    <text x="914" y="360" text-anchor="middle"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.08"
+          fill="#a8a8ad">product image</text>
+    <text x="668" y="494"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="34" letter-spacing="-0.7"
+          fill="#1d1d1f">{{OPTION_B_NAME}}</text>
+
+    <line x1="668" y1="524" x2="1160" y2="524" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="668" y="554"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#6e6e73">{{SPEC_B_1_KEY}}</text>
+    <text x="1160" y="554" text-anchor="end"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#1d1d1f">{{SPEC_B_1_VALUE}}</text>
+
+    <line x1="668" y1="573" x2="1160" y2="573" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="668" y="603"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#6e6e73">{{SPEC_B_2_KEY}}</text>
+    <text x="1160" y="603" text-anchor="end"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#1d1d1f">{{SPEC_B_2_VALUE}}</text>
+
+    <line x1="668" y1="622" x2="1160" y2="622" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="668" y="652"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#6e6e73">{{SPEC_B_3_KEY}}</text>
+    <text x="1160" y="652" text-anchor="end"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="17" letter-spacing="-0.374"
+          fill="#1d1d1f">{{SPEC_B_3_VALUE}}</text>
+  </g>
+
+  <g id="page-foot">
+    <text x="64" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>
