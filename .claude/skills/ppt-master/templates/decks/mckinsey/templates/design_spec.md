@@ -323,3 +323,4 @@ Templates use `{{PLACEHOLDER}}` tokens:
 2. deck kind이므로 Strategist가 identity + structure를 모두 잠근다; 확인 단계에서 template adherence(`strict` / `adaptive`)를 선택한다. Stage 2에서 이 스킨(색/타이포)이 추천 후보로 제시된다
 3. Executor는 `03_content.svg`의 콘텐츠 영역(x=44, y=136, w=1192, h=524)을 §VIII 문법으로 자유 구성하되 kicker / action title / title rule / source line / page-number 크롬을 보존한다
 4. Identity만 재사용하려면 brand 추출본 `.claude/skills/ppt-master/templates/brands/mckinsey/`을 다른 layout/deck과 융합한다
+5. **Delivery-purpose seeding**: 이 덱이 Step 3 템플릿으로 지정되면 Strategist는 Stage 1에서 `delivery_purpose: text`(read-close · dense)를 추천값으로 제시한다 — 컨설팅 덱은 발표용이 아니라 정독용 문서다. 사용자는 확인 단계에서 오버라이드할 수 있다(강제 아님). 주의: §IV가 이 덱의 타입 램프(Body 16px)를 잠그므로 `delivery_purpose`는 글자 크기가 아니라 페이지당 콘텐츠 분배량과 `page_rhythm`에만 작용한다. dense 페이지는 수용량이 크므로 같은 소스에서 페이지 수 추천(strategist.md §b)을 한 단계 낮게 잡는 경향을 허용한다 (예: 12–14 → 10–12)
