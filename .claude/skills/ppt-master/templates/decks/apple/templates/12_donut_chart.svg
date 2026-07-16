@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="12_donut_chart" data-pptx-layout-name="Donut Chart">
+  <!-- Apple (Vitrine monochrome) — 12 Donut Chart — sample data; chart-design replaces it with real figures -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="chart-kicker">
+    <text x="120" y="94"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="14" letter-spacing="0.84"
+          fill="#6e6e73">{{KICKER}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="120 106 1040 48">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="120" y="145"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="44" letter-spacing="-1"
+          fill="#1d1d1f">{{TITLE}}</text>
+  </g>
+
+  <!-- chart-plot-area: donut | center: 330,420 | outer-radius: 162 | inner-radius: 110 -->
+  <g id="chart-body">
+    <g id="donut-ring" transform="rotate(-90 330 420)" fill="none" stroke-width="52">
+      <circle cx="330" cy="420" r="136" stroke="#1d1d1f" stroke-dasharray="384.5 854.5" stroke-dashoffset="0"/>
+      <circle cx="330" cy="420" r="136" stroke="#6e6e73" stroke-dasharray="256.4 854.5" stroke-dashoffset="-384.5"/>
+      <circle cx="330" cy="420" r="136" stroke="#c7c7cc" stroke-dasharray="145.3 854.5" stroke-dashoffset="-640.9"/>
+      <circle cx="330" cy="420" r="136" stroke="#d2d2d7" stroke-dasharray="68.4 854.5" stroke-dashoffset="-786.2"/>
+    </g>
+
+    <g id="donut-center">
+      <text x="330" y="427" text-anchor="middle"
+            font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="52" letter-spacing="-1.5"
+            fill="#1d1d1f">{{DONUT_CENTER_VALUE}}</text>
+      <text x="330" y="456" text-anchor="middle"
+            font-family="Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="15" letter-spacing="-0.1"
+            fill="#6e6e73">{{DONUT_CENTER_LABEL}}</text>
+    </g>
+
+    <g id="donut-legend">
+      <rect x="620" y="315" width="16" height="16" rx="4" fill="#1d1d1f"/>
+      <text x="652" y="331"
+            font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="22" letter-spacing="-0.4"
+            fill="#1d1d1f">{{SEG_1_NAME}}</text>
+      <text x="1160" y="331" text-anchor="end"
+            font-family="Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="18" letter-spacing="-0.3"
+            fill="#6e6e73">{{SEG_1_VALUE}}</text>
+
+      <rect x="620" y="363" width="16" height="16" rx="4" fill="#6e6e73"/>
+      <text x="652" y="379"
+            font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="22" letter-spacing="-0.4"
+            fill="#1d1d1f">{{SEG_2_NAME}}</text>
+      <text x="1160" y="379" text-anchor="end"
+            font-family="Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="18" letter-spacing="-0.3"
+            fill="#6e6e73">{{SEG_2_VALUE}}</text>
+
+      <rect x="620" y="411" width="16" height="16" rx="4" fill="#c7c7cc"/>
+      <text x="652" y="427"
+            font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="22" letter-spacing="-0.4"
+            fill="#1d1d1f">{{SEG_3_NAME}}</text>
+      <text x="1160" y="427" text-anchor="end"
+            font-family="Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="18" letter-spacing="-0.3"
+            fill="#6e6e73">{{SEG_3_VALUE}}</text>
+
+      <rect x="620" y="459" width="16" height="16" rx="4" fill="#d2d2d7"/>
+      <text x="652" y="475"
+            font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="22" letter-spacing="-0.4"
+            fill="#1d1d1f">{{SEG_4_NAME}}</text>
+      <text x="1160" y="475" text-anchor="end"
+            font-family="Pretendard, 'Malgun Gothic', sans-serif"
+            font-size="18" letter-spacing="-0.3"
+            fill="#6e6e73">{{SEG_4_VALUE}}</text>
+    </g>
+  </g>
+
+  <g id="page-foot">
+    <text x="64" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>

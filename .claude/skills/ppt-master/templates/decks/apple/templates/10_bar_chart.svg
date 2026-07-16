@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="10_bar_chart" data-pptx-layout-name="Bar Chart">
+  <!-- Apple (Vitrine monochrome) — 10 Bar Chart — sample data; chart-design replaces it with real figures -->
+
+  <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="chart-kicker">
+    <text x="120" y="94"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="14" letter-spacing="0.84"
+          fill="#6e6e73">{{KICKER}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="120 106 700 48">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="120" y="145"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="44" letter-spacing="-1"
+          fill="#1d1d1f">{{TITLE}}</text>
+  </g>
+
+  <g id="chart-legend">
+    <rect x="893" y="137" width="16" height="16" rx="4" fill="#1d1d1f"/>
+    <text x="919" y="150"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="15" letter-spacing="-0.2"
+          fill="#6e6e73">{{LEGEND_PEAK}}</text>
+    <rect x="1030" y="137" width="16" height="16" rx="4" fill="#c7c7cc"/>
+    <text x="1056" y="150"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="15" letter-spacing="-0.2"
+          fill="#6e6e73">{{LEGEND_OTHERS}}</text>
+  </g>
+
+  <!-- chart-plot-area: 180,270,1160,550 -->
+  <g id="chart-body">
+    <g id="chart-grid" stroke="#e0e0e0" stroke-width="1">
+      <line x1="180" y1="270" x2="1160" y2="270"/>
+      <line x1="180" y1="340" x2="1160" y2="340"/>
+      <line x1="180" y1="410" x2="1160" y2="410"/>
+      <line x1="180" y1="480" x2="1160" y2="480"/>
+      <line x1="180" y1="550" x2="1160" y2="550"/>
+    </g>
+
+    <g id="chart-y-axis" text-anchor="end"
+       font-family="Pretendard, 'Malgun Gothic', sans-serif"
+       font-size="13" letter-spacing="-0.1" fill="#6e6e73">
+      <text x="166" y="274">40</text>
+      <text x="166" y="344">30</text>
+      <text x="166" y="414">20</text>
+      <text x="166" y="484">10</text>
+      <text x="166" y="554">0</text>
+    </g>
+
+    <g id="chart-bars">
+      <rect x="224" y="424" width="112" height="126" rx="4" fill="#c7c7cc"/>
+      <rect x="376" y="396" width="112" height="154" rx="4" fill="#c7c7cc"/>
+      <rect x="528" y="354" width="112" height="196" rx="4" fill="#c7c7cc"/>
+      <rect x="680" y="305" width="112" height="245" rx="4" fill="#1d1d1f"/>
+      <rect x="832" y="382" width="112" height="168" rx="4" fill="#c7c7cc"/>
+      <rect x="984" y="340" width="112" height="210" rx="4" fill="#c7c7cc"/>
+    </g>
+
+    <g id="chart-values" text-anchor="middle"
+       font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+       font-size="18" letter-spacing="-0.3" fill="#1d1d1f">
+      <text x="280" y="410">18</text>
+      <text x="432" y="382">22</text>
+      <text x="584" y="340">28</text>
+      <text x="736" y="291">35</text>
+      <text x="888" y="368">24</text>
+      <text x="1040" y="326">30</text>
+    </g>
+
+    <g id="chart-x-axis" text-anchor="middle"
+       font-family="Pretendard, 'Malgun Gothic', sans-serif"
+       font-size="13" letter-spacing="-0.1" fill="#6e6e73">
+      <text x="280" y="578">Jan</text>
+      <text x="432" y="578">Feb</text>
+      <text x="584" y="578">Mar</text>
+      <text x="736" y="578">Apr</text>
+      <text x="888" y="578">May</text>
+      <text x="1040" y="578">Jun</text>
+    </g>
+  </g>
+
+  <g id="page-foot">
+    <text x="64" y="682"
+          font-family="'Pretendard SemiBold', Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.4"
+          fill="#6e6e73">{{BRAND_MARK}}</text>
+    <text x="1216" y="682" text-anchor="end"
+          font-family="Pretendard, 'Malgun Gothic', sans-serif"
+          font-size="12" letter-spacing="-0.12"
+          fill="#7a7a7a">{{PAGE_LABEL}}</text>
+  </g>
+</svg>
