@@ -241,7 +241,12 @@ Before drawing each page, look up its entry in `page_charts` to decide which cha
 - No entry for this page → either no chart on this page, or a chart that didn't match any catalog template (Strategist's `no-template-match` fallback). Design the visualization from scratch using `design_spec.md §VII` for guidance.
 - Whole section absent → no chart pages in this deck.
 
-**Structural / conceptual diagram pages** (architecture, flowchart, sequence, state, ER, timeline, swimlane, quadrant, nested containment, tree, org chart, layer stack, venn, pyramid — i.e. not data-driven charts): before authoring, consult the matching per-type reference in the vendored `diagram-design` skill (`.claude/skills/diagram-design/SKILL.md` §3 selection guide → `references/type-<name>.md`) for node/edge discipline, layout conventions, and complexity budgets (target density 4/10; above ~9 nodes split into two diagrams). Colors, fonts, and icons still come exclusively from `spec_lock.md`, and the page obeys shared-standards.md like any other hand-authored SVG.
+**Structural / conceptual diagram pages** (architecture, flowchart, sequence, state, ER, timeline, swimlane, quadrant, nested containment, tree, org chart, layer stack, venn, pyramid — i.e. not data-driven charts):
+
+- `page_charts` entry present (structural catalog template, e.g. `timeline`, `top_down_tree`, `hub_spoke`) → the template adaptation above stays the layout authority, and the `diagram-design` complexity budgets still bind: target density 4/10; above ~9 nodes split into two diagrams (`.claude/skills/diagram-design/SKILL.md`).
+- No `page_charts` entry → before authoring, consult the matching per-type reference in the vendored `diagram-design` skill (`.claude/skills/diagram-design/SKILL.md` §3 selection guide → `references/type-<name>.md`) — it is the layout authority for node/edge discipline, layout conventions, and complexity budgets.
+
+Colors, fonts, and icons still come exclusively from `spec_lock.md` in both branches, and the page obeys shared-standards.md like any other hand-authored SVG.
 
 ---
 

@@ -1,12 +1,12 @@
 # diagram-design — 업스트림 온보딩 / 독립 HTML 출력 플로우 (legacy)
 
-> ⚠️ **Upstream context only — slide-svg에서는 실행하지 않는다.** 원본 diagram-design
+> ⚠️ **Upstream context only — ppt-master에서는 실행하지 않는다.** 원본 diagram-design
 > 라이브러리의 온보딩/HTML 출력 플로우 기록 보존용. 아래 본문은 이 스킬의 `SKILL.md`에서
 > verbatim으로 옮겨온 업스트림 원문이며, 섹션 번호(§0 / §5 / §6 / §7 / §8 / §10 / §11)와
-> 상호 참조(§9 taste gate 등)는 업스트림 SKILL.md 기준이다. slide-svg에서 다이어그램
-> 슬라이드는 `/slide` Executor가 `slide/references/diagram-types.md`를 통해 네이티브
-> DrawingML SVG로 그린다 — 이 문서의 스타일 가이드 게이트, URL 온보딩, HTML 템플릿/출력
-> 플로우는 따르지 말 것.
+> 상호 참조(§9 taste gate 등)는 업스트림 SKILL.md 기준이다. ppt-master에서 다이어그램
+> 슬라이드는 Executor가 `executor-base.md`의 다이어그램 라우팅과 이 스킬의
+> `references/type-<name>.md`를 통해 SVG 페이지로 그린다 — 이 문서의 스타일 가이드
+> 게이트, URL 온보딩, HTML 템플릿/출력 플로우는 따르지 말 것.
 
 ---
 

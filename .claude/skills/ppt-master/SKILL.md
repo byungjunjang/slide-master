@@ -620,6 +620,7 @@ Read references/shared-standards.md               # REQUIRED: SVG/PPT technical 
 Read references/native-shape-authoring.md         # REQUIRED: stock-shape selection and fragment helper contract
 Read references/modes/<locked-mode>.md            # narrative skeleton (spec_lock.md `mode`)
 Read references/visual-styles/<locked-style>.md   # aesthetic (spec_lock.md `visual_style`)
+Read .claude/skills/diagram-design/SKILL.md       # CONDITIONAL: deck has structural/conceptual diagram pages (routing: executor-base.md)
 ```
 
 > Read executor-base + shared-standards + native-shape-authoring + the one locked mode file + the one locked visual-style file. For `mode: custom` or `visual_style: custom`, skip that preset file and follow `mode_behavior` / `visual_style_behavior` from `spec_lock.md` instead. Never glob `modes/` or `visual-styles/`.
