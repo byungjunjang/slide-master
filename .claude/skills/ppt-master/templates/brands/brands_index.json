@@ -3,6 +3,10 @@
     "summary": "Anthropic brand identity — AI/LLM tech talks, developer conferences, technical training, product launches",
     "primary_color": "#D97757"
   },
+  "apple": {
+    "summary": "Apple 계열 모노크롬 미니멀 아이덴티티 — 잉크 단일 시그널, 서피스 반전 강조, 조용한 프리미엄 보이스",
+    "primary_color": "#1D1D1F"
+  },
   "google": {
     "summary": "Google brand identity — multi-product corporate decks, developer events (Google I/O style), education and training in the Google ecosystem",
     "primary_color": "#4285F4"
