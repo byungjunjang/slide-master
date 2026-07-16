@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" data-pptx-master="apple-master" data-pptx-master-name="Apple" data-pptx-layout="chart_linear" data-pptx-layout-name="Chart (Linear)">
-  <!-- Apple (Vitrine monochrome) — 10 Bar Chart — sample data; chart-design replaces it with real figures -->
+  <!-- Apple (Vitrine monochrome) — 10 Bar Chart — sample data; replaced with real-data charts at deck generation -->
 
   <rect id="master-bg" width="1280" height="720" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
 

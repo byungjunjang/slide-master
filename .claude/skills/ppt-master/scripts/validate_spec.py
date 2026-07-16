@@ -281,9 +281,8 @@ def check_spec_lock(sections: dict[str, dict[str, str]], page_count: int,
         if template in charts and page not in page_charts:
             warnings.append(f"§VII lists catalog template `{template}` for "
                             f"{page} but spec_lock.md page_charts has no "
-                            f"`{page}` row — intended only when that page "
-                            f"renders via the chart-design skill instead of "
-                            f"the template shell")
+                            f"`{page}` row — add the row, or mark the page "
+                            f"`no-template-match` in §VII")
     return errors, warnings
 
 
