@@ -193,6 +193,18 @@ Full-bleed `--navy-deep`, centered composition: uppercase closing label + accent
      ...
 ```
 
+### Evidence-page composition grammar (density doctrine)
+
+- **Two-zone minimum**: every evidence page is composed as exhibit zone + takeaway zone. The takeaway zone takes ONE of three forms — (a) `key-findings-rail` (right rail x=776→1236, separated by a 1px `#E8E8E8` hairline at x=758), (b) stacked takeaways right of the chart (the `chart-led-with-takeaway` pattern), (c) bottom verdict band. Single-zone pages are allowed only as declared exceptions: `stat-hero` or a full-bleed table
+- **Multi-exhibit pairing**: when the source provides both a trend and a breakdown, pair a chart (A) with a detail table (B). On rail-form pages the exhibit zone is x=44→740; on forms (b)/(c) exhibits use the full content width. Exhibit lettering `A ·` / `B ·` prefixes (15px/600 `#1A1A1A`) apply only when a page carries 2+ exhibits
+- **Detail-table promotion**: for multi-period / multi-entity quantitative content, a detail table (≥ 4 rows × 4 columns, §XII treatment, right-aligned numerics, 11px `#888888` footnote line) is the chart's first-choice companion — "chart + table" is the default form, not "chart or table"
+- **Framework mandate (deck level)**: a strategy deck whose source contains prioritization / causality / phasing structure surfaces at least ONE framework exhibit (2×2, tree, process — see the content-shape mapping below). Omission must be justified by source shape; omission for convenience is an anti-pattern (§XIII)
+- **Conditional density floor** — 증거가 있으면 펼치고, 없으면 패턴을 바꾼다: an evidence page targets ≥ 12 data points when the source provides them. When the source is thin, switch to a text pattern (`numbered-takeaway-stack`) instead of padding a table. Fabricated figures and fake cells are absolutely forbidden
+
+### `key-findings-rail` pattern
+
+Right rail (x=776→1236): `KEY FINDINGS` label (13.3/600, letter-spacing 0.6, `#888888`) + 2–3 numbered findings (hanging number 24/700 `--navy` + finding title 16.5/600 `#1A1A1A` + 1–2 evidence lines 13.5/400 `#888888`, hairline `#E8E8E8` between findings) + verdict band (2px accent rule + `VERDICT` label 13.3/600 + judgment 18/600 `#1A1A1A` + support 14/400 `#888888`) + optional micro-KPI strip (2–4 KPIs: value 24/700 `--navy` + label 11.5 `#888888`, hairline above). A rail-format reduction of `numbered-takeaway-stack` — same lineage: NO card boxes, NO rounded containment
+
 ### Content shape → first-choice pattern
 
 | Content shape | First choice | Composition |
@@ -208,6 +220,7 @@ Full-bleed `--navy-deep`, centered composition: uppercase closing label + accent
 | Multi-metric overview | KPI cards | `templates/charts/kpi_cards.svg` |
 | Single-number impact | `stat-hero` | 64–96px navy number + context line + source |
 | Option comparison | comparison table + Harvey balls | `templates/charts/comparison_table.svg`, `harvey_balls_table.svg`; verdict column |
+| Dense quantified evidence (trend + breakdown) | chart (A) + detail table (B) + `key-findings-rail` | grouped/line chart + §XII detail table + right rail |
 
 Nearest visual-style kin: `references/visual-styles/swiss-minimal.md` (grid-locked, sharp, no decoration).
 
@@ -217,6 +230,7 @@ Nearest visual-style kin: `references/visual-styles/swiss-minimal.md` (grid-lock
 - Same pattern ≤ 2 consecutive slides; minimum 3 layout types per deck
 - Every chart pairs with a takeaway (stacked right or verdict band); a chart without a takeaway is rejected
 - Stats include context ("vs 업계 평균 3.2%"); bare numbers read as placeholder
+- The composition grammar above stacks on top of this discipline — variation, ≤ 2 consecutive same-pattern, chart-takeaway pairing, and minimum 3 layout types all still hold
 
 ---
 
