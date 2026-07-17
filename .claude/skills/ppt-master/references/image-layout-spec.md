@@ -48,6 +48,7 @@ Layout rules for pages where the image is placed **side-by-side with body text**
 |--------|--------|--------------------|-----------------------|-------------|----------------|
 | PPT 16:9 | 1280x720 | 60, 60 | 1160 x 600 | 60px | 80px |
 | PPT 4:3 | 1024x768 | 50, 50 | 924 x 608 | 60px | 70px |
+| Instagram Card | 1080x1350 | 60, 80 | 960 x 1190 | 80px | 100px |
 | Xiaohongshu | 1242x1660 | 60, 80 | 1122 x 1500 | 80px | 100px |
 | WeChat Moments | 1080x1080 | 60, 60 | 960 x 960 | 60px | 80px |
 | Story | 1080x1920 | 60, 120/180 | 960 x 1620 | 80px | 140px |
@@ -118,11 +119,11 @@ Default selection table assumes **landscape or square canvas**. For portrait can
 
 | Canvas Orientation | Image Ratio | Recommended Layout | Reason |
 |-------------------|-------------|-------------------|--------|
-| Portrait (Xiaohongshu, Story) | > 1.5 (wide) | Top-bottom | Same as landscape canvas |
-| Portrait (Xiaohongshu, Story) | 1.2-1.5 (standard) | Top-bottom | Left-right too narrow on tall canvas |
-| Portrait (Xiaohongshu, Story) | 0.8-1.2 (square) | Top-bottom | Image fits well in top half |
-| Portrait (Xiaohongshu, Story) | 0.5-0.8 (portrait) | Left-right | Portrait image on tall canvas works |
-| Portrait (Xiaohongshu, Story) | < 0.5 (extreme portrait) | Left-right | Image takes one side, text the other |
+| Portrait (Instagram Card, Xiaohongshu, Story) | > 1.5 (wide) | Top-bottom | Same as landscape canvas |
+| Portrait (Instagram Card, Xiaohongshu, Story) | 1.2-1.5 (standard) | Top-bottom | Left-right too narrow on tall canvas |
+| Portrait (Instagram Card, Xiaohongshu, Story) | 0.8-1.2 (square) | Top-bottom | Image fits well in top half |
+| Portrait (Instagram Card, Xiaohongshu, Story) | 0.5-0.8 (portrait) | Left-right | Portrait image on tall canvas works |
+| Portrait (Instagram Card, Xiaohongshu, Story) | < 0.5 (extreme portrait) | Left-right | Image takes one side, text the other |
 
 > Square canvases (WeChat Moments 1:1): use the standard landscape rules.
 

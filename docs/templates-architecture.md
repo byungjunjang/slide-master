@@ -226,13 +226,19 @@ These indexes cover library scope only. A project-root workspace is intentionall
     "summary": "China Merchants Bank transaction banking deck",
     "canvas_format": "ppt169",
     "page_count": 5,
-    "primary_color": "#XXXXXX"
+    "primary_color": "#XXXXXX",
+    "defaults": {
+      "mode": "pyramid",
+      "visual_style": "swiss-minimal",
+      "delivery_purpose": "text"
+    }
   }
 }
 ```
 
 - Includes `primary_color` (decks carry identity) + structural metadata
 - Does not expand `page_types` — decks share the same page-type set as layouts; redundant to record
+- `defaults` (optional) — the Stage-1 anchors the Confirm UI re-defaults when the deck card is picked; catalog ids only (`mode` / `visual_style` / `delivery_purpose` / `template_adherence`), no prose, so the index stays trimmed. The deck's `design_spec.md` remains the authority for the Stage-2 skin / type-ramp seeding
 
 ---
 

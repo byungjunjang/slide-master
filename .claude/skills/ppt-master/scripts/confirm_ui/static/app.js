@@ -82,6 +82,7 @@
             delivery_purpose: "Delivery purpose",
             delivery_purpose_hint: "Read-close decks can run smaller; projected decks need larger type.",
             size_override: "Per-role size override:",
+            size_override_hint: "Role sizes rescale in proportion when the body baseline changes — values you edited keep their own ratio.",
             size_role_title: "title",
             size_role_subtitle: "subtitle",
             size_role_annotation: "annotation",
@@ -196,6 +197,7 @@
             delivery_purpose: "利用シーン",
             delivery_purpose_hint: "手元で読む資料は小さめでOK、投影する資料は大きめの文字が必要です。",
             size_override: "役割ごとのサイズ上書き：",
+            size_override_hint: "本文基準サイズを変更すると、役割別サイズも比例して自動調整されます — 手動で編集した値もその比率を保ったまま調整されます。",
             size_role_title: "タイトル",
             size_role_subtitle: "サブタイトル",
             size_role_annotation: "注釈",
@@ -310,6 +312,7 @@
             delivery_purpose: "전달 목적",
             delivery_purpose_hint: "가까이서 읽는 자료는 작아도 되고, 프로젝터로 발표하는 자료는 큰 글자가 필요합니다.",
             size_override: "역할별 크기 재정의:",
+            size_override_hint: "본문 기준 크기를 바꾸면 역할별 크기가 비례해 함께 조정됩니다 — 직접 수정한 값도 자기 비율을 유지한 채 조정됩니다.",
             size_role_title: "제목",
             size_role_subtitle: "부제목",
             size_role_annotation: "주석",
@@ -424,6 +427,7 @@
             delivery_purpose: "交付目的",
             delivery_purpose_hint: "近读型可以小一点；投影型需要更大的字。",
             size_override: "逐角色字号覆盖：",
+            size_override_hint: "修改正文基准大小时，各角色字号会按比例同步调整 — 你手动修改过的值也会保持其比例一起调整。",
             size_role_title: "标题",
             size_role_subtitle: "副标题",
             size_role_annotation: "注释",
@@ -618,6 +622,12 @@
     var ICON_PREVIEWS = {};  // /api/icon-previews — real SVG samples from templates/icons
     var AI_IMAGE_COMPARISON = {};  // /api/ai-image-comparison — reference preview options
     var STATE = {};
+    // Stage-1 recommendation overlay driven by the selected deck card: while a
+    // deck is picked, `recId()` answers from here first for the fields the deck
+    // declares (canvas + index `defaults`), so the ★ badge and re-seeded values
+    // follow the deck. Never carries a `template` key; never mutates
+    // REC.recommend — clearing the overlay restores the Strategist's originals.
+    var TEMPLATE_OVERLAY = {};
     var REC_ALIASES = {
         icons: {
             line: "tabler-outline",
@@ -847,6 +857,9 @@
     }
 
     function recId(field) {
+        if (Object.prototype.hasOwnProperty.call(TEMPLATE_OVERLAY, field)) {
+            return normalizeRecId(field, TEMPLATE_OVERLAY[field]);
+        }
         var value = (REC && REC.recommend && REC.recommend[field]) || legacyRecId(field);
         return normalizeRecId(field, value || null);
     }
@@ -1229,8 +1242,62 @@
         return !!(STATE.template && STATE.template !== "free");
     }
 
+    function templateEntry(id) {
+        var found = null;
+        templateCatalog().forEach(function (entry) { if (entry.id === id) found = entry; });
+        return found;
+    }
+
+    // The Stage-1 defaults a deck card carries: canvas from `canvas_format`
+    // plus the index `defaults` block (mode / visual_style / delivery_purpose /
+    // template_adherence — whitelisted server-side). null for free / unknown.
+    function templateDefaults(id) {
+        if (!id || id === "free") return null;
+        var entry = templateEntry(id);
+        if (!entry) return null;
+        var out = {};
+        if (entry.canvas_format) out.canvas = entry.canvas_format;
+        var d = entry.defaults || {};
+        Object.keys(d).forEach(function (k) { if (d[k]) out[k] = d[k]; });
+        return out;
+    }
+
+    // Picking a deck re-defaults the Stage-1 anchors it declares: STATE is
+    // overwritten and the ★ badge follows via the recId overlay. Fields the
+    // deck does not declare stay untouched; switching back to "free" re-seeds
+    // every previously overlaid field from the Strategist's original
+    // recommendation. The user can still edit any field afterwards — the
+    // cascade only fires on a template change.
+    function applyTemplateDefaults(id) {
+        var prev = Object.keys(TEMPLATE_OVERLAY);
+        var next = templateDefaults(id) || {};
+        TEMPLATE_OVERLAY = next;  // replaced before restore so recId() answers fresh
+        prev.forEach(function (field) {
+            if (Object.prototype.hasOwnProperty.call(next, field)) return;
+            if (field === "canvas") STATE.canvas = pick("canvas", CAT.canvas);
+            else if (field === "mode") STATE.mode = pick("mode", CAT.modes);
+            else if (field === "visual_style") STATE.visual_style = pick("visual_style", CAT.visual_styles);
+            else if (field === "delivery_purpose") STATE.delivery_purpose = recId("delivery_purpose") || "balanced";
+            else if (field === "template_adherence" && adherenceVisible()) {
+                STATE.template_adherence = pick("template_adherence", CAT.template_adherence);
+            }
+        });
+        Object.keys(next).forEach(function (field) {
+            STATE[field] = normalizeRecId(field, next[field]);
+        });
+        if (next.canvas) {
+            if (!STATE.typography) STATE.typography = { name: "", heading: {}, body: {} };
+            // Same guard as the canvas setter: fill a default body only when
+            // none is set yet — never silently rewrite a visible font size.
+            if (!STATE.typography.body_size) {
+                STATE.typography.body_size = defaultBodySizeForCanvas(STATE.canvas, STATE.delivery_purpose);
+            }
+        }
+    }
+
     function setTemplateSelection(id) {
         STATE.template = id;
+        applyTemplateDefaults(id);
         if (id && id !== "free") {
             if (!STATE.template_adherence) {
                 STATE.template_adherence = recOrFirst("template_adherence", CAT.template_adherence);
@@ -1344,13 +1411,26 @@
     // values are px (the system's only unit).
     var SIZE_ROLES = ["title", "subtitle", "annotation"];
     var SIZE_RATIO = { title: 1.75, subtitle: 1.35, annotation: 0.78 };
-    function deriveSize(role, bodyVal) {
-        var raw = (bodyVal || 0) * (SIZE_RATIO[role] || 1);
+    // Each role's exact ratio-to-body, seeded from the ramp or the user's own
+    // edit (recorded before snapping). Editing body_size recomputes every role
+    // from these invariants — drift-free, unlike chaining new/old multipliers
+    // across keystrokes. Module-level so re-renders preserve edited ratios.
+    var SIZE_RATIO_MEM = {};
+    function deriveSize(role, bodyVal, ratio) {
+        if (ratio == null) ratio = SIZE_RATIO[role] || 1;
+        var raw = (bodyVal || 0) * ratio;
         // All px. On PPT, snap the recommended role size to a clean even number so
         // the user sees conventional sizes (body 24 → title 42, subtitle 32), not
         // ratio leftovers. Non-PPT keeps a plain integer — large px, snapping moot.
-        if (isPptCanvas(STATE.canvas)) return Math.round(raw / 2) * 2;
-        return Math.round(raw);
+        var snapped = isPptCanvas(STATE.canvas) ? Math.round(raw / 2) * 2 : Math.round(raw);
+        return Math.min(200, Math.max(6, snapped));   // role inputs' own min/max
+    }
+    // Body value the ratio memory anchors to: the current body_size when valid,
+    // else the same canvas/purpose default refreshSizeInputs falls back to.
+    function bodyAnchor() {
+        var v = parseFloat(STATE.typography && STATE.typography.body_size);
+        if (isFinite(v) && v > 0) return v;
+        return defaultBodySizeForCanvas(STATE.canvas, STATE.delivery_purpose);
     }
 
     // Canvas height (viewBox user units) parsed from a catalog `dim` like
@@ -1612,10 +1692,11 @@
                 body_size: (preserveSizing && prev.body_size) ? prev.body_size : (c.body_size || prev.body_size || ""),
                 sizes: (preserveSizing && prev.sizes) ? Object.assign({}, prev.sizes) : Object.assign({}, c.sizes || {})
             };
+            if (!preserveSizing) SIZE_RATIO_MEM = {};   // re-anchor ratios to the new candidate's sizes
             if (sizeInput) sizeInput.value = STATE.typography.body_size || "";
             customInput.style.display = "none";
             grid.querySelectorAll(".font-card").forEach(function (card, i) { card.classList.toggle("selected", i === idx); });
-            refreshSizeInputs();   // fill any role with no value yet; never overwrites existing values
+            refreshSizeInputs();   // fill/anchor roles with no value yet and reflect current values
             refreshStylePreview();
         }
 
@@ -1679,19 +1760,31 @@
         sizeInput.placeholder = isPptCanvas(STATE.canvas) ? "16 / 20 / 24" : "40 / 48";
         sizeInput.addEventListener("input", function () {
             if (!STATE.typography) STATE.typography = { name: "", heading: {}, body: {} };
-            // Independent input — body never auto-changes the role sizes (no
-            // interlinking); the role inputs carry their own values.
             STATE.typography.body_size = sizeInput.value;
-            refreshBodySizeHint();   // hint text only (e.g. out-of-range flag) — no value cascade
+            // Cascade: a valid body edit rescales every role from its remembered
+            // ratio-to-body (SIZE_RATIO_MEM) — user-edited roles keep their own
+            // proportion. Gated to >= the input's min so mid-typing intermediates
+            // ("2" on the way to "24") and cleared values never rescale anything.
+            var body = parseFloat(sizeInput.value);
+            if (isFinite(body) && body >= 8) {
+                if (!STATE.typography.sizes) STATE.typography.sizes = {};
+                SIZE_ROLES.forEach(function (role) {
+                    var ratio = SIZE_RATIO_MEM[role] || SIZE_RATIO[role];
+                    STATE.typography.sizes[role] = deriveSize(role, body, ratio);
+                });
+                refreshSizeInputs();   // reflect the rescaled values + pt hints
+            }
+            refreshBodySizeHint();
             refreshStylePreview();
         });
         sizeRow.appendChild(sizeInput);
         sizeRow.appendChild(el("span", "font-size-unit", "px"));
         var sizePtHint = el("div", "toggle-desc body-size-pt");
         var sizeHint = el("div", "toggle-desc body-size-hint");
-        // Hint only — the user's value is never overwritten; downstream §g
-        // re-derives if ignored. PPT body is one fixed px value per delivery
-        // purpose (not a range); non-PPT canvases scale px to canvas height.
+        // Hint only — canvas / delivery-purpose changes never rewrite the body
+        // value (a body EDIT cascades the role sizes; see the input handler).
+        // Downstream §g re-derives if ignored. PPT body is one fixed px value per
+        // delivery purpose (not a range); non-PPT canvases scale px to canvas height.
         // Everything is px — lo/hi are only a sanity envelope for the OOR flag.
         refreshBodySizeHint = function () {
             var txt = t("font_body_size_hint");
@@ -1737,6 +1830,7 @@
         // set each explicitly. Values are px (the system's only unit).
         var sizeOverride = el("div", "hex-override");
         sizeOverride.appendChild(el("div", "subfield-label", t("size_override")));
+        sizeOverride.appendChild(el("div", "toggle-desc", t("size_override_hint")));
         var srow = el("div", "hex-row");
         var sizeInputs = {};
         var sizePtHints = {};
@@ -1756,8 +1850,12 @@
             inp.addEventListener("input", function () {
                 if (!STATE.typography) STATE.typography = { name: "", heading: {}, body: {} };
                 if (!STATE.typography.sizes) STATE.typography.sizes = {};
-                // Independent input — each role holds its own value; no cascade.
+                // A role edit sets its own value only — but records its exact
+                // ratio-to-body, so later body edits rescale it proportionally
+                // from the user's own value, not the default ramp.
                 STATE.typography.sizes[role] = inp.value;
+                var v = parseFloat(inp.value);
+                if (isFinite(v) && v > 0) SIZE_RATIO_MEM[role] = v / bodyAnchor();
                 refreshRolePtHint(role);
                 refreshStylePreview();
             });
@@ -1772,11 +1870,13 @@
         sizeOverride.appendChild(srow);
         sec.appendChild(sizeOverride);
 
-        // Inputs are independent — this only **fills a role that has no value yet**
-        // (a one-time starting suggestion from the ramp) and reflects the current
-        // value into the input. It never overwrites an existing value, so editing
-        // body / purpose / canvas does not cascade into the role sizes, and a
-        // re-render (canvas / language switch) preserves exactly what the user sees.
+        // Fills a role that has no value yet (a starting suggestion from the
+        // ramp), reflects the current value into the input, and serves as the
+        // write-back step after a body-size cascade. Filling also seeds the
+        // role's ratio memory (exact value, before snapping) so later body edits
+        // rescale from the right proportion. Canvas / delivery-purpose changes
+        // still update hints only, and a re-render (language switch) preserves
+        // exactly what the user sees.
         refreshSizeInputs = function () {
             if (!STATE.typography) STATE.typography = { name: "", heading: {}, body: {} };
             if (!STATE.typography.sizes) STATE.typography.sizes = {};
@@ -1785,7 +1885,15 @@
             SIZE_ROLES.forEach(function (role) {
                 var cur = STATE.typography.sizes[role];
                 var hasVal = cur !== undefined && cur !== null && cur !== "";
-                if (!hasVal) STATE.typography.sizes[role] = deriveSize(role, bodyVal);
+                if (!hasVal) {
+                    STATE.typography.sizes[role] = deriveSize(role, bodyVal);
+                    SIZE_RATIO_MEM[role] = SIZE_RATIO[role];
+                } else if (SIZE_RATIO_MEM[role] == null) {
+                    // Existing value with no memory yet (candidate-provided sizes,
+                    // reopen): anchor its exact ratio before any cascade runs.
+                    var curNum = parseFloat(cur);
+                    if (isFinite(curNum) && curNum > 0) SIZE_RATIO_MEM[role] = curNum / bodyVal;
+                }
                 if (sizeInputs[role]) sizeInputs[role].value = STATE.typography.sizes[role];
                 refreshRolePtHint(role);
             });
@@ -2263,11 +2371,12 @@
         if (stage === 1) {
             if (previewHost) renderDirectionPreview(previewHost);
             // Direction anchors — Stage 2 is re-derived from these.
+            // Template leads: picking a deck re-defaults the questions below it.
             // Delivery purpose rides inside renderAudience (§c key info).
+            renderTemplate(host);
             renderCanvas(host);
             renderAudience(host);
             renderStyle(host);
-            renderTemplate(host);
         } else if (stage === 2) {
             if (previewHost) renderStylePreview(previewHost);
             renderPages(host);
@@ -2285,10 +2394,10 @@
         } else {
             // Legacy single-pass: show every section on one page.
             if (previewHost) renderStylePreview(previewHost);
+            renderTemplate(host);
             renderCanvas(host);
             renderAudience(host);
             renderStyle(host);
-            renderTemplate(host);
             renderPages(host);
             var legacyStyleGroup = el("div", "style-group");
             renderColor(legacyStyleGroup);
@@ -2341,6 +2450,17 @@
         // Delivery purpose drives the PPT body px baseline; default balanced
         // (not the catalog-first id) when the Strategist did not recommend one.
         STATE.delivery_purpose = recId("delivery_purpose") || "balanced";
+        // A deck pre-selected via recommend.template re-defaults its declared
+        // anchors at boot too — same cascade as a manual card pick. Gated to a
+        // stage-1 payload in selector mode: on stage-2/3 reopens the server has
+        // folded the user's confirmed anchors into `recommend`, and those must
+        // win over the deck overlay.
+        if (templateField.mode !== "locked" && STATE.template && STATE.template !== "free"
+                && stageNumber(REC) === 1) {
+            applyTemplateDefaults(STATE.template);
+        } else {
+            TEMPLATE_OVERLAY = {};
+        }
     }
 
     // Stage-2 fields are (re-)read from the recommendations. At boot they come from

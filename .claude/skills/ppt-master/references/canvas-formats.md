@@ -8,6 +8,7 @@
 |----|--------|------|---------|-------|----------|
 | `ppt169` | PPT 16:9 | `1280x720` | `0 0 1280 720` | 16:9 | Business presentations, meetings |
 | `ppt43` | PPT 4:3 | `1024x768` | `0 0 1024 768` | 4:3 | Traditional projectors, academic talks |
+| `instagram` | Instagram Card News | `1080x1350` | `0 0 1080 1350` | 4:5 | Instagram feed card news, knowledge cards |
 | `xiaohongshu` | Xiaohongshu (RED) | `1242x1660` | `0 0 1242 1660` | 3:4 | Image-text sharing, knowledge posts |
 | `moments` | WeChat Moments / IG | `1080x1080` | `0 0 1080 1080` | 1:1 | Square posters, brand showcases |
 | `story` | Story / TikTok | `1080x1920` | `0 0 1080 1920` | 9:16 | Vertical stories, short video covers |
@@ -17,6 +18,8 @@
 
 `ppt169` is the canonical PPT wide-screen canvas in this repo: `1280x720`, not any arbitrary 16:9 size. Same-ratio canvases such as `banner` (`1920x1080`) must be treated as different coordinate systems.
 
+Portrait canvases (`instagram`, `xiaohongshu`, `story`, `a4`) should default to free design — every bundled deck/layout template is authored on `ppt169` (16:9) and does not transfer to a portrait coordinate system.
+
 ## Format Selection Decision Tree
 
 ```
@@ -25,8 +28,9 @@ Content purpose?
 │   ├── Modern devices → PPT 16:9 (1280x720)
 │   └── Traditional devices → PPT 4:3 (1024x768)
 ├── Social sharing
+│   ├── Instagram card news → 1080x1350
 │   ├── Xiaohongshu (RED) → 1242x1660
-│   ├── WeChat Moments / IG → 1080x1080
+│   ├── WeChat Moments / IG square → 1080x1080
 │   └── Story / TikTok → 1080x1920
 └── Marketing materials
     ├── WeChat Article Header → 900x383
@@ -42,7 +46,7 @@ Content purpose?
 - Layouts: multi-column, left-right split, grid
 - Card dimensions (16:9): single-row 530-600px, double-row 265-295px
 
-### Portrait (3:4, 9:16)
+### Portrait (4:5, 3:4, 9:16)
 - Visual flow: top to bottom
 - Margins: 60-120px
 - Layouts: single-column, top-bottom split, card stacking
@@ -58,6 +62,7 @@ Content purpose?
 | Format | Title Area | Content Area | Special Notes |
 |--------|-----------|--------------|---------------|
 | PPT | 80-100px | Full width utilization | Page number bottom-right |
+| Instagram Card | 160-220px (bold) | Generous vertical whitespace | Brand/CTA area at bottom 120-160px |
 | Xiaohongshu (RED) | 180-240px (bold) | Generous top/bottom whitespace | Brand area at bottom 120-160px |
 | WeChat Moments | 200-280px | Center 500-600px | QR code area at bottom 150-200px |
 | Story | — | Middle 1500px | Top safe zone 120px, bottom 180px |
@@ -69,6 +74,7 @@ Content purpose?
 
 ```xml
 <svg width="1280" height="720" viewBox="0 0 1280 720">   <!-- PPT 16:9 -->
+<svg width="1080" height="1350" viewBox="0 0 1080 1350"> <!-- Instagram Card -->
 <svg width="1242" height="1660" viewBox="0 0 1242 1660"> <!-- Xiaohongshu -->
 <svg width="1080" height="1080" viewBox="0 0 1080 1080"> <!-- WeChat Moments -->
 <svg width="1080" height="1920" viewBox="0 0 1080 1920"> <!-- Story -->

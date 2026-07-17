@@ -30,6 +30,20 @@
       "use_ko": "전통형 프로젝터"
     },
     {
+      "id": "instagram",
+      "label": "Instagram 卡片 4:5",
+      "label_zh": "Instagram 图文卡片 4:5",
+      "label_en": "Instagram Card 4:5",
+      "label_ja": "Instagramカードニュース 4:5",
+      "label_ko": "인스타그램 카드뉴스 4:5",
+      "dim": "1080×1350",
+      "viewbox": "0 0 1080 1350",
+      "use_zh": "Instagram 信息流图文 / 知识卡片",
+      "use_en": "Instagram feed card news",
+      "use_ja": "Instagramフィードのカードニュース",
+      "use_ko": "인스타그램 피드 카드뉴스"
+    },
+    {
       "id": "wechat",
       "label": "公众号头图 2.35:1",
       "label_zh": "公众号头图 2.35:1",

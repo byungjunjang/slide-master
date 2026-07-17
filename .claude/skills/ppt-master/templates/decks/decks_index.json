@@ -3,24 +3,44 @@
     "summary": "Apple 계열 모노크롬 미니멀 키노트 — 제품 발표, 브랜드 스토리, 디자인 리뷰, 조용한 프리미엄 톤의 전략 브리핑",
     "canvas_format": "ppt169",
     "page_count": 13,
-    "primary_color": "#1D1D1F"
+    "primary_color": "#1D1D1F",
+    "defaults": {
+      "mode": "showcase",
+      "visual_style": "swiss-minimal",
+      "delivery_purpose": "balanced"
+    }
   },
   "jangpm": {
     "summary": "Korean editorial lecture / report decks — 강의, 워크숍, 전략 브리핑, 분석 리포트",
     "canvas_format": "ppt169",
     "page_count": 4,
-    "primary_color": "#4633E3"
+    "primary_color": "#4633E3",
+    "defaults": {
+      "mode": "instructional",
+      "visual_style": "editorial",
+      "delivery_purpose": "balanced"
+    }
   },
   "mckinsey": {
     "summary": "McKinsey consulting-style strategy decks — 전략 보고서, 시장/산업 분석, 경영진 브리핑, 실행 로드맵",
     "canvas_format": "ppt169",
     "page_count": 5,
-    "primary_color": "#0F2A4A"
+    "primary_color": "#0F2A4A",
+    "defaults": {
+      "mode": "pyramid",
+      "visual_style": "swiss-minimal",
+      "delivery_purpose": "text"
+    }
   },
   "naver_ir": {
     "summary": "NAVER IR 실적발표 스타일 — 분기 실적발표, 재무 보고, 투자자 미팅, 절제된 재무 데이터 덱",
     "canvas_format": "ppt169",
     "page_count": 7,
-    "primary_color": "#03C75A"
+    "primary_color": "#03C75A",
+    "defaults": {
+      "mode": "briefing",
+      "visual_style": "data-journalism",
+      "delivery_purpose": "balanced"
+    }
   }
 }

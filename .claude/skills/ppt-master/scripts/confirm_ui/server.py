@@ -702,6 +702,12 @@ def _read_decks_index() -> dict:
     return data if isinstance(data, dict) else {}
 
 
+# Stage-1 anchor fields a deck's index `defaults` block may re-default when its
+# card is picked (canvas rides separately on `canvas_format`). Whitelist keeps
+# arbitrary index keys from leaking into the front-end overlay.
+_TEMPLATE_DEFAULT_FIELDS = {'mode', 'visual_style', 'delivery_purpose', 'template_adherence'}
+
+
 def _template_catalog_entries() -> list[dict]:
     """Deck entries for the Stage-1 template card, synced live from
     ``decks_index.json`` — the single source of truth for the deck library —
@@ -711,6 +717,12 @@ def _template_catalog_entries() -> list[dict]:
     index = _read_decks_index()
     for deck_id in sorted(index):
         info = index[deck_id] if isinstance(index[deck_id], dict) else {}
+        raw_defaults = info.get('defaults')
+        defaults = (
+            {k: v for k, v in raw_defaults.items()
+             if k in _TEMPLATE_DEFAULT_FIELDS and isinstance(v, str)}
+            if isinstance(raw_defaults, dict) else {}
+        )
         entries.append({
             'id': deck_id,
             'label': deck_id,
@@ -718,6 +730,7 @@ def _template_catalog_entries() -> list[dict]:
             'canvas_format': info.get('canvas_format', ''),
             'page_count': info.get('page_count'),
             'primary_color': info.get('primary_color', ''),
+            'defaults': defaults,
         })
     return entries
 
