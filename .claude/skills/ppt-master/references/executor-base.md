@@ -172,13 +172,13 @@ is `0.55 × font-size`, and a space is `0.25 × font-size`.
    the canvas bottom margin. Allocate wrapped-line count × line-height before
    placing the block (§1.0).
 
-**Repair ladder (over-budget copy — apply in order)**:
+**Repair ladder (over-budget copy — apply in order; copy survives layout)**:
 
 | # | Strategy | Bounds |
 |---|---|---|
-| ① | **Shorten the copy** — lead / core-message first | Executor-owned micro-shortening at draw time: meaning preserved, no fact distortion; the dropped detail must already exist in — or be moved into — a supporting block on the page. CJK costs a full font-size px per glyph, so trimming a few characters buys real room. |
-| ② | **Redistribute the zone** | When the colliding neighbor can move: narrow the panel / image column, rebalance margins. Useless on full-width pages; costs layout balance. |
-| ③ | **Balanced line break** | **Body prose only** — break at word / phrase boundaries, balance the line lengths, never leave an orphan word on the last line. **Not permitted for lead / core-message / subtitle**: a one-sentence lead wrapping to two lines is itself a defect (user norm, 2026-07-17). |
+| ① | **Redistribute the zone** | First resort. When the colliding neighbor can move: narrow the panel / image column, rebalance margins, or give the line a full-width zone. Costs layout balance; useless when nothing can move. |
+| ② | **Balanced line break** | Body prose: freely. Lead / core-message / subtitle: when ① cannot buy a one-line fit, a **deliberate, balanced two-line stack is acceptable** — break at a natural phrase boundary, balance the line lengths, never leave an orphan tail line. One line stays the preferred target; the defect is the *awkward* wrap (unbalanced split, orphan second line), not two lines per se. |
+| ③ | **Bounded copy trim** | Last resort, hard-bounded (user norm, 2026-07-17: over-trimmed copy reads unprofessional — worse than a balanced wrap). Remove redundancy only: filler qualifiers, repetition, detail the title or a supporting block already carries. **Cut at most ~20% of the sentence's characters; keep named entities, figures, terminology, and the sentence's register; never rewrite the sentence into a different, simpler one to force a fit.** If fitting needs more than the cap allows, go back to ① / ②. |
 | ④ | **Font reduction** | Forbidden in principle. The §1.0 bounded last resort (body only, local, max −4px) is unchanged; lead / title sizes never shrink to fit. |
 
 **If `spec_lock.md` is missing**: emit `warning: spec_lock.md missing — generating without execution lock` once, then proceed using `design_spec.md` values. Expected only for legacy projects; new projects MUST have it (see [strategist.md](strategist.md) §6 step 4).

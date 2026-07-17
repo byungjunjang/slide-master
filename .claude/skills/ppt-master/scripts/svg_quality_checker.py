@@ -2589,16 +2589,18 @@ class SVGQualityChecker:
             result['warnings'].append(
                 f"text geometry: lead-size block ({fs:.0f}px > body "
                 f"{body_px:.0f}px) in group '{label}' wraps (est "
-                f"{full_w:.0f}px > {available:.0f}px available) — shorten "
-                f"the copy (repair ladder ①) or redistribute the zone (②); "
-                f"a one-sentence lead must not wrap"
+                f"{full_w:.0f}px > {available:.0f}px available) — "
+                f"redistribute the zone (repair ladder ①) or keep a "
+                f"deliberate balanced two-line break (②, no orphan tail); "
+                f"trim copy only within the bounded cap (③, redundancy only)"
             )
         elif n == 2 and _geom_sentence_count(full_text) <= 1:
             result['warnings'].append(
                 f"text geometry: single-sentence block in group '{label}' "
                 f"wraps to 2 lines (est {full_w:.0f}px > {available:.0f}px "
-                f"available) — consider shortening (ladder ①) or a balanced "
-                f"word-boundary break (③)"
+                f"available) — verify the break is balanced at a word "
+                f"boundary (ladder ②) or redistribute the zone (①); bounded "
+                f"trim (③) only as a last resort"
             )
 
     def _get_spec_lock(self, svg_path: Path):
