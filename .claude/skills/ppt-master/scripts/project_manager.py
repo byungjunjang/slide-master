@@ -150,13 +150,16 @@ class ProjectManager:
         if project_path.exists():
             raise FileExistsError(f"Project directory already exists: {project_path}")
 
+        # Opt-in surfaces are NOT scaffolded here: `notes/` exists only when
+        # speaker notes are requested (total_md_split.py mkdirs on write) and
+        # `templates/` only when a Step 3 template install / create-template
+        # run copies into it. Pre-creating them leaves permanently empty dirs
+        # in every default-path project.
         for rel_path in (
             "svg_output",
             "svg_final",
             "images",
             "icons",
-            "notes",
-            "templates",
             "live_preview",
             SOURCE_DIRNAME,
             "analysis",
@@ -193,8 +196,8 @@ class ProjectManager:
                 "- `svg_final/`: self-contained SVG visual preview; may be inserted manually as an SVG image, but PowerPoint Convert to Shape is unsupported\n"
                 "- `images/`: runtime image pool; converter assets keep their original short filenames when possible\n"
                 "- `icons/`: project icon set — selected library icons copied in (via icon_sync.py) plus any custom icons you add; embedded from here at export\n"
-                "- `notes/`: speaker notes\n"
-                "- `templates/`: project templates\n"
+                "- `notes/`: speaker notes (created on demand — only when notes are requested)\n"
+                "- `templates/`: project templates (created on demand — only when a template is installed)\n"
                 "- `live_preview/`: browser preview runtime files and history (lock.json, server.log, edits.jsonl, annotations.jsonl)\n"
                 "- `sources/`: source materials and normalized markdown\n"
                 "- `analysis/`: machine-extracted intermediate analysis (PPTX intake, image_analysis.csv) — the pipeline's canonical must-read source/asset facts\n"
