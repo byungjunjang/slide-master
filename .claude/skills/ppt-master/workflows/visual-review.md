@@ -12,7 +12,9 @@ description: Per-page rubric-based visual self-review via parallel subagents. Ru
 
 ## Positioning
 
-This is an **optional auxiliary loop**, opt-in only. The main pipeline (SKILL.md Step 1–7) does not invoke it; trigger only when the user explicitly asks for a visual re-pass on the generated SVGs before export.
+The main pipeline now runs a **default lightweight geometry loop** of its own: `svg_quality_checker.py` statically detects text overflow / cross-group collision (errors) and unnecessary or over-width wraps (warnings), and SKILL.md Step 6 follows it with a selective pixel check (flagged + hero/scrim pages only, main-agent Read, silently skipped without playwright). That default loop owns arithmetic-detectable geometry defects only.
+
+This workflow remains the **optional full visual re-pass**, opt-in only: per-page rubric coverage (rhythm, alignment, centroid, readability, emphasis) via parallel subagents over every rendered page. The main pipeline does not invoke it; trigger only when the user explicitly asks for a visual re-pass on the generated SVGs before export.
 
 **Token cost**: each batch subagent re-reads the rubric + `design_spec.md` + `spec_lock.md` and processes K SVG+PNG pairs. For a 20-page deck with K=5, expect on the order of 100–150K additional input tokens on top of the main generation run.
 

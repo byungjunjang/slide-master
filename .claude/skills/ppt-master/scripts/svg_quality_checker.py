@@ -577,6 +577,71 @@ RAMP_MAX_RATIO = 5.0
 POSTER_SIZE_MODES = {'showcase'}
 POSTER_SIZE_STYLES = {'zine'}
 
+# --- Text-geometry heuristics (overflow / collision / wrap checks) ---
+# Glyph-width approximation validated against the 2026-07-17 defect corpus
+# (docs/handoff/2026-07-17-visual-overflow-review-handoff.md §1.1): all 8
+# user-reported defects reproduce with these constants. Deliberately coarse —
+# do not "improve" with real font metrics; tune the constants instead.
+GEOM_CJK_WIDTH = 1.0        # CJK / full-width glyph advance, x font-size
+GEOM_LATIN_WIDTH = 0.55     # Latin letters, digits, ASCII punctuation
+GEOM_SPACE_WIDTH = 0.25     # ASCII space
+GEOM_CONSERVATIVE = 0.95    # shrink width estimates before firing errors
+GEOM_ASCENT = 0.8           # line-box rise above baseline, x font-size
+GEOM_DESCENT = 0.2          # line-box drop below baseline, x font-size
+GEOM_OPACITY_EXEMPT = 0.15  # <= this (fill-)opacity => watermark, not an obstacle
+GEOM_BG_COVERAGE = 0.85     # rect/image covering >= this of the canvas = background/hero
+GEOM_MARGIN_RATIO = 0.05    # assumed content margin for wrap-budget checks
+GEOM_MIN_OVERLAP = 4.0      # px; ignore hairline intersections
+
+_GEOM_CJK_EXTRA = set('—…「」『』《》〈〉【】〔〕')
+_GEOM_TRANSLATE_RE = re.compile(
+    r'^\s*translate\(\s*(-?[\d.]+)(?:[\s,]+(-?[\d.]+))?\s*\)\s*$'
+)
+_GEOM_SKIP_TAGS = frozenset({
+    'defs', 'metadata', 'title', 'desc', 'symbol', 'clipPath',
+    'linearGradient', 'radialGradient', 'pattern', 'filter', 'style',
+    'script',
+})
+
+
+def _geom_char_width(ch: str, font_size: float) -> float:
+    if ch in (' ', '\u00a0'):
+        return GEOM_SPACE_WIDTH * font_size
+    cp = ord(ch)
+    if (
+        0x1100 <= cp <= 0x11FF       # Hangul jamo
+        or 0x2E80 <= cp <= 0xA4CF    # CJK radicals / kana / unified ideographs
+        or 0xAC00 <= cp <= 0xD7AF    # Hangul syllables
+        or 0xF900 <= cp <= 0xFAFF    # CJK compatibility ideographs
+        or 0xFE30 <= cp <= 0xFE4F    # CJK compatibility forms
+        or 0xFF00 <= cp <= 0xFF60    # full-width forms
+        or ch in _GEOM_CJK_EXTRA
+    ):
+        return GEOM_CJK_WIDTH * font_size
+    return GEOM_LATIN_WIDTH * font_size
+
+
+def _geom_text_width(s: str, font_size: float, letter_spacing: float = 0.0) -> float:
+    if not s:
+        return 0.0
+    width = sum(_geom_char_width(ch, font_size) for ch in s)
+    if letter_spacing and len(s) > 1:
+        width += letter_spacing * (len(s) - 1)
+    return width
+
+
+def _geom_sentence_count(text: str) -> int:
+    """Terminal-punctuation count; '.' terminal only before whitespace/end
+    (protects decimals like 2.5%)."""
+    count = 0
+    n = len(text)
+    for i, ch in enumerate(text):
+        if ch in '。！？!?':
+            count += 1
+        elif ch in '.．' and (i == n - 1 or text[i + 1].isspace()):
+            count += 1
+    return max(count, 1)
+
 
 def _design_spec_is_brand(spec_path: Path) -> bool:
     """Return True when a design_spec.md frontmatter declares ``kind: brand``.
@@ -875,6 +940,11 @@ class SVGQualityChecker:
 
                 # 5. Check text wrapping methods
                 self._check_text_elements(content, root, result)
+
+                # 5b. Text geometry: overflow / collision / wrap budget.
+                #     Templates carry placeholder copy; skip in template mode.
+                if not self.template_mode:
+                    self._check_text_geometry(root, svg_path, result)
 
                 # 6. Check image references (file existence and resolution)
                 self._check_image_references(root, svg_path, result)
@@ -2171,6 +2241,366 @@ class SVGQualityChecker:
             else:
                 result['warnings'].append(issue.message)
 
+    # ------------------------------------------------------------------
+    # Text geometry: canvas overflow, cross-group collision, wrap budget
+    # (A-class geometry defects are errors; B-class wrap defects are
+    # warnings. Exemptions: same-group intersections, low-opacity
+    # watermarks, background/hero elements covering most of the canvas.)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _geom_float(value, default=None):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _find_spec_lock_upward(self, svg_path: Path):
+        """spec_lock.md via bounded upward search (<= 4 levels).
+
+        The geometry B-checks need ``typography.body``, and re-checks of
+        frozen corpora live at <project>/backup/<ts>/svg_output/ — two levels
+        deeper than the drift check's two-level search. Separate helper on
+        purpose: ``_get_spec_lock`` keeps its existing behavior.
+        """
+        if _parse_spec_lock is None:
+            return None
+        d = svg_path.parent
+        for _ in range(4):
+            cand = d / 'spec_lock.md'
+            if cand in self._lock_cache:
+                return self._lock_cache[cand]
+            if cand.exists():
+                try:
+                    data = _parse_spec_lock(cand)
+                except Exception:
+                    data = None
+                self._lock_cache[cand] = data
+                return data
+            if d.parent == d:
+                break
+            d = d.parent
+        return None
+
+    def _geom_body_px(self, svg_path: Path):
+        lock = self._find_spec_lock_upward(svg_path)
+        if not lock:
+            return None
+        body = (lock.get('typography') or {}).get('body')
+        return self._geom_float(body)
+
+    @classmethod
+    def _geom_translate(cls, elem):
+        """(tx, ty) for translate-only transforms, (0, 0) when absent, None
+        for any other transform (that subtree's geometry is not estimated)."""
+        raw = elem.get('transform')
+        if raw is None:
+            return (0.0, 0.0)
+        m = _GEOM_TRANSLATE_RE.match(raw)
+        if not m:
+            return None
+        return (float(m.group(1)), float(m.group(2) or 0.0))
+
+    @classmethod
+    def _geom_opacity_exempt(cls, elem) -> bool:
+        for attr in ('fill-opacity', 'opacity'):
+            v = cls._geom_float(elem.get(attr))
+            if v is not None and v <= GEOM_OPACITY_EXEMPT:
+                return True
+        return False
+
+    @classmethod
+    def _geom_shape_box(cls, elem, tag, dx, dy):
+        gf = cls._geom_float
+        if tag in ('rect', 'image', 'use'):
+            x, y = gf(elem.get('x'), 0.0), gf(elem.get('y'), 0.0)
+            w, h = gf(elem.get('width'), 0.0), gf(elem.get('height'), 0.0)
+            if w <= 0 or h <= 0:
+                return None
+            if tag == 'rect' \
+                    and (elem.get('fill') or '').strip().lower() == 'none' \
+                    and elem.get('stroke') in (None, 'none'):
+                return None  # invisible layout helper
+            return (x + dx, y + dy, x + dx + w, y + dy + h)
+        if tag in ('circle', 'ellipse'):
+            cx, cy = gf(elem.get('cx'), 0.0), gf(elem.get('cy'), 0.0)
+            rx = gf(elem.get('rx')) or gf(elem.get('r'), 0.0)
+            ry = gf(elem.get('ry')) or gf(elem.get('r'), 0.0)
+            if not rx or not ry or rx <= 0 or ry <= 0:
+                return None
+            return (cx - rx + dx, cy - ry + dy, cx + rx + dx, cy + ry + dy)
+        if tag == 'line':
+            x1, y1 = gf(elem.get('x1'), 0.0), gf(elem.get('y1'), 0.0)
+            x2, y2 = gf(elem.get('x2'), 0.0), gf(elem.get('y2'), 0.0)
+            return (min(x1, x2) + dx, min(y1, y2) + dy,
+                    max(x1, x2) + dx, max(y1, y2) + dy)
+        if tag in ('polygon', 'polyline'):
+            pts = re.findall(r'(-?[\d.]+)[\s,]+(-?[\d.]+)',
+                             elem.get('points') or '')
+            if not pts:
+                return None
+            xs = [float(px) for px, _ in pts]
+            ys = [float(py) for _, py in pts]
+            return (min(xs) + dx, min(ys) + dy, max(xs) + dx, max(ys) + dy)
+        return None  # path etc.: not estimated (documented limitation)
+
+    def _geom_text_block(self, text_el, dx, dy):
+        gf = self._geom_float
+        fs = gf(text_el.get('font-size'))
+        x = gf(text_el.get('x'))
+        y = gf(text_el.get('y'))
+        if fs is None or fs <= 0 or x is None or y is None:
+            return None
+        anchor = (text_el.get('text-anchor') or 'start').strip()
+        ls = gf(text_el.get('letter-spacing'), 0.0) or 0.0
+
+        mixed_sizes = False
+        lines = []  # (content, x_abs, baseline)
+        cur_text = (text_el.text or '').strip()
+        cur_x, cur_y = x, y
+        started = bool(cur_text)
+        for child in list(text_el):
+            if not self._is_tspan(child):
+                continue
+            if child.get('font-size') is not None:
+                mixed_sizes = True
+            seg = (child.text or '').strip()
+            if self._is_line_tspan(child):
+                if started and cur_text:
+                    lines.append((cur_text, cur_x, cur_y))
+                ty = gf(child.get('y'))
+                dy_v = gf(child.get('dy'), 0.0) or 0.0
+                cur_y = ty if ty is not None else cur_y + dy_v
+                cur_x = gf(child.get('x'), x)
+                cur_text = seg
+                started = True
+            elif seg:
+                cur_text = (cur_text + ' ' + seg).strip()
+            tail = (child.tail or '').strip()
+            if tail:
+                cur_text = (cur_text + ' ' + tail).strip()
+        if started and cur_text:
+            lines.append((cur_text, cur_x, cur_y))
+        if not lines:
+            return None
+
+        line_boxes = []
+        for content, lx, baseline in lines:
+            w = _geom_text_width(content, fs, ls)
+            if anchor == 'middle':
+                x0 = lx - w / 2.0
+            elif anchor == 'end':
+                x0 = lx - w
+            else:
+                x0 = lx
+            line_boxes.append({
+                'text': content,
+                'width': w,
+                'x0': x0 + dx,
+                'x1': x0 + w + dx,
+                'top': baseline - GEOM_ASCENT * fs + dy,
+                'bottom': baseline + GEOM_DESCENT * fs + dy,
+            })
+        return {
+            'font_size': fs,
+            'anchor': anchor,
+            'letter_spacing': ls,
+            'x': x + dx,
+            'lines': line_boxes,
+            'mixed_sizes': mixed_sizes,
+        }
+
+    def _geom_collect(self, top, vb_w, vb_h):
+        """One top-level child -> (obstacle boxes, text blocks).
+
+        Boxes stay per-element (no union): a union bbox would let two footer
+        texts span the whole page width and false-fire on anything between
+        them.
+        """
+        boxes = []
+        blocks = []
+        canvas_area = vb_w * vb_h
+
+        def visit(elem, dx, dy):
+            shift = self._geom_translate(elem)
+            if shift is None:
+                return  # non-translate transform: skip subtree
+            dx, dy = dx + shift[0], dy + shift[1]
+            tag = _local_name(elem)
+            if tag in _GEOM_SKIP_TAGS:
+                return
+            if self._geom_opacity_exempt(elem):
+                return  # watermark: neither obstacle nor checked text
+            if tag == 'text':
+                block = self._geom_text_block(elem, dx, dy)
+                if block is not None:
+                    blocks.append(block)
+                    for line in block['lines']:
+                        boxes.append((line['x0'], line['top'],
+                                      line['x1'], line['bottom']))
+                return  # tspans already consumed
+            box = self._geom_shape_box(elem, tag, dx, dy)
+            if box is not None:
+                area = (box[2] - box[0]) * (box[3] - box[1])
+                if not (tag in ('rect', 'image')
+                        and area >= GEOM_BG_COVERAGE * canvas_area):
+                    boxes.append(box)
+            for sub in list(elem):
+                visit(sub, dx, dy)
+
+        visit(top, 0.0, 0.0)
+        return boxes, blocks
+
+    def _check_text_geometry(self, root: ET.Element, svg_path: Path,
+                             result: Dict) -> None:
+        """Static text overflow / collision / wrap-budget checks.
+
+        Width model: CJK 1.0 x fs, Latin 0.55 x fs, space 0.25 x fs
+        (validated against the 2026-07-17 defect corpus — 8/8 reproduced).
+        A-class (canvas overflow, cross-group intrusion) -> error;
+        B-class (unnecessary wrap, over-width single-sentence wrap) ->
+        warning.
+        """
+        parsed = _parse_viewbox_values(root.get('viewBox') or '')
+        if parsed is None:
+            return
+        _vx, _vy, vb_w, vb_h = parsed
+        if vb_w <= 0 or vb_h <= 0:
+            return
+
+        groups = []  # (key, label, boxes, blocks)
+        for child in list(root):
+            tag = _local_name(child)
+            if tag in _NON_VISUAL_SVG_TAGS or tag in _GEOM_SKIP_TAGS:
+                continue
+            label = child.get('id') or f'<{tag}>'
+            boxes, blocks = self._geom_collect(child, vb_w, vb_h)
+            groups.append((id(child), label, boxes, blocks))
+
+        body_px = self._geom_body_px(svg_path)
+        margin = vb_w * GEOM_MARGIN_RATIO
+
+        for key, label, _boxes, blocks in groups:
+            for block in blocks:
+                self._geom_a_checks(block, label, key, groups, vb_w, vb_h,
+                                    result)
+                if body_px:
+                    self._geom_b_checks(block, label, key, groups, vb_w,
+                                        margin, body_px, result)
+
+    def _geom_a_checks(self, block, label, own_key, groups, vb_w, vb_h,
+                       result):
+        for line in block['lines']:
+            gap = line['width'] * (1.0 - GEOM_CONSERVATIVE)
+            if block['anchor'] == 'middle':
+                ex0, ex1 = line['x0'] + gap / 2.0, line['x1'] - gap / 2.0
+            elif block['anchor'] == 'end':
+                ex0, ex1 = line['x0'] + gap, line['x1']
+            else:
+                ex0, ex1 = line['x0'], line['x1'] - gap
+            snippet = line['text'][:18] + ('…' if len(line['text']) > 18
+                                           else '')
+            if ex1 > vb_w + 0.5:
+                result['errors'].append(
+                    f"text geometry: line \"{snippet}\" in group '{label}' "
+                    f"overflows the canvas right edge by ~{ex1 - vb_w:.0f}px "
+                    f"(est. end x={ex1:.0f} > {vb_w:.0f})"
+                )
+            if ex0 < -0.5:
+                result['errors'].append(
+                    f"text geometry: line \"{snippet}\" in group '{label}' "
+                    f"starts ~{-ex0:.0f}px left of the canvas"
+                )
+            if line['bottom'] > vb_h + 0.5 or line['top'] < -0.5:
+                result['errors'].append(
+                    f"text geometry: line \"{snippet}\" in group '{label}' "
+                    f"exceeds the canvas vertically"
+                )
+            for other_key, other_label, boxes, _blocks in groups:
+                if other_key == own_key:
+                    continue
+                for bx0, by0, bx1, by1 in boxes:
+                    ox = min(ex1, bx1) - max(ex0, bx0)
+                    oy = min(line['bottom'], by1) - max(line['top'], by0)
+                    if ox <= GEOM_MIN_OVERLAP or oy <= GEOM_MIN_OVERLAP:
+                        continue
+                    # Containment = deliberate underlay (text on a panel);
+                    # a defect crosses the obstacle's edge instead.
+                    h_cross = (
+                        (ex0 < bx0 - GEOM_MIN_OVERLAP
+                         and ex1 > bx0 + GEOM_MIN_OVERLAP)
+                        or (ex1 > bx1 + GEOM_MIN_OVERLAP
+                            and ex0 < bx1 - GEOM_MIN_OVERLAP)
+                    )
+                    v_cross = (
+                        (line['top'] < by0 - GEOM_MIN_OVERLAP
+                         and line['bottom'] > by0 + GEOM_MIN_OVERLAP)
+                        or (line['bottom'] > by1 + GEOM_MIN_OVERLAP
+                            and line['top'] < by1 - GEOM_MIN_OVERLAP)
+                    )
+                    if h_cross or v_cross:
+                        result['errors'].append(
+                            f"text geometry: line \"{snippet}\" in group "
+                            f"'{label}' intrudes ~{ox:.0f}px into group "
+                            f"'{other_label}' (obstacle x={bx0:.0f}..{bx1:.0f}"
+                            f", y={by0:.0f}..{by1:.0f})"
+                        )
+                        break  # one report per (line, group) pair
+
+    def _geom_b_checks(self, block, label, own_key, groups, vb_w, margin,
+                       body_px, result):
+        if (
+            len(block['lines']) < 2
+            or block['anchor'] != 'start'
+            or block['mixed_sizes']
+            or block['font_size'] < body_px - 0.01
+        ):
+            return
+        x_start = block['x']
+        top = min(line['top'] for line in block['lines'])
+        bottom = max(line['bottom'] for line in block['lines'])
+        right_bound = vb_w - margin
+        for other_key, _other_label, boxes, _blocks in groups:
+            if other_key == own_key:
+                continue
+            for bx0, by0, bx1, by1 in boxes:
+                if bx0 <= x_start:
+                    continue  # not a right-side obstacle
+                if min(bottom, by1) - max(top, by0) <= GEOM_MIN_OVERLAP:
+                    continue  # no vertical overlap with the block
+                right_bound = min(right_bound, bx0)
+        available = right_bound - x_start
+        if available <= 0:
+            return
+
+        full_text = ' '.join(line['text'] for line in block['lines'])
+        full_w = _geom_text_width(full_text, block['font_size'],
+                                  block['letter_spacing'])
+        n = len(block['lines'])
+        fs = block['font_size']
+        if full_w <= available:
+            result['warnings'].append(
+                f"text geometry: block in group '{label}' wraps into {n} "
+                f"lines but fits on one (est {full_w:.0f}px <= "
+                f"{available:.0f}px available) — draw it as a single line "
+                f"(executor-base.md width budget)"
+            )
+        elif fs > body_px + 0.01:
+            result['warnings'].append(
+                f"text geometry: lead-size block ({fs:.0f}px > body "
+                f"{body_px:.0f}px) in group '{label}' wraps (est "
+                f"{full_w:.0f}px > {available:.0f}px available) — shorten "
+                f"the copy (repair ladder ①) or redistribute the zone (②); "
+                f"a one-sentence lead must not wrap"
+            )
+        elif n == 2 and _geom_sentence_count(full_text) <= 1:
+            result['warnings'].append(
+                f"text geometry: single-sentence block in group '{label}' "
+                f"wraps to 2 lines (est {full_w:.0f}px > {available:.0f}px "
+                f"available) — consider shortening (ladder ①) or a balanced "
+                f"word-boundary break (③)"
+            )
+
     def _get_spec_lock(self, svg_path: Path):
         """Locate and parse spec_lock.md near the SVG. Returns dict or None.
 
@@ -2504,6 +2934,8 @@ class SVGQualityChecker:
 
     def _categorize_issue(self, error_msg: str) -> str:
         """Categorize issue type"""
+        if 'text geometry' in error_msg:
+            return 'Text geometry (overflow/collision)'
         if 'Invalid XML' in error_msg:
             return 'XML well-formedness'
         elif 'viewBox' in error_msg:

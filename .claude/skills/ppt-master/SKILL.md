@@ -674,10 +674,19 @@ Fix every `error` on page 1 first — structural violations are systematic, and 
 ```bash
 python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 ```
-- Any `error` (banned SVG features, viewBox mismatch, spec_lock drift, etc.) MUST be fixed before proceeding — return to Visual Construction, regenerate that page, re-run check.
+- Any `error` (banned SVG features, viewBox mismatch, spec_lock drift, text-geometry overflow / cross-group collision, etc.) MUST be fixed before proceeding — return to Visual Construction, regenerate that page, re-run check.
 - `warning` entries (low-res image, non-PPT-safe font tail, etc.): fix when straightforward, otherwise acknowledge and release.
+- **Text-geometry warnings are never acknowledge-and-release.** For each `text geometry:` warning (unnecessary wrap / over-width copy), output one disposition line: the fix applied (unwrap to one line, shorten the copy per the executor-base.md repair ladder, redistribute the zone, or re-break at a word boundary) or why the flagged break is intended (e.g. quoted verse keeps its authored line breaks). Default is fix.
 - **Structured template routes only — PPTX-structure warnings are the exception.** For each empty-Layout / framing-only-Layout / bare-Master / duplicate-layout-key warning, output one disposition line: either the fix applied (merge keys in `spec_lock.md pptx_layouts` + SVG roots, mark the missing slots/layers) or why the flagged state is intended (e.g. "P01 cover is a fixed composition, zero-slot by design"). Flat free-design and brand-only routes have no positive Master/Layout checkpoint; the checker instead enforces a complete flat lock and the absence of Master/Layout/layer/placeholder metadata. "0 errors" alone does not pass a structured template gate when such warnings remain undispositioned.
 - Run against `svg_output/` (not after `finalize_svg.py` — finalize rewrites SVG and masks violations).
+
+**Selective pixel check (automatic, non-blocking)** — after the gate reaches 0 errors: if any page carried `text geometry:` findings, or overlays text on a full-bleed hero / scrim or a low-opacity watermark (the static checker exempts those zones, so arithmetic alone cannot clear them), render just those pages and eyeball them:
+
+```bash
+python3 ${SKILL_DIR}/scripts/visual_review.py <project_path> --pages <tokens> --server-url <live-preview URL>
+```
+
+The Step 6 live-preview server is already running — pass its actual URL from the launch log. Read each rendered PNG from `<project_path>/.preview/` and fix any real overlap / overflow by hand-editing the SVG (main agent; discipline rules 6 and 9 apply — no sub-agents, no script-generated SVG). If playwright or the server is unavailable, skip silently — the static gate stands alone. This pass is automatic and never a user stop; the full-rubric [`visual-review`](workflows/visual-review.md) workflow remains opt-in.
 
 **Logic Construction Phase (opt-in)**: only when the user requested speaker notes / narration (recorded in `design_spec.md §X`), generate speaker notes → `<project_path>/notes/total.md`. **Default — no request → skip this phase entirely**: write no `notes/` files; Step 7.1 is skipped and export simply embeds no notes. A later narration/audio request generates notes on demand via [`generate-audio`](workflows/generate-audio.md).
 
@@ -688,6 +697,8 @@ python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 - [x] First-page gate run after page 1 (errors fixed before page 2)
 - [x] All SVGs generated to svg_output/
 - [x] svg_quality_checker.py passed (0 errors)
+- [x] Text-geometry warnings dispositioned one by one (fix or stated intent)
+- [x] Selective pixel check run on flagged + hero/scrim pages (silently skipped when playwright or the preview server is absent)
 - [x] Structured-template PPTX warnings dispositioned one by one when applicable
 - [x] Speaker notes generated at notes/total.md (only when requested; skipped by default)
 ```

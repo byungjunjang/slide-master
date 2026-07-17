@@ -152,6 +152,35 @@ Before the first SVG page, output a confirmation listing: canvas dimensions, bod
 
 > Note: block-level phrasing, applied *within* the page's `page_rhythm` density (below), not against it.
 
+**Text width & wrap budget (Mandatory)**: SVG has no auto-wrap — every line
+break is the author's manual `<tspan>` split, so every wrap decision is width
+arithmetic done (or skipped) at draw time. Run the arithmetic **before**
+drawing any text block, with the same approximation the quality checker uses:
+`est_width = Σ glyph widths + letter-spacing × (chars − 1)`, where a CJK /
+full-width glyph is `1.0 × font-size`, a Latin letter / digit / ASCII symbol
+is `0.55 × font-size`, and a space is `0.25 × font-size`.
+
+1. Determine the zone width: from the text `x` to the nearest right boundary —
+   content margin (canvas width − ~5%), panel edge, image edge, or column
+   gutter, whichever is nearest.
+2. `est_width(sentence, font-size) ≤ zone width` → draw it as **one line**.
+   Never wrap a sentence that fits — an unnecessarily wrapped line is a
+   defect the quality checker flags.
+3. Over budget → apply the repair ladder below, in order.
+4. Vertical is arithmetic too: last baseline = `y + Σdy`; the block bottom
+   (`+ 0.2 × font-size` descent) MUST clear the next element's top edge and
+   the canvas bottom margin. Allocate wrapped-line count × line-height before
+   placing the block (§1.0).
+
+**Repair ladder (over-budget copy — apply in order)**:
+
+| # | Strategy | Bounds |
+|---|---|---|
+| ① | **Shorten the copy** — lead / core-message first | Executor-owned micro-shortening at draw time: meaning preserved, no fact distortion; the dropped detail must already exist in — or be moved into — a supporting block on the page. CJK costs a full font-size px per glyph, so trimming a few characters buys real room. |
+| ② | **Redistribute the zone** | When the colliding neighbor can move: narrow the panel / image column, rebalance margins. Useless on full-width pages; costs layout balance. |
+| ③ | **Balanced line break** | **Body prose only** — break at word / phrase boundaries, balance the line lengths, never leave an orphan word on the last line. **Not permitted for lead / core-message / subtitle**: a one-sentence lead wrapping to two lines is itself a defect (user norm, 2026-07-17). |
+| ④ | **Font reduction** | Forbidden in principle. The §1.0 bounded last resort (body only, local, max −4px) is unchanged; lead / title sizes never shrink to fit. |
+
 **If `spec_lock.md` is missing**: emit `warning: spec_lock.md missing — generating without execution lock` once, then proceed using `design_spec.md` values. Expected only for legacy projects; new projects MUST have it (see [strategist.md](strategist.md) §6 step 4).
 
 **Forbidden — values outside the lock**:
@@ -262,7 +291,7 @@ Colors, fonts, and icons still come exclusively from `spec_lock.md` in both bran
 - **Reference — image-led promotional pages (not a constraint)**: for travel, venue, product-introduction, hospitality, event, real-estate, and brochure-style decks, let images define the page skeleton before placing text. Consult [`image-layout-patterns.md`](image-layout-patterns.md) §Imported Deck Patterns and prefer patterns such as `#74` TOC image-navigation cards, `#75` asymmetric chapter banners, `#77` photo mosaic with a text cell, `#78` ambient banner + evidence photo + text panel, `#79` ribbon-header image cards, and `#80` side hero image + staggered evidence cards before falling back to plain left/right image-text splits.
 - **Phased batch generation** (recommended):
   1. **Visual Construction Phase**: generate all SVG pages sequentially for visual consistency. Use layout judgment for chart marks during the draft. **MUST embed plot-area markers** per §3.1 below on every chart page — coordinate calibration is a post-generation step (see [`workflows/verify-charts.md`](../workflows/verify-charts.md)) that depends on these markers — and **native object metadata** per §3.2 on every eligible data-chart page. **Reach for native presets** per §3.0 as you draw each page: a block arrow, chevron, banner/ribbon, callout, standard flowchart node, or star is authored through `preset_shape_svg.py` at draw time — decided by the object's intent as you create it, never by scanning finished paths, and never committed to a bare `<path>`/`<polygon>` when a preset expresses it (a gradient fill/stroke or a pattern fill is the one paint exception — keep those ordinary SVG). **First-page gate (Mandatory)**: after completing the first page, run `python3 scripts/svg_quality_checker.py <project_path>/svg_output/<first_page>.svg` and fix every error before drawing page 2 — structural violations are systematic, and a first-page error repeated deck-wide costs a whole-deck rewrite.
-  2. **Quality Check Gate**: run `python3 scripts/svg_quality_checker.py <project_path>` on `svg_output/`. Any `error` (banned features, viewBox mismatch, spec_lock drift, non-PPT-safe font, etc.) MUST be fixed on the offending page before proceeding — regenerate and re-check. Address `warning`s when straightforward. On a structured deck/layout template route, PPTX-structure warnings (empty Layout, framing-only Layout, bare Master, duplicate layout keys) are never acknowledge-and-release: list each one and either fix the page/lock or state per warning why the flagged state is intended (e.g. a zero-slot cover) before proceeding. Flat free-design/brand-only routes have no Master/Layout checkpoint. Do NOT defer to after `finalize_svg.py` — finalize rewrites SVG and masks some violations.
+  2. **Quality Check Gate**: run `python3 scripts/svg_quality_checker.py <project_path>` on `svg_output/`. Any `error` (banned features, viewBox mismatch, spec_lock drift, non-PPT-safe font, etc.) MUST be fixed on the offending page before proceeding — regenerate and re-check. Address `warning`s when straightforward. On a structured deck/layout template route, PPTX-structure warnings (empty Layout, framing-only Layout, bare Master, duplicate layout keys) are never acknowledge-and-release: list each one and either fix the page/lock or state per warning why the flagged state is intended (e.g. a zero-slot cover) before proceeding. Flat free-design/brand-only routes have no Master/Layout checkpoint. Text-geometry B-class warnings (unnecessary wrap / over-width copy) are likewise never acknowledge-and-release: disposition each one — fix it (unwrap, shorten per the repair ladder, redistribute the zone, or re-break at a word boundary) or state why the flagged break is intended. Do NOT defer to after `finalize_svg.py` — finalize rewrites SVG and masks some violations.
   3. **Logic Construction Phase (opt-in)**: only when `design_spec.md §X` records a speaker-notes request — after SVGs pass the quality check, batch-generate speaker notes for narrative continuity (§8). Default `None requested` → skip; write no `notes/` files.
 
 ### 3.0 Native Preset Shape Selection

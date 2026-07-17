@@ -46,6 +46,8 @@ OPTIONAL_MODULES = (
     ("flask", "flask", "Confirm UI page + live preview fall back to chat-only"),
     ("numpy", "numpy", "image placeholder detection and watermark tooling degrade"),
     ("requests", "requests", "web image search / web_to_md unavailable"),
+    ("playwright", "playwright", "Step 6 selective pixel check and visual-review "
+     "rendering are skipped (static geometry gate still runs)"),
 )
 FONT_FAMILY = "Pretendard"
 # Per-directory guard against a pathological scan. Hitting it means "unknown",
