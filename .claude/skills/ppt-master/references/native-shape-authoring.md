@@ -1,4 +1,4 @@
-> See [`shared-standards.md`](./shared-standards.md) §§1.4–1.5 for the native-shape metadata and validation contracts.
+> See [`native-objects.md`](./native-objects.md) §§1–2 for the native-shape metadata and validation contracts.
 
 # Native Preset Shape Authoring Reference
 

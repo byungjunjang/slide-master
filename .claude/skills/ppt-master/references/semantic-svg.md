@@ -18,7 +18,7 @@ The completed SVG remains the full visible page. Removing the metadata must not 
 
 **Hard rule — route boundary**: Free-design and brand-only pages use `pptx_structure.mode: flat` and omit every Master/Layout/layer/placeholder marker in this document — but they still declare the root `data-pptx-page-role` of §4.1. Deck/layout template pages declare their final Master and Layout before drawing begins and omit `data-pptx-page-role`; the structured exporter compiles that contract and never selects, clusters, distills, or visually infers it.
 
-**Hard rule — specialized metadata wins**: Use Master/Layout/placeholder metadata for native structure, `data-pptx-native` for chart/table reconstruction, and the imported/authored shape metadata defined in [`shared-standards.md`](./shared-standards.md) §§1.4–1.5. Do not duplicate those facts with `data-pptx-role`.
+**Hard rule — specialized metadata wins**: Use Master/Layout/placeholder metadata for native structure, `data-pptx-native` for chart/table reconstruction, and the imported/authored shape metadata defined in [`native-objects.md`](./native-objects.md) §§1–2. Do not duplicate those facts with `data-pptx-role`.
 
 ---
 
@@ -76,7 +76,7 @@ Use one direct root group as the authoring boundary and one compatible direct ch
 | Identity | `data-pptx-placeholder-idx` is optional; effective indices must be unique within one Layout. Preserve a source index when reconstructing an existing PPTX. |
 | Fixed decoration | Reusable decoration does not belong in the slot. Author it as a root Layout atom. Page-specific labels/captions use another slot or remain Slide-local. |
 
-Canonical placeholder values are `title`, `subtitle`, `body`, `picture`, `chart`, `table`, `object`, `media`, `date`, `footer`, and `slide-number`. Carrier compatibility is defined in [`shared-standards.md`](./shared-standards.md) §7.
+Canonical placeholder values are `title`, `subtitle`, `body`, `picture`, `chart`, `table`, `object`, `media`, `date`, `footer`, and `slide-number`. Carrier compatibility is defined in [`structured-templates.md`](./structured-templates.md) §2.
 
 ### 3.2 Explicit composite proxy
 

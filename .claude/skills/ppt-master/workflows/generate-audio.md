@@ -25,7 +25,7 @@ This workflow is **independent**: it reads `notes/*.md` and queries the selected
 
 If `notes/*.md` are missing but `notes/total.md` exists, run `total_md_split.py <project_path>` first.
 
-If the deck has no notes at all (the default pipeline skips speaker notes unless requested), generate them now: write `notes/total.md` per [`executor-base.md`](../references/executor-base.md) §8 (reading `design_spec.md §IX` for per-page core messages), then run `total_md_split.py <project_path>`, then continue below.
+If the deck has no notes at all (the default pipeline skips speaker notes unless requested), generate them now: write `notes/total.md` per [`speaker-notes.md`](../references/speaker-notes.md) (reading `design_spec.md §IX` for per-page core messages), then run `total_md_split.py <project_path>`, then continue below.
 
 ---
 

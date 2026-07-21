@@ -618,10 +618,13 @@ Read references/shared-standards.md               # REQUIRED: SVG/PPT technical 
 Read references/native-shape-authoring.md         # REQUIRED: stock-shape selection and fragment helper contract
 Read references/modes/<locked-mode>.md            # narrative skeleton (spec_lock.md `mode`)
 Read references/visual-styles/<locked-style>.md   # aesthetic (spec_lock.md `visual_style`)
+Read references/native-objects.md                 # CONDITIONAL: deck plans data-chart or text-grid table pages (spec_lock.md `page_charts` / design_spec.md §VII) — marker schemas for executor-base.md §3.2 transcription
+Read references/structured-templates.md           # CONDITIONAL: spec_lock.md `pptx_structure.mode: structured` or a mirror template — Master/Layout/placeholder authoring + mirror consumption
+Read references/speaker-notes.md                  # CONDITIONAL: design_spec.md §X records a speaker-notes request (default off)
 Read .claude/skills/diagram-design/SKILL.md       # CONDITIONAL: deck has structural/conceptual diagram pages (routing: executor-base.md)
 ```
 
-> Read executor-base + shared-standards + native-shape-authoring + the one locked mode file + the one locked visual-style file. For `mode: custom` or `visual_style: custom`, skip that preset file and follow `mode_behavior` / `visual_style_behavior` from `spec_lock.md` instead. Never glob `modes/` or `visual-styles/`.
+> Read executor-base + shared-standards + native-shape-authoring + the one locked mode file + the one locked visual-style file. For `mode: custom` or `visual_style: custom`, skip that preset file and follow `mode_behavior` / `visual_style_behavior` from `spec_lock.md` instead. Never glob `modes/` or `visual-styles/`. Load each CONDITIONAL file only when its trigger holds for this deck — never proactively "just in case"; a mid-deck trigger change (e.g. the user adds a chart page) loads the file once at that point.
 
 **Design Parameter Confirmation (Mandatory)**: before the first SVG, output key design parameters from the spec (canvas dimensions, color scheme, font plan, body font size). See executor-base.md §2.
 
@@ -947,6 +950,9 @@ Before switching roles, **MUST first read** the corresponding reference file. Ou
 | Resource | Path |
 |----------|------|
 | Shared technical constraints | `references/shared-standards.md` |
+| Native object conversion contracts (conditional load) | `references/native-objects.md` |
+| Structured template route standards (conditional load) | `references/structured-templates.md` |
+| Speaker-notes framework (opt-in load) | `references/speaker-notes.md` |
 | Native preset shape authoring | `references/native-shape-authoring.md` |
 | Semantic SVG marker contract | `references/semantic-svg.md` |
 | Canvas format specification | `references/canvas-formats.md` |
