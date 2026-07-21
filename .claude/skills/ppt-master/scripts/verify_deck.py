@@ -27,10 +27,11 @@ Warnings (reported, non-blocking):
       overflow / collisions in the converted deck
 
 Usage:
-    python3 scripts/verify_deck.py <project_path>
+    python3 scripts/verify_deck.py <project_path> [--strict] [--no-render]
 
 Examples:
     python3 scripts/verify_deck.py projects/20260714_ai_agent_adoption
+    python3 scripts/verify_deck.py projects/<name> --no-render   # skip only the contact-sheet render
 
 Environment:
     OFFICECLI_BIN — path forces that binary; empty string disables the
@@ -194,9 +195,10 @@ def _run_officecli(args: list[str], timeout: int) -> Optional[subprocess.Complet
         return None
 
 
-def officecli_checks(project: Path) -> tuple[list[str], list[str]]:
+def officecli_checks(project: Path, render: bool = True) -> tuple[list[str], list[str]]:
     """OpenXML validation + converted-PPTX contact sheet. Measurement-only:
-    skipped entirely when officecli is absent."""
+    skipped entirely when officecli is absent. render=False keeps the
+    validation and skips only the contact-sheet screenshot."""
     binary = _officecli_bin()
     if binary is None:
         return [], []
@@ -225,6 +227,9 @@ def officecli_checks(project: Path) -> tuple[list[str], list[str]]:
         head = warns[0].get("message", "") if warns else ""
         warnings.append(f"officecli validate schema warnings on {pptx.name} "
                         f"({len(warns)} line(s), non-blocking): {head[:200]}")
+
+    if not render:
+        return failures, warnings
 
     if not failures:
         out = project / "_pptx_render" / f"{pptx.stem}-grid.png"
@@ -326,6 +331,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("project", help="path to projects/<project_name>")
     parser.add_argument("--strict", action="store_true",
                         help="treat warnings as failures")
+    parser.add_argument("--no-render", action="store_true",
+                        help="skip only the OfficeCLI contact-sheet render; "
+                             "OpenXML validation and all other checks stay on")
     return parser
 
 
@@ -339,7 +347,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 2
 
     failures, warnings = run_checks(project)
-    cli_failures, cli_warnings = officecli_checks(project)
+    cli_failures, cli_warnings = officecli_checks(project, render=not args.no_render)
     failures += cli_failures
     warnings += cli_warnings
 

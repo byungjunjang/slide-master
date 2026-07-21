@@ -1,6 +1,6 @@
 # Confirm UI — Strategist Confirmation Stage Page
 
-> The interactive, visual surface for SKILL.md Step 4 (the Strategist confirmation stage). Enumerable fields list **all** options from a catalog with the AI's recommendation badged; generative fields (color, typography, generated-image style) show **≥3** AI candidates (creative recommendations always offer real choice — same rule as the h.5 image strategy; fewer only on the honest-shortfall exception, with a stated reason). Fields whose universe is open (canvas, mode, visual style, icons) also get a **Custom** box; image usage is a multi-select source list plus a free-text `image_notes` box. Fully closed fields (the Stage-1 template card, template adherence when a deck/layout template is active or a deck card is selected, AI source when applicable, formula policy, generation mode, refine spec) do not. The AI writes its recommendation to `recommendations.json`; the user's final choices are written back to `result.json` for the AI to read. On confirm the page saves the result and shuts the server down (auto-close). The chat path is always a valid fallback — if the browser cannot open (remote / headless / web host), the AI presents the same staged confirmation in chat.
+> The interactive, visual surface for SKILL.md Step 4 (the Strategist confirmation stage). Enumerable fields list **all** options from a catalog with the AI's recommendation badged; generative fields (color, typography, generated-image style) show **≥3** AI candidates (creative recommendations always offer real choice — same rule as the h.5 image strategy; fewer only on the honest-shortfall exception, with a stated reason). Fields whose universe is open (canvas, mode, visual style, icons) also get a **Custom** box; image usage is a multi-select source list plus a free-text `image_notes` box. Fully closed fields (the Stage-1 template card, template adherence when a deck/layout template is active or a deck card is selected, AI source when applicable, formula policy, generation mode, refine spec) do not. The AI writes its recommendation to `recommendations.json`; the user's final choices are written back to `result.json` for the AI to read. On confirm the page saves the result and shuts the server down (auto-close). The chat path is always a valid fallback — if the browser cannot open (remote / headless / web host), the AI presents the same confirmation bundle in chat.
 
 ## Authority and Scope
 
@@ -8,7 +8,7 @@
 |---|---|
 | Step 4 gate and pipeline order | `SKILL.md` |
 | Confirm UI schema | This document |
-| Stage 1 / Stage 2 / Stage 3 field membership | This document |
+| Single-pass vs staged field membership | This document |
 | Server launch / wait / shutdown behavior | This document |
 | Port and lock behavior | This document |
 | Chat fallback equivalence | This document |
@@ -16,14 +16,14 @@
 
 **Hard rule**: Keep detailed Confirm UI behavior here. `SKILL.md` may summarize the orchestration, but it should not duplicate the full JSON schema, catalog behavior, or launcher lifecycle.
 
-**Fallback rule**: Browser failure never cancels Step 4. Re-check `result.json` once, then use the chat confirmation path with the same three-stage semantics.
+**Fallback rule**: Browser failure never cancels Step 4. Re-check `result.json` once, then use the chat confirmation path with the same single-bundle semantics (staged in chat only when the user asked for the staged flow).
 
 ## `confirm_ui/server.py`
 
 ```bash
-python3 scripts/confirm_ui/server.py <project_path> --daemon --wait   # launch + wait for Stage 1
-python3 scripts/confirm_ui/server.py <project_path> --wait-only --wait-stage stage2  # Stage 2: wait for the design-system handoff
-python3 scripts/confirm_ui/server.py <project_path> --wait-only       # Stage 3: wait for the final result
+python3 scripts/confirm_ui/server.py <project_path> --daemon --wait   # launch + wait (single-pass default: returns on the final result)
+python3 scripts/confirm_ui/server.py <project_path> --wait-only --wait-stage stage2  # staged flow only: wait for the design-system handoff
+python3 scripts/confirm_ui/server.py <project_path> --wait-only       # staged flow only: wait for the final result
 python3 scripts/confirm_ui/server.py <project_path> --daemon
 python3 scripts/confirm_ui/server.py <project_path> --daemon --port 5051
 python3 scripts/confirm_ui/server.py <project_path> --no-browser
@@ -70,26 +70,29 @@ The front-end loads `/api/catalogs` (served by the confirm server) and falls bac
 
 Round-trip and session files live under `<project_path>/confirm_ui/`.
 
-### Three-stage flow
+### Single-pass default and the staged flow
 
-The page runs as a **three-stage wizard in one browser session**. `recommendations.json` carries a top-level `"stage"` selector. Legacy payloads that still carry `"tier"` are accepted as read-only compatibility input, but new files must use `stage`.
+**Default — single-pass**: the main pipeline writes `recommendations.json` with **no top-level `stage` key**; the page renders every section at once and one **Confirm** writes the final `result.json` (`status: "confirmed"`). Coherence comes from the client-side cascades (deck-pick re-defaults, body-size ramp cascade) plus the AI's post-confirm reconciliation (SKILL.md Step 4).
+
+**Staged flow (explicit user request only)**: the page runs as a **three-stage wizard in one browser session**. `recommendations.json` carries a top-level `"stage"` selector. Legacy payloads that still carry `"tier"` are accepted as read-only compatibility input, but new staged files must use `stage`.
 
 | `recommendations.json stage` | Page renders | Button | On submit |
 |---|---|---|---|
 | `"stage1"` | direction anchors — the `template` card first (decks-only selector, or a locked badge when a template is already installed; a deck pick re-defaults the sections below) with `template_adherence` when a deck/layout template is active or a deck card is selected, then canvas, audience + `content_divergence` + `delivery_purpose` *(PPT only — omitted on non-PPT canvases, not written to the result)*, mode + visual_style | **Next** | writes `result.json` `{ stage: "stage1", status: "stage1-confirmed", <anchors> }`; the page does **not** close — it shows a "deriving…" state and polls `GET /api/recommendations` |
 | `"stage2"` | design system — page count, color, icons, typography, formula policy | **Next** | writes `result.json` `{ stage: "stage2", status: "stage2-confirmed", <anchors + design system> }`; the page stays open and polls for Stage 3 |
 | `"stage3"` | images and execution — image usage + generated-image style, generation mode, refine spec | **Confirm** | writes `result.json` `{ stage: "final", status: "confirmed", <all fields> }`, then shuts the page down |
-| *(absent)* | legacy single-pass — every section on one page | **Confirm** | single final write (`status: "confirmed"`) — backward-compatible |
+| *(absent)* | **single-pass (pipeline default)** — every section on one page | **Confirm** | single final write (`status: "confirmed"`) |
 
-The AI launches Stage 1 (`--daemon --wait`), reads the stage-1 result, **re-derives** the design-system candidates from the user's actual anchors, overwrites `recommendations.json` with `"stage": "stage2"`, and re-attaches with `--wait-only --wait-stage stage2`. After the Stage-2 result, it **re-derives** image and execution recommendations from the confirmed anchors + design system, overwrites `recommendations.json` with `"stage": "stage3"`, and re-attaches with `--wait-only` for the final result. The page preserves earlier selections across transitions (single JS session). `GET /api/session` is the browser's waiting-state endpoint: it is derived from `recommendations.json`, `result.json`, and the active server port, then persisted to `session.json` so a recovered server can resume the same stage state. Only after `/api/session` reports that the next recommendation stage is ready does the page fetch `GET /api/recommendations`. `GET /api/recommendations` is served `no-store` so polls see overwrites; on later stages the server folds already-confirmed choices from `result.json` back into the payload so a refresh / reopen re-initializes from the user's actual choices even though those sections are no longer rendered.
+In the staged flow the AI launches Stage 1 (`--daemon --wait`), reads the stage-1 result, **re-derives** the design-system candidates from the user's actual anchors, overwrites `recommendations.json` with `"stage": "stage2"`, and re-attaches with `--wait-only --wait-stage stage2`. After the Stage-2 result, it **re-derives** image and execution recommendations from the confirmed anchors + design system, overwrites `recommendations.json` with `"stage": "stage3"`, and re-attaches with `--wait-only` for the final result. The page preserves earlier selections across transitions (single JS session). `GET /api/session` is the browser's waiting-state endpoint: it is derived from `recommendations.json`, `result.json`, and the active server port, then persisted to `session.json` so a recovered server can resume the same stage state. Only after `/api/session` reports that the next recommendation stage is ready does the page fetch `GET /api/recommendations`. `GET /api/recommendations` is served `no-store` so polls see overwrites; on later stages the server folds already-confirmed choices from `result.json` back into the payload so a refresh / reopen re-initializes from the user's actual choices even though those sections are no longer rendered.
 
-**Stage progression guard.** Stages confirm strictly in order — a staged `recommendations.json` may only run **one** stage past the last confirmed result. A file that skips ahead (e.g. `"stage3"` while only stage 1 is confirmed — typically an attempt to collapse Stage 2 because an active template already fixes color / typography) is never rendered: `/api/session` keeps reporting `waiting_agent` with `stage_skip: true`, and `--wait` / `--wait-only` exit `2` with a directive log line naming the expected stage to rewrite. An active deck/layout template — `strict` adherence included — does not exempt Stage 2: the template skin becomes the recommended color / typography candidate, not a reason to skip the confirmation. Legacy single-pass files (no `stage`) are not staged and bypass the guard.
+**Stage progression guard.** Stages confirm strictly in order — a staged `recommendations.json` may only run **one** stage past the last confirmed result. A file that skips ahead (e.g. `"stage3"` while only stage 1 is confirmed — typically an attempt to collapse Stage 2 because an active template already fixes color / typography) is never rendered: `/api/session` keeps reporting `waiting_agent` with `stage_skip: true`, and `--wait` / `--wait-only` exit `2` with a directive log line naming the expected stage to rewrite. An active deck/layout template — `strict` adherence included — does not exempt Stage 2: the template skin becomes the recommended color / typography candidate, not a reason to skip the confirmation. Single-pass files (no `stage` — the pipeline default) are not staged and bypass the guard.
 
 ### Input — `recommendations.json` (written by Strategist before launch)
 
+Single-pass (default) files omit `stage`; a staged file adds `"stage": "stage1"` (then `stage2` / `stage3` on the later overwrites):
+
 ```json
 {
-  "stage": "stage1",
   "lang": "zh",
   "recommend": {
     "canvas": "ppt169",
@@ -204,12 +207,12 @@ The AI launches Stage 1 (`--daemon --wait`), reads the stage-1 result, **re-deri
 }
 ```
 
-The shape above is the **final** (Stage 3) result, carrying Stage 1 anchors, Stage 2 design-system fields, and Stage 3 image / execution fields. The intermediate **Stage 1** write carries only the anchor fields plus `"stage": "stage1"`, `"status": "stage1-confirmed"`; the AI reads it to re-derive Stage 2 and never treats it as the final confirmation. The intermediate **Stage 2** write carries anchors + design-system fields plus `"stage": "stage2"`, `"status": "stage2-confirmed"`; the AI reads it to re-derive Stage 3 and never treats it as final. Legacy `tier1` / `tier2` results are accepted for old sessions but are no longer written. A legacy single-pass write has no `stage` (or `stage: "final"`) and `status: "confirmed"`.
+The shape above is the **final** result, carrying every field. A single-pass write (the pipeline default) has no `stage` (or `stage: "final"`) and `status: "confirmed"`. In the staged flow, the intermediate **Stage 1** write carries only the anchor fields plus `"stage": "stage1"`, `"status": "stage1-confirmed"`; the AI reads it to re-derive Stage 2 and never treats it as the final confirmation. The intermediate **Stage 2** write carries anchors + design-system fields plus `"stage": "stage2"`, `"status": "stage2-confirmed"`; the AI reads it to re-derive Stage 3 and never treats it as final. Legacy `tier1` / `tier2` results are accepted for old sessions but are no longer written.
 
 - Any option field may instead hold a **free-text custom string** (the user picked **Custom**); `color` / `typography` custom entries set `name: "custom"`. Image usage is not a custom string in new results: it is a source-id array, with free-text strategy captured in `image_notes`.
 - `template` is the Stage-1 card value: a deck id, `"free"`, or — locked card — the installed template's display name (informational; never a re-install trigger). `template_adherence` accompanies it only when a deck is active.
 - `image_ai_path` and `image_strategy` are omitted from `result.json` unless `image_usage` includes `ai`. Both are honored downstream as confirmed choices — and the page is only a convenience surface over the **canonical chat channel**: the same choices made in chat are honored identically when no `result.json` exists. `image_ai_path` drives the Step 5 generation ladder (`image-generator.md` §7 — `codex` forces Path A only; `api` forces the API backend; legacy `host-native` reads as `auto` and legacy `manual` routes to the user-drop handoff); the chosen `image_strategy` candidate is locked verbatim by Strategist h.5 (no re-pick).
-- After the user clicks the **final Confirm** (Stage 3, or single-pass), the page saves `result.json` and shuts the server down (auto-close). Stage-1 and Stage-2 **Next** keep the page open while it polls for the re-derived downstream stage. In the default flow, the first `--daemon --wait` returns on the stage-1 result, `--wait-only --wait-stage stage2` returns on the stage-2 result, and the final `--wait-only` returns on the final result; the AI reads each immediately — no extra chat confirmation is required. Chat confirmation remains the fallback when the page cannot be used. Either way, Step 4 ends with a `--shutdown` cleanup so a never-confirmed page cannot keep holding port 5050 ahead of the Step 6 live preview.
+- After the user clicks the **final Confirm** (single-pass, or Stage 3 of the staged flow), the page saves `result.json` and shuts the server down (auto-close). In the default single-pass flow, the one `--daemon --wait` returns on the final result. In the staged flow, Stage-1 and Stage-2 **Next** keep the page open while it polls for the re-derived downstream stage: the first `--daemon --wait` returns on the stage-1 result, `--wait-only --wait-stage stage2` returns on the stage-2 result, and the final `--wait-only` returns on the final result; the AI reads each immediately — no extra chat confirmation is required. Chat confirmation remains the fallback when the page cannot be used. Either way, Step 4 ends with a `--shutdown` cleanup so a never-confirmed page cannot keep holding port 5050 ahead of the Step 6 live preview.
 
 ## Scope
 
