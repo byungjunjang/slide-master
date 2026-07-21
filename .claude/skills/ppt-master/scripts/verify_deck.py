@@ -10,7 +10,8 @@ drift, off-spec planning artifacts, placeholder images.
 Checks (FAIL → non-zero exit):
     - svg_output/ non-empty; every page matches the project canvas viewBox
     - svg_final/ page parity with svg_output/ and not stale (finalize re-run
-      needed after SVG edits)
+      needed after SVG edits); an entirely absent svg_final/ is valid —
+      finalize is on-demand (deferred by default)
     - a native PPTX exists in exports/, is a valid zip, has one slide per SVG
       page, every slide carries editable DrawingML, and is not stale
     - validate_spec.py passes on design_spec.md + spec_lock.md
@@ -269,9 +270,14 @@ def run_checks(project: Path) -> tuple[list[str], list[str]]:
             failures.append(f"pages not on canvas viewBox \"{viewbox}\": "
                             + ", ".join(bad))
 
-    # 3. stage parity + freshness
+    # 3. stage parity + freshness — svg_final/ is an on-demand preview
+    # (deferred by default): entirely absent means finalize was never
+    # requested, which is valid; once it exists it must be complete + fresh.
     fin_pages = _svgs(fin_dir)
-    if len(fin_pages) != len(pages):
+    if not fin_pages:
+        print("[verify_deck] svg_final/ absent — deferred finalize "
+              "(run finalize_svg.py when SVG previews are needed)")
+    elif len(fin_pages) != len(pages):
         failures.append(f"svg_final/ ({len(fin_pages)}) != svg_output/ "
                         f"({len(pages)}) — re-run finalize_svg.py")
     elif _newest_mtime(fin_pages) < _newest_mtime(pages):

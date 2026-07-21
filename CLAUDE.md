@@ -97,7 +97,7 @@ python3 .claude/skills/ppt-master/scripts/native_enhance_pptx.py apply <project_
 
 # Post-processing pipeline: run sequentially, one command at a time
 python3 .claude/skills/ppt-master/scripts/total_md_split.py <project_path>   # only when speaker notes were requested (notes are opt-in, default off)
-python3 .claude/skills/ppt-master/scripts/finalize_svg.py <project_path>
+python3 .claude/skills/ppt-master/scripts/finalize_svg.py <project_path>  # on-demand (deferred by default): svg_final/ preview only — export reads svg_output/ directly
 python3 .claude/skills/ppt-master/scripts/svg_to_pptx.py <project_path>
 # Mergeable dy-stacked paragraph blocks collapse into one editable text frame by default; add --no-merge to keep every line as its own frame (strict line fidelity). See SKILL.md Step 7.3.
 

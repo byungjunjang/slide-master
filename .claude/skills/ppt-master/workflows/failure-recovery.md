@@ -29,7 +29,7 @@ Central recovery rules for common PPT Master failures. Route-specific workflow f
 | Browser annotations submitted during generation | No | Defer application until after Step 7 | User asks to apply annotations | `live-preview` Step 2 |
 | `svg_quality_checker.py` error | Yes | Fix the affected SVG, then rerun checker | No unless required asset is missing | Step 6 Visual Construction |
 | `svg_quality_checker.py` warning | No | Fix when straightforward; otherwise acknowledge residual risk (text-geometry warnings: disposition each — fix or stated intent) | No | Step 6 warning handling |
-| Post-export visual defect (verify_deck contact sheet / user review) | No | Hand-edit the owning `svg_output/` page (main agent), rerun Step 7.2 + 7.3 (finalize + export; verN auto-increments) | Only when the fix needs a content decision | Step 7.2 |
+| Post-export visual defect (verify_deck contact sheet / user review) | No | Hand-edit the owning `svg_output/` page (main agent), rerun Step 7.2 (only if `svg_final/` exists — it is deferred by default) + 7.3 (export; verN auto-increments) | Only when the fix needs a content decision | Step 7.3 |
 | Selective pixel check unavailable (playwright or preview server missing) | No | Skip silently — the static geometry gate already ran | No | Step 6 gate |
 | Missing `notes/total.md` (only when notes were requested in `design_spec.md §X`; absence is normal on the default no-notes path) | Yes | Generate speaker notes before Step 7 | No | Step 6 Logic Construction |
 | Step 7 image readiness missing manual files | Yes | None for user-drop assets; list each missing image's filename, purpose, and recommended size | Yes — user places chosen images at `images/<filename>` | Step 7 image readiness gate |

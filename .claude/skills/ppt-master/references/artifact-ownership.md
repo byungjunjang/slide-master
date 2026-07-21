@@ -49,7 +49,7 @@ Global artifact ownership rules for PPT Master projects.
 | SVG source | `svg_output/` is the only author source for generated pages. |
 | Page-design closure | On SVG-authoring routes, every visible exported-slide object exists in the corresponding page SVG or an explicitly referenced visual asset. |
 | Package-behavior separation | Speaker notes, animations, transitions, narration, and direct native-PPTX workflows keep their owning artifacts; do not force them into SVG metadata. |
-| Post-processed SVG | `svg_final/` is disposable, must be rebuilt in Step 7.2, and serves only as a self-contained visual preview / manually insertable SVG picture. |
+| Post-processed SVG | `svg_final/` is disposable, generated on demand by Step 7.2 (deferred by default), and serves only as a self-contained visual preview / manually insertable SVG picture. |
 | Export source | The only supported generated-PPTX route reads `svg_output/` through the project SVG-to-DrawingML converter. A diagnostic `-s final` override does not change ownership or create a supported release route. |
 | Shape-conversion boundary | PowerPoint's manual Convert-to-Shape operation on `svg_final/` is outside the project compatibility contract. |
 | Confirmation | Final `confirm_ui/result.json` or chat confirmation overrides recommendations. |
