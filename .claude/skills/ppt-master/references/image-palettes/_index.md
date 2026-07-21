@@ -57,7 +57,7 @@ When no preset temperament matches (brand HEX outside preset ranges, ceremonial 
 
 > Note: §4's rendering × palette matrix only covers the 14 presets. When `palette: custom`, Strategist owns the compatibility judgment in h.5.
 
-**Hard rule**: `custom` is a tail-case, not a default. See [`strategist.md`](../strategist.md) h.5 for the one-`custom`-per-dimension limit.
+**Hard rule**: `custom` is a tail-case, not a default. See [`strategist-images.md`](../strategist-images.md) h.5 for the one-`custom`-per-dimension limit.
 
 ---
 

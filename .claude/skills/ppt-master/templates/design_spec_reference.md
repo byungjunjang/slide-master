@@ -2,7 +2,7 @@
 
 > Human-readable design narrative — rationale, audience, style, color choices, content outline. Read once by downstream roles for context.
 >
-> Machine-readable execution contract: `spec_lock.md` (color / typography / icon / image short form). Executor re-reads `spec_lock.md` before every SVG page to resist context-compression drift. Keep both in sync; on divergence, `spec_lock.md` wins.
+> Machine-readable execution contract: `spec_lock.md` (color / typography / icon / image short form). Executor re-reads `spec_lock.md` on the milestone cadence (executor-base.md §2.1) to resist context-compression drift. Keep both in sync; on divergence, `spec_lock.md` wins.
 
 ## I. Project Information
 
@@ -242,13 +242,11 @@ Catalog read: 76 templates
 | ---- | -------- | ---- | ------------------------------------------------- | ----- |
 | P05 | grouped_bar_chart | `templates/charts/grouped_bar_chart.svg` | "Pick for 2-4 series side-by-side across the same categories (e.g. YoY/QoQ). Skip if showing composition within each category (use stacked_bar_chart)." | YoY revenue comparison by product line |
 
-**Runners-up considered** (3 entries minimum, drawn from real second-best matches in this deck):
+**Runners-up considered** (only genuinely close second-best calls; at least 1 when any viz page exists):
 
 - `<key_A>` | rejected for P05: `<reason citing this deck's specifics>`
-- `<key_B>` | rejected for P##: `<reason>`
-- `<key_C>` | rejected for P##: `<reason>`
 
-> **Audit rule**: `Summary-quote` must be copy-pasted verbatim — paraphrasing breaks the audit. Every template name listed must `grep` cleanly inside `charts_index.json` (so misspellings/inventions fail). If fewer than 3 viz pages exist, list what exists and note "fewer than 3 viz pages"; runners-up still required for each page that does exist.
+> **Audit rule**: `Summary-quote` must be copy-pasted verbatim — paraphrasing breaks the audit. Every template name listed must `grep` cleanly inside `charts_index.json` (so misspellings/inventions fail). A page whose match was unambiguous needs no runner-up line.
 
 > **Native-preset candidates → append to `Usage`**: for a page already in this list, when its content calls for a literal stock PowerPoint shape (chevron, block arrow, standard flowchart node, callout, banner, star — judged from the page plan, not a template's name), append a candidate note to that page's `Usage`, e.g. `…usage…; native-preset candidate: chevron; Executor applies executor-base §3.0`. The Executor still selects the exact preset, frame, and paint. See [`strategist.md`](../references/strategist.md) Template Match.
 
@@ -262,47 +260,7 @@ Catalog read: 76 templates
 | comparison_p07.png | {canvas_info['dimensions']} | [ratio] | Three-panel approach comparison — panel labels stay inside the image | Diagram | #44 background image + native network/architecture diagram | ai | Pending | Three side-by-side schematic motifs comparing approach A / B / C, panel labels rendered inside each motif | embedded | local |
 | formula_001.png | [actual dimensions from formula manifest / image_analysis] | [ratio] | Block equation on P03 | Latex Formula | formula-block | formula | Rendered | `E = mc^2` — energy-mass equation | | |
 
-> **Layout pattern column is MANDATORY** — for non-formula rows, value is one or more `#<id> <name>` joined by ` + ` drawn verbatim from [`references/image-layout-patterns.md`](../references/image-layout-patterns.md) (Primary + optional Modifiers). Empty cells, paraphrased names, or invented ids invalidate the row. Formula rows are the only exception; use `formula-inline` or `formula-block`. See `strategist.md §h` GATE for the three-layer requirement (read → produce → image-as-canvas coverage).
-
-**Type** (free-form category tag; common values):
-
-- `Background` — cover / chapter / full-bleed atmosphere
-- `Photography` — real-world photo
-- `Illustration` — vector / flat / painterly art
-- `Illustration Sheet` — a grid of several spot illustrations generated as one image to be sliced (the `ai` sheet row of a `slice` set; never placed itself)
-- `Diagram` — schematic / architecture / flowchart
-- `Portrait` — single-subject person
-- `Latex Formula` — formula PNG rendered by `latex_render.py`
-
-**Status**:
-
-- **Pending** — needs AI generation or web sourcing
-- **Rendered** — deterministic formula asset already exists under `images/`
-- **Existing** — user-supplied, place in `images/`
-- **Placeholder** — not yet processed, use dashed border in SVG
-
-**Acquire Via**:
-
-- `ai` — Step 5 Image_Generator
-- `web` — Step 5 Image_Searcher
-- `formula` — already rendered by `latex_render.py` before this spec was written
-- `user` — user-supplied
-- `placeholder` — intentionally deferred
-- `slice` — a spot-illustration element derived in Step 5 by cutting it out of an `ai` sheet row (not generated on its own)
-
-> **Spot-illustration sheets (`slice`).** When the deck draws several same-family spot illustrations from one generated sheet (see [`image-generator.md`](../references/image-generator.md) §4.3), write **two kinds of rows**: one **sheet row** (`Acquire Via: ai`, `Type: Illustration Sheet`, name the intended cell shape + placement purpose in `Reference`, e.g. `portrait side-accent spot set` or `landscape footer-vignette spot set`) that is generated but **never placed** — keep it out of `spec_lock.md images`; and one **element row per used element** (`Acquire Via: slice`, `Reference` naming the parent sheet + cell/element, dimensions filled after slicing) that **is** placed — list every element row in `spec_lock.md images` so the Executor may reference it. Strategist states the shape intent; Image_Generator chooses the exact sheet ratio, grid, and slice command. An element row with no sheet row, or a sliced file absent from `spec_lock.md images`, is an invalid spec. **Each element row's Layout pattern must come from the decorative-cutout family** (`#63` sticker, `#4` edge bleed, `#58` corner fragment, `#66` fade-out, `#69` rotation, `#49` cluster) — a transparent spot is an accessory placed at the margins / off-edge / behind text, never centered in a boxed tile.
-
-**text_policy** (`ai` rows only; AI judges per row, no global default bias):
-
-- `none` — image carries no text; SVG overlays all labels
-- `embedded` — image contains in-artwork text: decorative lettering, a designed title, hand-lettered keywords, or stable visual identifiers (axis labels, subplot letters, unit symbols). Body copy / data points / long quotes never go inside the image regardless — they must stay editable. Embedded text is frozen into the raster, so the exact characters are named literally in the prompt
-
-**page_role** (`ai` rows only; leave blank for default):
-
-- *blank / `local`* — image is a region block on an SVG page
-- `hero_page` — image is the page's main voice; SVG overlay is minimal or empty. Use on covers, chapter dividers, mood transitions, single-number data heroes, closing quotes. Same rendering and palette as the rest of the deck regardless
-
-**Reference grammar** (`ai` rows): write **subject + intent + composition** only. Do NOT repeat style words ("flat design", "modern") or HEX values — both are already locked deck-wide by `design_spec §III AI Image Strategy` (rendering + palette) and `§III Color Scheme` (HEX triplet). Image_Generator's prompt assembler injects them.
+> **Row legend — conditional read.** The `Layout pattern` column contract, `Type` / `Status` / `Acquire Via` vocabularies, spot-illustration sheet (`slice`) row rules, `text_policy`, `page_role`, and the `Reference` prompt grammar live in [`strategist-images.md`](../references/strategist-images.md) §VIII Row Legend — read it whenever this section carries image rows. An image-less deck writes "no image rows" here and skips it.
 
 ---
 

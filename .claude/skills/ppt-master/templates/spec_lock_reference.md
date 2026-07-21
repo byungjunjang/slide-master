@@ -2,7 +2,7 @@
 
 > **⚠️ Skeleton for Strategist — do NOT copy verbatim into a project.** When producing `<project_path>/spec_lock.md`, emit only `##` sections with filled-in `-` data lines. Do NOT carry over any `>` blockquote guidance, HARD-rule notes, or override examples — those are author-time guidance, not runtime data. Every output line must be parseable data.
 >
-> Machine-readable execution contract. Executor MUST `read_file` this before every SVG page. Values not listed here must NOT appear in SVGs. For design narrative (rationale, audience, style), see `design_spec.md`.
+> Machine-readable execution contract. Executor MUST `read_file` this on the milestone cadence — first page of each 4-page block plus after any context compaction ([`executor-base.md`](../references/executor-base.md) §2.1). Values not listed here must NOT appear in SVGs. For design narrative (rationale, audience, style), see `design_spec.md`.
 >
 > After SVG generation begins, this is the canonical source for color / font / icon / image values. Modifications should go through `scripts/update_spec.py` to keep this file and generated SVGs in sync.
 

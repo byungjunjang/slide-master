@@ -13,7 +13,7 @@ Layout rules for pages where the image is placed **side-by-side with body text**
 ## Layout Decision Flow
 
 ```
-1. Decide narrative intent (hero / atmosphere / side-by-side / accent) — see strategist.md §h
+1. Decide narrative intent (hero / atmosphere / side-by-side / accent) — see [`strategist-images.md`](./strategist-images.md)
 2. If intent = side-by-side: continue below. Otherwise: compose per narrative; this spec does not apply.
 3. Get image original dimensions → Calculate ratio (width/height)
 4. Select layout type based on ratio
