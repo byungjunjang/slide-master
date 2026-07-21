@@ -659,7 +659,7 @@ Do not duplicate specialized identity with `data-pptx-role`. Add it only to stru
 ```bash
 python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>/svg_output/<page>.svg
 ```
-Fix every `error` on the page while its context is hot, and disposition its `text geometry:` warnings immediately (same one-line disposition contract as the deck-wide gate below). Page 1 is the strictest instance — structural violations are systematic, and a first-page error repeated deck-wide costs a whole-deck rewrite. Fixing each page before the next replaces the old end-of-deck repair loop, where every fix paid to reload a cold page.
+Fix every `error` on the page while its context is hot, and disposition its `text geometry:` warnings immediately (same one-line disposition contract as the deck-wide gate below). **Clean page = silent pass**: when the run reports no error and no text-geometry warning for the page, move straight to the next page — no disposition lines, no summary, no commentary. Page 1 is the strictest instance — structural violations are systematic, and a first-page error repeated deck-wide costs a whole-deck rewrite. Fixing each page before the next replaces the old end-of-deck repair loop, where every fix paid to reload a cold page.
 
 **Quality Check Gate (Mandatory)** — after all SVGs, BEFORE annotation handling and speaker notes (with the per-page gate in force this is a parity sweep — expect only cross-page or late-edit findings; any residual finding still follows the rules below):
 ```bash
