@@ -4,9 +4,14 @@ PPT Master - Cross-Page Consistency Checker
 
 Compares every generated page against an anchor-derived vocabulary seed:
 horizontal chrome-line y positions, spec_lock palette membership, font-size
-set, and left text margin. Read-only diagnostic for the bundle fan-out
-workflow (see workflows/parallel-execute.md); sequential decks are the
-calibration ground truth.
+set, and left text margin. Standalone read-only diagnostic — run it on any
+deck (sequential or parallel-authored) to catch cross-page chrome / palette /
+type drift after Step 6, before export. Calibrated so a clean sequential deck
+passes with 0 errors.
+
+Known limitation: the left-margin check uses one global anchor margin, so
+pages with an intentionally different archetype margin (dividers, full-bleed
+covers) may raise a warning rather than an error — inspect, do not auto-fix.
 
 Usage:
     python3 scripts/consistency_check.py <project_path> [--seed FILE]
