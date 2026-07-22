@@ -93,6 +93,7 @@ description: >
 | `${SKILL_DIR}/scripts/slice_images.py` | Slice one AI illustration sheet into individual spot-illustration elements |
 | `${SKILL_DIR}/scripts/svg_authoring_view.py` | Create a lightweight non-destructive inspection projection of PPTX-imported SVGs; never a release source |
 | `${SKILL_DIR}/scripts/svg_quality_checker.py` | SVG quality check |
+| `${SKILL_DIR}/scripts/text_fit.py` | Pre-draw line-fit oracle — checker-identical width verdict + balanced-break suggestion before authoring text (free-design speed path; see `references/executor-cheatcard.md` §4) |
 | `${SKILL_DIR}/scripts/validate_spec.py` | Planning artifact gate — `design_spec.md` §IX/§VII + `spec_lock.md` coherence, run right after the Step 4 spec output |
 | `${SKILL_DIR}/scripts/preset_shape_svg.py` | Print one registry-backed native PowerPoint preset fragment to stdout for hand-authored SVG insertion |
 | `${SKILL_DIR}/scripts/total_md_split.py` | Speaker notes splitting |
@@ -610,6 +611,12 @@ Workflow:
 🚧 **GATE**: Step 4 (and Step 5 if triggered) complete; all prerequisite deliverables are ready.
 
 **Artifact ownership**: `svg_output/` is the author source, `svg_final/` is derived, and image facts come from the regenerated `analysis/image_analysis.csv`; see [`references/artifact-ownership.md`](references/artifact-ownership.md).
+
+> **⚡ Speed accelerators (free-design flat decks only — no template, no charts, no images).** For the `pptx_structure.mode: flat` route you MAY:
+> 1. read the one-screen [`references/executor-cheatcard.md`](references/executor-cheatcard.md) **in place of** re-reading `executor-base.md` + `shared-standards.md` end-to-end (still read the short mode + visual-style files);
+> 2. instantiate page skeletons from [`references/layout-archetypes.md`](references/layout-archetypes.md) instead of re-deriving geometry per pattern;
+> 3. pre-check every text line's fit with `python3 ${SKILL_DIR}/scripts/text_fit.py "text" -s <fs> --x <x>` (or `--zone <w>`) before drawing, to skip the write→quality-warning→edit loop.
+> These are optional aids, not a new route: the `spec_lock` values, gates, grouping, and Step 7 export are unchanged. For structured/template, chart, image, mirror/beautify, or notes decks, read the full references below instead — the card omits their contracts.
 
 Read the execution references for this deck's locked `mode` + `visual_style` (from `spec_lock.md`):
 ```
