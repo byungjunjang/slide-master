@@ -104,6 +104,8 @@ Left panel x 72–470; vertical divider at x=516; right column x 560–1208 (**a
 ```
 Parallel-exposition tip (instructional mode): reuse the same three `{{ROW_LABEL}}` across sibling activity pages (e.g. 이렇게 말하면 → 이렇게 나온다 → 교사의 역할). Left `{{DEF}}` ≈ 3 lines at width ~400 (~16 CJK/line). Right body lines aim ≤ 27 CJK to stay one line.
 
+> **Column-wrap gate note.** This archetype's `divider-vert` at x=516 spans y 196→648, so it bounds the **left** column's wrapped `{{DEF}}` lines (the checker sees the divider in their y-band → no false wrap warning). The **right** column has no shape on its right, so wrapped right-body blocks would be measured against the full canvas and flagged — keep right-column bodies to **one line each**, or add a right-edge rule. Pre-confirm any intended wrap with text_fit's checker-parity mode: `{"lines":[…],"font_size":24,"x":<x>,"right_bound":<bound>}`.
+
 ---
 
 ## D. Horizontal steps (`dense`) — 2–4 columns with arrows
@@ -121,6 +123,8 @@ Parallel-exposition tip (instructional mode): reuse the same three `{{ROW_LABEL}
 <!-- step-2: x=490 (rule 490→820), arrow-2 x=848; step-3: x=908 (rule 908→1208) -->
 ```
 Highlight the final/active step's rule with `stroke="{{ACCENT}}" stroke-width="2"`.
+
+> **Column-wrap gate note.** The per-step top rules sit *above* the step body (different y-band), so they do **not** bound a wrapped body — the checker measures the body against the full canvas and flags a 2-line body that fits full-width. So keep each step's body to **one line** (shorten the copy), OR bound the columns with faint full-height vertical dividers between them spanning the body y-band. Confirm with text_fit checker-parity mode before writing.
 
 ---
 

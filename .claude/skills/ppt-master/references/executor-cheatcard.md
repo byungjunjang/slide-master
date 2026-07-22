@@ -48,6 +48,9 @@
 - `est > available` → wrap; a lead/core/subtitle wraps as a **balanced** 2-line at a phrase boundary (no orphan tail). Body prose may wrap freely.
 - **Use the helper instead of guessing** — it returns the exact checker verdict + a balanced-break suggestion:
   `python3 ${SKILL_DIR}/scripts/text_fit.py "text" -s <fs> --x <x>` (or `--zone <w>` for a bounded column). Batch: `--batch blocks.json`.
+- **Batch ONCE, not per-line.** One `--batch` covering the deck's risk lines (leads/core-messages, cover/section heroes, every column body) costs one round-trip; five ad-hoc calls cost five. Skip trivially-short lines.
+- **Column-wrap trap (the checker measures the FULL canvas, not your column).** The gate's unnecessary-wrap warning uses `right_bound = canvasW − 5%` and only narrows it to a **sibling shape** (rect/line/icon) that sits to the block's right *and vertically overlaps its y-band*. A column separated only by whitespace is **not** narrowed — so a 2-line body that would fit one line at full width is flagged even though it fits *your* column. `--zone` can't predict this (it only measures single lines). For any block you intend to **wrap in a column**, pass its lines to the checker-parity mode and give the real bound:
+  `{"lines":["l1","l2"],"font_size":24,"x":72,"right_bound":<column right edge>}` → `CHECKER_OK` (wrap justified) / `CHECKER_FLAG` (gate will warn). Resolve a FLAG one of three ways: **(a)** draw it as one line (shorten the copy to fit the column), **(b)** add a vertical divider / right-edge shape spanning the block's y-band so the checker bounds the column (then it's OK even wrapped), or **(c)** split it into **separate `<text>` paragraphs** (each is its own single-line block, no wrap detected).
 
 ## 5. Color / icons (from the lock only)
 - Fill/stroke/stop MUST be `spec_lock.colors` values. `fill="transparent"` = no paint; use color+alpha for a painted translucent layer.

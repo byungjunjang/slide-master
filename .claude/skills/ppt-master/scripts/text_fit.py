@@ -97,6 +97,53 @@ def _balanced_break(text: str, font_size: float, letter_spacing: float,
     return best[1] if best else None
 
 
+def evaluate_wrap(lines, font_size: float, *, x: float | None = None,
+                  right_bound: float | None = None, vb_width: float = 1280.0,
+                  letter_spacing: float = 0.0, label: str | None = None) -> dict:
+    """Checker-parity oracle for an *intended multi-line block*.
+
+    Mirrors svg_quality_checker `_geom_b_checks`: a wrapped <text> block whose
+    joined text fits on one line at the block's available width is flagged
+    ("wraps into N lines but fits on one"). The checker's available width is
+    ``full_canvas_right_bound - x`` UNLESS a sibling SHAPE (rect/line/icon)
+    sits to the block's right within its y-band and narrows it — a column
+    separated only by whitespace is NOT narrowed, so the checker measures the
+    full canvas. Pass the same ``right_bound`` you will actually bound the
+    column with (e.g. a vertical divider x, or the next column's left edge) to
+    model that; omit it to get the pessimistic full-canvas verdict the checker
+    uses when no bounding shape exists.
+
+    CHECKER_FLAG  -> joined text fits one line at `available`; the checker WILL
+                     warn. Draw one line, add a right-edge shape spanning the
+                     block's y-band so the checker bounds the column, or split
+                     into separate <text> paragraphs (each its own block).
+    CHECKER_OK    -> joined text exceeds `available`; the wrap is justified.
+    """
+    lines = [str(s) for s in lines if str(s)]
+    n = max(len(lines), 2)
+    xs = 0.0 if x is None else float(x)
+    rb = right_bound if right_bound is not None else (
+        vb_width - vb_width * GEOM_MARGIN_RATIO)
+    available = float(rb) - xs
+    joined = ' '.join(lines)
+    full_w = text_width(joined, font_size, letter_spacing)
+    flags = full_w <= available if available > 0 else False
+    return {
+        'label': label,
+        'mode': 'wrap',
+        'text': joined,
+        'lines': lines,
+        'font_size': font_size,
+        'letter_spacing': letter_spacing,
+        'est_width': round(full_w, 1),
+        'available': round(available, 1),
+        'right_bound': round(float(rb), 1),
+        'fits_one_line': flags,            # True == checker flags the wrap
+        'lines_needed': n,
+        'verdict': 'CHECKER_FLAG' if flags else 'CHECKER_OK',
+    }
+
+
 def evaluate(text: str, font_size: float, *, zone: float | None = None,
              x: float | None = None, right_bound: float | None = None,
              vb_width: float = 1280.0, letter_spacing: float = 0.0,
@@ -137,6 +184,17 @@ def evaluate(text: str, font_size: float, *, zone: float | None = None,
 
 def _fmt(r: dict) -> str:
     tag = f"[{r['label']}] " if r.get('label') else ''
+    if r.get('mode') == 'wrap':
+        preview = ' | '.join(r['lines'])
+        head = (f"{tag}{r['verdict']:12s}  full {r['est_width']:.0f}px "
+                f"{'<=' if r['fits_one_line'] else '>'} avail {r['available']:.0f}px "
+                f"(rb={r['right_bound']:.0f})  fs={r['font_size']:g}  "
+                f"{r['lines_needed']}L \"{preview[:48]}{'…' if len(preview) > 48 else ''}\"")
+        if r['fits_one_line']:
+            return (head + "\n           -> checker WILL warn 'fits on one line'. "
+                    "Draw ONE line, bound the column with a right-edge shape in "
+                    "the block's y-band, or split into separate <text> paragraphs.")
+        return head + "  -> wrap justified; checker won't flag."
     head = (f"{tag}{r['verdict']:8s}  est {r['est_width']:.0f}px / "
             f"avail {r['available']:.0f}px  fs={r['font_size']:g}  "
             f"\"{r['text'][:42]}{'…' if len(r['text']) > 42 else ''}\"")
@@ -173,12 +231,18 @@ def main(argv=None) -> int:
         with open(args.batch, encoding='utf-8') as fh:
             blocks = json.load(fh)
         for b in blocks:
-            results.append(evaluate(
-                b['text'], float(b.get('font_size', args.font_size or 24)),
-                zone=b.get('zone'), x=b.get('x'), right_bound=b.get('right_bound'),
-                vb_width=float(b.get('vb_width', 1280.0)),
-                letter_spacing=float(b.get('letter_spacing', 0.0)),
-                label=b.get('label')))
+            fs = float(b.get('font_size', args.font_size or 24))
+            ls = float(b.get('letter_spacing', 0.0))
+            vbw = float(b.get('vb_width', 1280.0))
+            if 'lines' in b:  # intended multi-line block -> checker-parity view
+                results.append(evaluate_wrap(
+                    b['lines'], fs, x=b.get('x'), right_bound=b.get('right_bound'),
+                    vb_width=vbw, letter_spacing=ls, label=b.get('label')))
+            else:
+                results.append(evaluate(
+                    b['text'], fs, zone=b.get('zone'), x=b.get('x'),
+                    right_bound=b.get('right_bound'), vb_width=vbw,
+                    letter_spacing=ls, label=b.get('label')))
     else:
         if args.text is None or args.font_size is None:
             ap.error('provide TEXT and --font-size (or use --batch)')
@@ -194,8 +258,12 @@ def main(argv=None) -> int:
     else:
         for r in results:
             print(_fmt(r))
-    # exit non-zero if any block would wrap unexpectedly (useful in checks)
-    return 0 if all(r['fits_one_line'] for r in results) else 1
+    # exit non-zero if any block is not clean: a single-line block that would
+    # wrap, or an intended-wrap block the checker will flag as "fits on one line"
+    def _clean(r):
+        return (not r['fits_one_line']) if r.get('mode') == 'wrap' \
+            else r['fits_one_line']
+    return 0 if all(_clean(r) for r in results) else 1
 
 
 if __name__ == '__main__':
