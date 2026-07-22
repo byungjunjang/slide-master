@@ -1,0 +1,89 @@
+# 라운드 B — lite-P v2 묶음 팬아웃 실험 설계
+
+- 날짜: 2026-07-22 · 브랜치 `lite-p-v2` (base = main `7f766639`) · 선행: [`2026-07-21-roundA-step4diet-design.md`](./2026-07-21-roundA-step4diet-design.md) · 인수인계: `Temp/2026-07-21-fork-fanout-handoff.md`
+- 목표: Step 6 페이지 저작을 서브에이전트 팬아웃으로 병렬화해 대형 덱(16–24p)의 총 소요 시간을 줄인다. 콜드 병목 실측: 페이지 저작 22m45s + Step 4 ~11m ≈ 총량(40m57s)의 83% (12p 기준).
+- 판정 원칙(시리즈 확정): 산술 절감 + 방향 + 품질 전수 통과. n=1 런의 총량 % 주장 금지.
+
+## 0. 환경 전제 (세션 시작 시 실증)
+
+| 검증 | 결과 | 영향 |
+|---|---|---|
+| `subagent_type: "fork"` (메인 세션) | **미지원** — `Agent type 'fork' not found` | 부트스트랩 ≈ 0 전제 폐기 |
+| `subagent_type: "fork"` (서브에이전트 내부) | **미지원** — 동일 에러 | 〃 |
+| 일반 서브에이전트 2단 중첩 스폰 | **지원** — `NESTED-GP: SUPPORTED` 실증 | 콜드 벤치 실행자가 페이지 서브에이전트를 팬아웃하는 하네스 성립 |
+| `svg_quality_checker.py` 단일 파일 타깃 | 지원 (`check_directory`가 파일 인자 수용) | 서브에이전트 자체 페이지 게이트 유지 가능 |
+
+fork 부재로 핸드오프 §4의 차선책을 채택: **일반 서브에이전트 + ref-diet 조건부 참조 + 연속 2–3장 묶음 배정**. 묶음이 부트스트랩(참조 1,617–2,119줄 + 락 + 앵커)을 장당 1/3로 암탈한다 — v1 실패 원인(장당 고정비 ~9m 전액 반복)의 직접 해소.
+
+## 1. 설계 — `workflows/parallel-execute.md` v2 (v1 전면 개정)
+
+| 요소 | v2 규칙 | v1 대비 |
+|---|---|---|
+| 발동 | 사용자 명시 요청만("병렬 생성"), `mode: flat` 전용, 덱 ≥10p | ≥8p → ≥10p (묶음 경제성) |
+| 앵커 | 메인이 표지 + 구분자 1 + 아키타입 견본 순차 손저작, 최소 4장 또는 ~25%, 전 장 게이트 통과 | 동일 |
+| 어휘 시드 | **신규** — 앵커 게이트 직후 `consistency_check.py --emit-seed` → `anchor_vocab.json`(크롬 y좌표·마진 박스·타이틀 지오메트리·팔레트 롤·폰트 사이즈 대역). 팬아웃 프롬프트에 시드 수치 + 최근접 앵커 SVG 경로 2–3개 주입 | 앵커 SVG 눈대중 상속 → 기계 수치 상속 |
+| 팬아웃 단위 | 연속 2–3장 묶음 / 서브에이전트, 1웨이브 동시 ≤7 | 1장 / 서브에이전트, 동시 ≤4 |
+| 묶음 읽기 목록 | ref-diet 조건부 목록의 묶음별 합집합만 (무차트 묶음은 `native-objects.md` 생략) | 고정 전체 로드 |
+| 규칙 8 번역 | 묶음 시작 시 `spec_lock.md` 1회 정독(≤3장이라 마일스톤 재독 불요), 컴팩션 발생 시에만 재독 | 페이지 전 재독 |
+| 서브에이전트 계약 | 자기 `svg_output/<page>.svg`만 작성 · 페이지별 checker 단일 파일 실행(0 error + text-geometry 처분 보고) · 규칙 9 손저작 내부 적용 · 다른 파일 쓰기/spec_lock 수정/서버 기동 금지 | 동일 골자 |
+| 실패·미완 페이지 | 메인이 순차 저작 | 동일 |
+| 일관성 리뷰 | **기계화** — `consistency_check.py` 전 페이지 실행 → 위반만 메인 손수선 → 덱 전체 checker → 기존 Step 6 꼬리(선택 픽셀 체크·verify-charts) → Step 7 | 수동 6분 리뷰 대체 |
+
+## 2. 설계 — `scripts/consistency_check.py` (신규 독립 스크립트)
+
+- 체커(4,545줄) 확장 대신 독립 스크립트: 크로스 페이지 검사는 팬아웃 워크플로 전용 관심사 — mandatory 게이트 의미론 무변경, 판정 미달 시 커밋 드롭이 깔끔. 읽기 전용 진단 도구라 판정과 무관하게 독립 머지 가능.
+- 추출 로직 하나가 시드 생성과 검증 양쪽 담당(기준 불일치 원천 차단):
+  - `--emit-seed --anchors P01,...` → 앵커에서 `anchor_vocab.json` 생성
+  - 기본 모드 → 전 페이지를 시드 대역과 대조, 위반 시 exit 1
+- 검사 항목: 크롬 수평선 y좌표(±2px) · 팔레트 밖 HEX · 이질 폰트 사이즈 · 마진 이탈. 리포트 형식은 checker의 error/warning 라인 관례를 따른다.
+- 허용 오차 캘리브레이션: 기존 순차 벤치 덱(`20260721_bench_semis_roundA`)이 자기 검사를 통과하도록 조정 — 순차 덱 = 일관성 정답지.
+
+## 3. 설계 — SKILL.md 규칙 6/7 좁은 예외 + 등록
+
+- v1 브랜치(`pipeline-lite-p-experiment`)의 예외 문안 재사용, 묶음 배정 문구로 수정.
+- `workflows/index.md` · `workflows/routing.md` 등록.
+- 품질 원천 무변경: 지오메트리 게이트, 규칙 9 손저작, verify-charts, Pretendard 락.
+
+## 4. 벤치 프로토콜 (신규 콜드 3런, 직렬 실행)
+
+| 암 | 체크아웃 | 브랜치 | 소스 | 페이지 |
+|---|---|---|---|---|
+| seq-24p (대조군) | 메인 체크아웃 — 런 중 머지·파일 변경 **금지** | main | 신규 24p급 소스 | 24 고정 |
+| fan-24p | 워크트리 `lite-p-v2` | lite-p-v2 | 동일 파일 | 24 고정 |
+| fan-12p | 워크트리 `lite-p-v2` | lite-p-v2 | cold-A와 동일 `samsung_vs_hynix_2025.md` | 12 고정 |
+
+- 12p 순차 대조군 = cold-A 40m57s 재사용. 12p 팬아웃은 소형 덱 품질·오버헤드 거동 관찰용.
+- 24p 소스는 기존 반도체 주제 확장판(차트 소재 포함, 이미지 없음)을 신규 저작 — 양 암 동일 파일.
+- 실행자 프롬프트 원형(콜드 벤치 프로토콜): 콜드 GP 서브에이전트가 파이프라인 엔드투엔드 수행 · 페이지 수 고정 · 추천값 자체 도출·수락(chat fallback, `--wait` 금지) · 타 프로젝트/`docs/superpowers/` 열람 금지 · verify_deck 렌더 포함 · measure_run 전문 보고 · `result.json` 쓰지 않음(`confirmed_at` 플레이스홀더 허수 방지). 팬아웃 암만 "병렬 생성" 옵트인 문구 추가.
+- 측정: 총 시간 + 단계 경계 위주(팬아웃 구간은 mtime 케이던스 무의미 — measure_run 한계), 묶음 구성·서브에이전트 타임라인 자가 보고 병용.
+
+## 5. 판정 기준 (핸드오프 §4 합의 그대로)
+
+| 축 | 기준 | 미달 시 |
+|---|---|---|
+| 시간 | fan-24p의 Step 6 팬아웃 구간이 seq-24p 동일 구간 대비 산술적으로 단축 + 방향 일관 | v2 워크플로 커밋 드롭 (v1 전례) |
+| 품질 | checker 0 error · verify_deck PASS(렌더 포함) · 콘택트시트 육안 결함 0 · verify-charts 보정 확인 · validate_spec PASS | 〃 |
+| 일관성 | `consistency_check.py` 위반 0 + 육안 페이지 간 일관성 결함 0 (톤·간격·크롬) | 〃 |
+| 독립 머지 | `consistency_check.py` 자체는 읽기 전용 진단 도구 — 판정과 무관하게 머지 가능 | — |
+
+## 6. 격리·운영 주의
+
+- 작업/팬아웃 암 실행은 전부 워크트리 `lite-p-v2`. 메인 체크아웃은 seq-24p 대조군 전용이며 런 중 동결(교훈: 벤치 중 체크아웃에 머지 금지).
+- 벤치 전: 잔존 프리뷰 데몬(5050+) 셧다운, 구 워크트리 `pipeline-lite`의 벤치 코퍼스(coldA·refdiet·roundA)를 메인 `projects/`로 복사(회귀 대조군 보존).
+- 구 워크트리 제거는 세션 종료 후(현 세션 CWD가 내부에 있음). 로컬 main 푸시는 사용자 확인 대기 유지.
+
+## 7. 결과 기록 (벤치 후 기입)
+
+| 런 | 총 시간 | Step 4 | 앵커 구간 | 팬아웃 구간 | 수선·일관성 구간 | 품질 |
+|---|---|---|---|---|---|---|
+| cold-A 12p 순차 (재사용) | 40m57s | 10m58s | — | — | — | 0 error · PASS · 결함 0 |
+| seq-24p | | | — | — | — | |
+| fan-24p | | | | | | |
+| fan-12p | | | | | | |
+
+## 8. 커밋 구조 (계획)
+
+1. `spec: lite-P v2 bundle-fanout design` — 본 문서
+2. `tool: consistency_check.py — cross-page chrome/palette/type consistency + anchor vocab seed` — 독립 머지 가능
+3. `lite-P v2: bundle fan-out workflow + SKILL.md rules 6/7 narrow exception + registry` — 판정 통과 시에만 유지
+4. `bench: record lite-P v2 A/B results` — §7 기입 + 판정
