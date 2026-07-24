@@ -53,6 +53,12 @@ Usage:
   #                "font_size": 24, "lines": ["첫 줄", "둘째 줄"],
   #                "bottom_bound": 668}],
   #    "obstacles": [{"label": "footer", "box": [72, 668, 1208, 700]}]}
+  #  List EVERY opaque rect/image the checker treats as an obstacle: content
+  #  cards, panels, photos, AND any partial scrim/gradient/badge behind text —
+  #  anything that is NOT a full-canvas (>=85% coverage) background or a
+  #  <=0.15-opacity watermark. A text-backing scrim left out of this list draws
+  #  clean here but fires a cross-group collision at the gate; prefer a
+  #  full-canvas scrim (both the checker and this pre-check exempt it).
   text_fit.py --batch page.json
 """
 from __future__ import annotations

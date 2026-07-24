@@ -128,10 +128,12 @@ is `0.55 × font-size`, and a space is `0.25 × font-size`.
 python3 ${SKILL_DIR}/scripts/text_fit.py --batch <page.json>
 # page.json: {"vb_width":<W>,"vb_height":<H>,
 #   "blocks":[{"label","x","y","dy","font_size","lines",("bottom_bound")}...],
-#   "obstacles":[{"label","box":[x0,y0,x1,y1]}...]}   # cards/panels/images the text must not cross
+#   "obstacles":[{"label","box":[x0,y0,x1,y1]}...]}   # EVERY opaque rect/image the checker counts (see below)
 ```
 
 It returns the checker-identical verdict per block: width wrap (`CHECKER_FLAG`/`CHECKER_OK`) plus vertical/collision (`CANVAS_V` / `CANVAS_H` / `COLLIDE` / `BOUND`). Resolve every non-clean verdict via the repair ladder before drawing. Batch once per page (skip trivially-short standalone lines); the single-line `"text" -s <fs> --x <x>` form remains valid for a one-off. Skipping this and hand-drawing is only acceptable on a page with a single short centered line and no neighbors.
+
+**Enumerate obstacles the way the checker does, or the pre-check silently misses them.** The gate derives obstacles from the drawn SVG; this pre-check derives them from your `obstacles` list — so the list must match. The gate treats **any** rect/image as an obstacle *unless* it is a full-canvas background (covers ≥ 85% of the canvas) or a watermark (fill-opacity ≤ 0.15). So `obstacles` must include not only content cards/panels/photos but every **partial scrim or gradient you place behind text** — a bottom-third legibility gradient, a side scrim, a badge chip. Omit one and text that crosses its edge draws clean here yet fires a cross-group `text geometry:` collision at the gate and forces a page rewrite. Best avoided at the source: a scrim/gradient meant to sit *behind* text should be **full-canvas** (≥ 85% coverage) or **fill-opacity ≤ 0.15**, so both the pre-check and the gate exempt it as background; reach for a partial opaque backing rect only when the design truly needs it, and then list it as an obstacle.
 
 **Repair ladder (over-budget copy — apply in order; copy survives layout)**:
 

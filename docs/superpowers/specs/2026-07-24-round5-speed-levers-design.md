@@ -35,6 +35,8 @@
 
 **기대**: 마일스톤 게이트에서 터지던 세로/충돌 error → 페이지 재작성(1–3m/건) 루프가 사전 1콜로 대체.
 
+**후속 보정 (A/B 판정 후, 2026-07-25)**: 실험 arm에서 P05 **부분 스크림**(불투명 rect, 커버리지<85%·opacity>0.15)을 `obstacles`에 열거하지 않아 사전 프리엠프트가 놓쳤고, 게이트에서 cross-group 충돌 error 2건→재작성 2회가 발생. `evaluate_page`의 **판정 로직은 체커 정합**이나, 장애물 **입력이 손저작 `obstacles` 배열**이라 실행자가 스크림을 빠뜨리면 갈라지는 것이 원인(코드 버그 아님, 열거 규약 갭). 기존 가이던스가 obstacles를 "cards/panels/images"로만 안내한 것을 보정: `executor-base.md`·`executor-cheatcard.md §4`·`text_fit.py` docstring에 **"체커가 obstacle로 세는 모든 불투명 rect/image(카드·패널·사진 + 부분 스크림/그라디언트/배지)를 열거하고, 텍스트 배경 스크림은 full-canvas(≥85%) 또는 opacity ≤0.15로 두어 양쪽 모두 면제"**를 명문화. 판정 기준 ②(충돌 0)를 다음 실사에서 충족하기 위한 규약 수정.
+
 ## 4. 레버 ④ — checker `--pages` 증분화 + verify_deck 중복 단락
 
 **변경**:
