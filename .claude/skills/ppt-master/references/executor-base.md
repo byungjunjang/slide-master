@@ -120,11 +120,18 @@ is `0.55 × font-size`, and a space is `0.25 × font-size`.
 4. Vertical is arithmetic too: last baseline = `y + Σdy`; the block bottom
    (`+ 0.2 × font-size` descent) MUST clear the next element's top edge and
    the canvas bottom margin. Allocate wrapped-line count × line-height before
-   placing the block (§1.0). Do not hand-compute this: pass the planned
-   blocks to `text_fit.py` stack/page mode (block dict with `y` / `dy` /
-   `bottom_bound`, or one `--batch` page object with `blocks` + `obstacles`)
-   — it returns the checker's A-class verdict (CANVAS_V / CANVAS_H /
-   COLLIDE / BOUND) pre-draw.
+   placing the block (§1.0).
+
+**Mandatory — run the fit helper before drawing each non-trivial page, do NOT eyeball the arithmetic**: hand-computing the width/vertical budget in your head is the documented failure mode — it passes width but misses vertical stacks and cross-group collisions (the checker's A-class errors), which then force a gate repair cycle. For every page that has a multi-line text block, a block in the lower third, or text placed beside/over another element, author one `text_fit.py --batch` **page object** and read its verdict **before** writing the `<text>`:
+
+```bash
+python3 ${SKILL_DIR}/scripts/text_fit.py --batch <page.json>
+# page.json: {"vb_width":<W>,"vb_height":<H>,
+#   "blocks":[{"label","x","y","dy","font_size","lines",("bottom_bound")}...],
+#   "obstacles":[{"label","box":[x0,y0,x1,y1]}...]}   # cards/panels/images the text must not cross
+```
+
+It returns the checker-identical verdict per block: width wrap (`CHECKER_FLAG`/`CHECKER_OK`) plus vertical/collision (`CANVAS_V` / `CANVAS_H` / `COLLIDE` / `BOUND`). Resolve every non-clean verdict via the repair ladder before drawing. Batch once per page (skip trivially-short standalone lines); the single-line `"text" -s <fs> --x <x>` form remains valid for a one-off. Skipping this and hand-drawing is only acceptable on a page with a single short centered line and no neighbors.
 
 **Repair ladder (over-budget copy — apply in order; copy survives layout)**:
 

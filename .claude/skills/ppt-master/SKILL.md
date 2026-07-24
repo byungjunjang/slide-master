@@ -713,7 +713,8 @@ The Step 6 live-preview server is already running — pass its actual URL from t
 ```markdown
 ## ✅ Executor Phase Complete
 - [x] Live preview started before the first SVG and kept available at the reported URL
-- [x] Milestone gate run (page 1 + every 4 pages; errors fixed and text-geometry warnings dispositioned per block)
+- [x] text_fit.py page-object batch run before drawing each non-trivial page (pre-clears width + vertical + collision; hand-eyeballing the geometry is the documented miss)
+- [x] Milestone gate run (page 1 + every 4 pages via --pages block; errors fixed and text-geometry warnings dispositioned per block)
 - [x] All SVGs generated to svg_output/
 - [x] svg_quality_checker.py passed (0 errors)
 - [x] Text-geometry warnings dispositioned one by one (fix or stated intent)
