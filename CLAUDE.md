@@ -77,7 +77,8 @@ python3 .claude/skills/ppt-master/scripts/latex_render.py <project_path>
 python3 .claude/skills/ppt-master/scripts/latex_render.py <project_path> --dry-run
 python3 .claude/skills/ppt-master/scripts/latex_render.py <project_path> --providers codecogs,quicklatex,mathpad,wikimedia
 # In-pipeline AI image generation — manifest mode (required, even for 1 image).
-# Ladder: codex backend (default, Codex CLI OAuth) → API backend (only when IMAGE_BACKEND + key configured) → web-sourcing switch → user-drop:
+# Ladder: codex backend (default, Codex CLI OAuth) → API backend (only when IMAGE_BACKEND + key configured) → web-sourcing switch → user-drop.
+# Launched as a BACKGROUND process at the end of Step 4 (overlaps spec writing); Step 5 collects — see SKILL.md:
 python3 .claude/skills/ppt-master/scripts/image_gen.py --manifest <project_path>/images/image_prompts.json
 # Out-of-pipeline one-off / debug / single-image fixup only (no manifest, no audit trail):
 python3 .claude/skills/ppt-master/scripts/image_gen.py "prompt" --aspect_ratio 16:9 --image_size 1K -o <project_path>/images

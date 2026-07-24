@@ -516,6 +516,18 @@ python3 ${SKILL_DIR}/scripts/analyze_images.py <project_path>/images
 
 > ⚠️ **Image handling**: NEVER directly read / open / view image files (`.jpg`, `.png`, etc.). All image info comes from `analyze_images.py` output (`analysis/image_analysis.csv`) or the Design Spec's Image Resource List.
 
+**Early background image launch (Mandatory when the confirmed `image_usage` includes `ai` and/or `web`)**: acquisition wall-clock must overlap spec writing, not block Step 6. Fix the §VIII image resource plan first — rows, filenames, per-row intent — then launch acquisition as background processes and keep authoring while they run:
+
+1. Read `references/image-base.md` plus the path-specific reference(s) for the confirmed sources (`references/image-generator.md` for `ai`, `references/image-searcher.md` for `web`) — the same files Step 5 loads; Step 5's re-read is then a no-op.
+2. Write `<project_path>/images/image_prompts.json` (ai rows — the §VIII manifest contract is unchanged) and/or `<project_path>/images/image_queries.json` (≥2 web rows), then launch **in the background** (do NOT wait for completion):
+   ```bash
+   python3 ${SKILL_DIR}/scripts/image_gen.py --manifest <project_path>/images/image_prompts.json    # background process
+   python3 ${SKILL_DIR}/scripts/image_search.py --batch <project_path>/images/image_queries.json    # background process
+   ```
+3. Continue immediately with the design spec output below. §VIII rows carry `Status: Pending` until Step 5 reconciles the background results.
+
+The confirmed image path still wins **before any launch** (`codex` / `api` / `auto` per image-generator.md §7; `manual` skips generation entirely — launch nothing). The Path A recovery ladder and the web-switch offer move to Step 5's collection point — a failed background run is diagnosed there, never mid-spec. A single web row may use the positional `image_search.py` form. `slice` rows stay in Step 5 (sheets must finish before slicing). **FALLBACK**: if the host cannot run background processes, skip this block — Step 5 acquires in the foreground exactly as before.
+
 **Output**:
 - `<project_path>/design_spec.md` — human-readable design narrative
 - `<project_path>/spec_lock.md` — machine-readable execution contract (skeleton: `templates/spec_lock_reference.md`); Executor re-reads on the milestone cadence (executor-base.md §2.1)
@@ -533,6 +545,7 @@ python3 ${SKILL_DIR}/scripts/validate_spec.py <project_path>
 - [x] Strategist confirmation stage completed (user confirmed via Confirm UI `result.json` or chat fallback)
 - [x] Split-mode note appended below the confirmation fields (heavy or normal variant)
 - [x] Spec-refinement opt-in line appended (default OFF; only the user's explicit request enters the refine-spec workflow)
+- [x] Background image acquisition launched before spec writing (only when confirmed `image_usage` includes `ai`/`web`; skipped for `manual` / `none` / hosts without background processes)
 - [x] Design Specification & Content Outline generated
 - [x] Execution lock (spec_lock.md) generated
 - [x] validate_spec.py passed (0 errors) on design_spec.md + spec_lock.md
@@ -548,6 +561,8 @@ python3 ${SKILL_DIR}/scripts/validate_spec.py <project_path>
 > **Trigger**: At least one row in the resource list has `Acquire Via: ai`, `web`, and/or `slice`. If every row is `user`, `formula`, or `placeholder`, skip to Step 6.
 
 **Failure recovery**: stop/continue behavior for AI/web/slice/image-readiness failures is defined in [`workflows/failure-recovery.md`](workflows/failure-recovery.md). This Step keeps the acquisition procedure.
+
+**Default — collection point (Step 4 already launched the background acquisition)**: when the Step 4 early launch ran, this Step collects rather than starts: check the background runs' written-back statuses (`image_prompts.json` / `image_sources.json`), run the Path A recovery ladder / web-switch offer (image-generator.md §7) only for rows the runs left `Failed`, slice sheets (step 2.5), re-run `analyze_images.py` (step 4), and complete the checkpoint. If a background run is still in flight, do NOT idle-wait here — proceed to Step 6 under its deferred-image-pages rule and finish this collection at the image-page boundary. Only when no early launch happened (confirmed `manual`, no ai/web rows, or a host without background processes) does this Step acquire in the foreground per the workflow below.
 
 **Always load the common framework**:
 
@@ -576,7 +591,7 @@ A deck with only `ai` rows never loads `image-searcher.md`; a deck with only `we
 
 Workflow:
 
-1. Extract all resource rows from the design spec and group them by `Acquire Via`; rows with `Status: Pending` or `Status: Failed` and `Acquire Via ∈ {ai, web, slice}` must all reach a terminal state before Executor starts
+1. Extract all resource rows from the design spec and group them by `Acquire Via`; rows with `Status: Pending` or `Status: Failed` and `Acquire Via ∈ {ai, web, slice}` must all reach a terminal state **before the first image-placing page is authored**. Executor MAY start on image-less pages while a background acquisition finishes (Step 6 deferred-image-pages rule); a foreground acquisition completes all rows here before Step 6
 2. Generate prompts (ai rows) and/or run search (web rows) per [image-base.md](references/image-base.md) §3 dispatch table
 2.5. **Slice any spot-illustration sheets (only if `slice` rows exist).** For each generated `ai` **sheet** row, run `slice_images.py` (grid + the element `--names` matching the `slice` rows, `--trim --alpha`) so every element file lands in `images/`; mark each `slice` row `Generated`. A sheet still in `Needs-Manual` cannot be sliced — leave its `slice` rows `Needs-Manual` and surface them at the Step 7 readiness gate. Contract: [image-generator.md](references/image-generator.md) §4.3.
 3. Verify every row reaches a terminal status: `Generated` (ai success / sliced element), `Sourced` (web success), or `Needs-Manual`. `Failed` is not a terminal status: it means the current run did not generate that item, but the item remains retryable. The agent must resolve every residual `Failed` item by rerunning the confirmed path or marking it `Needs-Manual` before Executor starts
@@ -593,7 +608,7 @@ Workflow:
 - [x] analyze_images.py re-run so image_analysis.csv covers the acquired web / AI / sliced images
 ```
 
-**Default — auto-proceed to Step 6.** Only when the user's Step 4 response explicitly opted into split mode (in chat or via Confirm UI `result.json` with `generation_mode: "split"`), output the planning-session handoff below and stop this conversation:
+**Default — auto-proceed to Step 6.** Only when the user's Step 4 response explicitly opted into split mode (in chat or via Confirm UI `result.json` with `generation_mode: "split"`), first complete this Step's collection in full (all rows terminal — a background process does not survive the session handoff), then output the planning-session handoff below and stop this conversation:
 
   ```markdown
   ## ✅ Planning Session Complete
@@ -608,14 +623,14 @@ Workflow:
 
 ### Step 6: Executor Phase
 
-🚧 **GATE**: Step 4 (and Step 5 if triggered) complete; all prerequisite deliverables are ready.
+🚧 **GATE**: Step 4 complete, and Step 5 (if triggered) either complete or reduced to a still-running Step-4 background acquisition — then enter under the **deferred-image-pages rule** below. All other prerequisite deliverables are ready.
 
 **Artifact ownership**: `svg_output/` is the author source, `svg_final/` is derived, and image facts come from the regenerated `analysis/image_analysis.csv`; see [`references/artifact-ownership.md`](references/artifact-ownership.md).
 
 > **⚡ Speed accelerators (free-design flat decks only — no template, no charts, no images).** For the `pptx_structure.mode: flat` route you MAY:
 > 1. read the one-screen [`references/executor-cheatcard.md`](references/executor-cheatcard.md) **in place of** re-reading `executor-base.md` + `shared-standards.md` end-to-end (still read the short mode + visual-style files);
 > 2. instantiate page skeletons from [`references/layout-archetypes.md`](references/layout-archetypes.md) instead of re-deriving geometry per pattern;
-> 3. pre-check every text line's fit with `python3 ${SKILL_DIR}/scripts/text_fit.py "text" -s <fs> --x <x>` (or `--zone <w>`) before drawing, to skip the write→quality-warning→edit loop.
+> 3. pre-check each page's text with one `python3 ${SKILL_DIR}/scripts/text_fit.py --batch <page.json>` page object (width + vertical + collision; single-line form `"text" -s <fs> --x <x>` stays valid) before drawing, to skip the write→quality-warning/error→edit loop.
 > These are optional aids, not a new route: the `spec_lock` values, gates, grouping, and Step 7 export are unchanged. For structured/template, chart, image, mirror/beautify, or notes decks, read the full references below instead — the card omits their contracts.
 
 Read the execution references for this deck's locked `mode` + `visual_style` (from `spec_lock.md`):
@@ -650,6 +665,8 @@ python3 ${SKILL_DIR}/scripts/svg_editor/server.py <project_path> --live --daemon
 
 > Image facts: trust the `analysis/image_analysis.csv` regenerated at the end of Step 5. If `images/` changed since (the user swapped or added files), re-run `python3 ${SKILL_DIR}/scripts/analyze_images.py <project_path>/images` before laying images out — facts are re-derived on use, never a stale store (Step 4 image-facts note).
 
+**Deferred image pages (only while a Step-4 background acquisition is still running)**: author the pages that place no §VIII image first. Before the FIRST page that places one, complete Step 5's collection: every `ai`/`web`/`slice` row terminal (recovery ladder for `Failed` rows), sheets sliced, `analyze_images.py` re-run for measured sizes. If only image-placing pages remain and rows are still generating, wait for the background run (or resolve per [`workflows/failure-recovery.md`](workflows/failure-recovery.md)) — never lay out an image without its measured facts. Page order is otherwise the author's choice; rules 6/7 (main-agent, sequential one-continuous-pass) are unchanged — this defers *which* page comes next, not how pages are authored.
+
 **Milestone spec_lock re-read (Mandatory)**: `read_file <project_path>/spec_lock.md` before the first page of each 4-page block (P01, P05, P09, …) and immediately after any context compaction; use only its colors / fonts / icons / images, plus `pptx_structure.mode` and the per-page `page_rhythm` / `page_charts` lookups. Read `page_layouts` / `pptx_masters` / `pptx_layouts` only on a structured deck/layout template route; they are absent in flat free-design and brand-only projects. Resists context-compression drift on long decks. See executor-base.md §2.1.
 
 > ⚠️ **Main-agent only**: SVG generation MUST stay in the current main agent — page design depends on full upstream context. Do NOT delegate to sub-agents.
@@ -667,9 +684,10 @@ Do not duplicate specialized identity with `data-pptx-role`. Add it only to stru
 
 **Milestone gate (Mandatory)** — after page 1, and after every 4th page thereafter (P04, P08, …):
 ```bash
-python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
+python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>                    # P01 gate: full run (whole deck = 1 page; contract checks included)
+python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path> --pages 2-4        # later gates: ONLY the block authored since the last gate (5-8, 9-12, …)
 ```
-The page-1 run is the strictest instance — structural violations are systematic, and a first-page error repeated deck-wide costs a whole-deck rewrite; fix every error before drawing page 2. Each later run covers the block authored since the last gate: fix every `error` while the block's context is hot, and disposition each `text geometry:` warning immediately (same one-line disposition contract as the deck-wide gate below). **Clean block = silent pass**: no error and no text-geometry warning → move straight on, no disposition lines, no summary, no commentary. Repair scope stays ≤4 hot pages; the deck-wide sweep and the checker's spec-lock drift check backstop the gaps.
+The page-1 run is the strictest instance — structural violations are systematic, and a first-page error repeated deck-wide costs a whole-deck rewrite; fix every error before drawing page 2. Each later run is **incremental**: `--pages` re-checks only the block authored since the last gate, so already-dispositioned earlier-page findings are not re-surfaced (deck-wide contract checks defer to the final full sweep below). Fix every `error` while the block's context is hot, and disposition each `text geometry:` warning immediately (same one-line disposition contract as the deck-wide gate below). **Clean block = silent pass**: no error and no text-geometry warning → move straight on, no disposition lines, no summary, no commentary. Repair scope stays ≤4 hot pages; the deck-wide sweep and the checker's spec-lock drift check backstop the gaps.
 
 **Quality Check Gate (Mandatory)** — after all SVGs, BEFORE annotation handling and speaker notes (with the milestone gate in force this is a parity sweep — expect only cross-page or late-edit findings; any residual finding still follows the rules below):
 ```bash
@@ -695,7 +713,8 @@ The Step 6 live-preview server is already running — pass its actual URL from t
 ```markdown
 ## ✅ Executor Phase Complete
 - [x] Live preview started before the first SVG and kept available at the reported URL
-- [x] Milestone gate run (page 1 + every 4 pages; errors fixed and text-geometry warnings dispositioned per block)
+- [x] text_fit.py page-object batch run before drawing each non-trivial page (pre-clears width + vertical + collision; hand-eyeballing the geometry is the documented miss)
+- [x] Milestone gate run (page 1 + every 4 pages via --pages block; errors fixed and text-geometry warnings dispositioned per block)
 - [x] All SVGs generated to svg_output/
 - [x] svg_quality_checker.py passed (0 errors)
 - [x] Text-geometry warnings dispositioned one by one (fix or stated intent)

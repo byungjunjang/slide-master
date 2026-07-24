@@ -40,7 +40,7 @@
 - Page **core message ≥ body** (map to `lead`/`subtitle`). Never below body.
 - Last-resort body-only shrink: −2px steps, floor `body − 4`. Title/subtitle/caption/footnote never shrink.
 
-## 4. Width budget — measure BEFORE you draw (kills the warn→edit loop)
+## 4. Width + vertical budget — measure BEFORE you draw (kills the warn/error→edit loop)
 - SVG has no auto-wrap; every break is your manual `<tspan>`. So decide per block:
   `est = Σ glyph  (CJK/full-width 1.0×fs · Latin/digit/ASCII 0.55×fs · space 0.25×fs) + letter_spacing×(n−1)`
 - `available = right_bound − x`, where `right_bound = canvasW − 5%` (1216 on 1280) unless a nearer right-side element.
@@ -48,7 +48,9 @@
 - `est > available` → wrap; a lead/core/subtitle wraps as a **balanced** 2-line at a phrase boundary (no orphan tail). Body prose may wrap freely.
 - **Use the helper instead of guessing** — it returns the exact checker verdict + a balanced-break suggestion:
   `python3 ${SKILL_DIR}/scripts/text_fit.py "text" -s <fs> --x <x>` (or `--zone <w>` for a bounded column). Batch: `--batch blocks.json`.
-- **Batch ONCE, not per-line.** One `--batch` covering the deck's risk lines (leads/core-messages, cover/section heroes, every column body) costs one round-trip; five ad-hoc calls cost five. Skip trivially-short lines.
+- **Batch ONCE, not per-line — and use the page object.** One `--batch` per page covering its risk lines (leads/core-messages, cover/section heroes, every column body) costs one round-trip; five ad-hoc calls cost five. Skip trivially-short lines. Preferred form is the **page object**, which also pre-clears the gate's A-class *errors* (vertical canvas overflow, cross-group intrusion, declared-bound overshoot) with the checker's exact conditions:
+  `{"vb_width":1280,"vb_height":720,"blocks":[{"label","x","y","dy","font_size","lines",("bottom_bound")}...],"obstacles":[{"label","box":[x0,y0,x1,y1]}...]}`
+  List as `obstacles` **every** opaque rect/image the checker counts — cards/panels/photos **and any partial scrim/gradient/badge behind text** (the gate treats a rect/image as an obstacle unless it covers **≥85%** of the canvas or is **≤0.15** fill-opacity). Text fully **contained** is exempt underlay; the defect is an **edge-crossing** intrusion — matching the checker. Omitting a partial scrim is the P05-class miss: make text-backing scrims **full-canvas** (or ≤0.15 opacity) so both the pre-check and the gate exempt them as background.
 - **Column-wrap trap (the checker measures the FULL canvas, not your column).** The gate's unnecessary-wrap warning uses `right_bound = canvasW − 5%` and only narrows it to a **sibling shape** (rect/line/icon) that sits to the block's right *and vertically overlaps its y-band*. A column separated only by whitespace is **not** narrowed — so a 2-line body that would fit one line at full width is flagged even though it fits *your* column. `--zone` can't predict this (it only measures single lines). For any block you intend to **wrap in a column**, pass its lines to the checker-parity mode and give the real bound:
   `{"lines":["l1","l2"],"font_size":24,"x":72,"right_bound":<column right edge>}` → `CHECKER_OK` (wrap justified) / `CHECKER_FLAG` (gate will warn). Resolve a FLAG one of three ways: **(a)** draw it as one line (shorten the copy to fit the column), **(b)** add a vertical divider / right-edge shape spanning the block's y-band so the checker bounds the column (then it's OK even wrapped), or **(c)** split it into **separate `<text>` paragraphs** (each is its own single-line block, no wrap detected).
 
@@ -63,8 +65,9 @@
 - Read each page's `page_rhythm` tag. `anchor` = structural (cover/section/TOC/ending). `dense` = grids/columns/lists OK. `breathing` = **no multi-card grid** — naked text, dividers, whitespace, or full-bleed; single rounded elements are fine.
 
 ## 8. Per-page + milestone gate
-- After P01, then after every 4th page (P04, P08…), and once on the whole project:
-  `python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project>`
+- After P01 (full run): `python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project>`
+- After every 4th page (P04, P08…), **block only**: `... svg_quality_checker.py <project> --pages 2-4` (then `5-8`, `9-12`, …) — earlier pages' dispositioned findings stay closed.
+- Once on the whole project at the end (full run, no `--pages`) — this sweep owns the deck-wide contract checks.
 - Fix every `error`. Disposition each `text geometry:` warning (fix, or state the intended balanced break). Clean block = silent pass.
 
 ## 9. Then export (SKILL.md Step 7 owns it)

@@ -39,6 +39,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -334,6 +335,18 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1
     print(f"[validate_spec] PASS — {len(slides)} pages, "
           f"{len(vii_rows)} §VII rows checked")
+    # Record the pass so verify_deck.py can skip an unchanged re-run
+    # (mtime comparison against design_spec.md / spec_lock.md).
+    try:
+        (project / ".spec_pass.json").write_text(
+            json.dumps({
+                "passed_at": datetime.now(timezone.utc).isoformat(),
+                "pages": len(slides),
+            }),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
     return 0
 
 
