@@ -5,7 +5,7 @@
 [![Canvas](https://img.shields.io/badge/canvas-16%3A9%20기본%20%C2%B7%20세로형%C2%B7SNS%20포맷%20지원-4633E3)](.claude/skills/ppt-master/references/canvas-formats.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 이 저장소는 [hugohe3/ppt-master](https://github.com/hugohe3/ppt-master)(MIT)를 기반으로 한 **개인 커스터마이즈 워크스페이스**입니다. 한국어 덱 제작에 맞춰 Pretendard 폰트 고정, 수출 PPTX 검증 워크플로우(OfficeCLI) 등이 조정·추가되어 있습니다. 원 프로젝트의 라이선스와 저작권 고지는 그대로 유지합니다.
+> 이 저장소는 [hugohe3/ppt-master](https://github.com/hugohe3/ppt-master)(MIT)를 기반으로 한 **장피엠 커스터마이즈 워크스페이스**입니다. 한국어 덱 제작에 맞춰 작업 절차 커스터마이징, 완료 PPTX 검증 워크플로우) 등이 조정·추가되어 있습니다. 원 프로젝트의 라이선스와 저작권 고지는 그대로 유지합니다.
 
 ---
 
