@@ -464,6 +464,8 @@ Write `project/images/image_prompts.json` with this shape:
 ## 7. Generation Execution
 
 > Prerequisite: §3 Steps 1-3 complete; `images/image_prompts.json` exists and validates. The manifest is the machine execution/audit contract for the automated paths. It is never handed to the user as a prompt sheet, and no Markdown prompt sidecar is rendered.
+>
+> In-pipeline launch point: SKILL.md Step 4 "Early background image launch" — the manifest run starts as a background process overlapping spec writing, and Step 5 is the collection/recovery point (this §7 ladder runs there for rows the background run left `Failed`). SKILL.md owns the sequencing; this section owns path selection and recovery.
 
 ### Path Selection (Deterministic)
 

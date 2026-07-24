@@ -16,6 +16,7 @@ import re
 import json
 import html
 import math
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Tuple
 from collections import Counter, defaultdict
@@ -2949,13 +2950,17 @@ class SVGQualityChecker:
         else:
             return 'Other'
 
-    def check_directory(self, directory: str, expected_format: str = None) -> List[Dict]:
+    def check_directory(self, directory: str, expected_format: str = None,
+                        pages: str = None) -> List[Dict]:
         """
         Check all SVG files in a directory
 
         Args:
             directory: Directory path
             expected_format: Expected canvas format
+            pages: Optional --pages filter (page numbers / N-M ranges /
+                filename substrings). A partial check runs per-file checks
+                only; deck-wide contract sweeps are skipped.
 
         Returns:
             List of check results
@@ -3004,11 +3009,27 @@ class SVGQualityChecker:
             self.issue_types['Input issues'] += 1
             return []
 
+        partial = bool(pages) and dir_path.is_dir()
+        if partial:
+            svg_files = _filter_svg_pages(svg_files, pages)
+            if not svg_files:
+                print(f"[ERROR] --pages '{pages}' matched no SVG files "
+                      f"in: {directory}")
+                self.summary['errors'] += 1
+                self.issue_types['Input issues'] += 1
+                return []
+
         print(f"\n[SCAN] Checking {len(svg_files)} SVG file(s)...\n")
 
         for svg_file in svg_files:
             result = self.check_file(str(svg_file), expected_format)
             self._print_result(result)
+
+        if partial:
+            print(f"[INFO] --pages partial check ({len(svg_files)} file(s)) — "
+                  f"deck-wide contract checks skipped; the final full sweep "
+                  f"still runs them.")
+            return self.results
 
         if self.template_mode:
             check_structure = _template_structure_checks_enabled(dir_path)
@@ -4455,6 +4476,37 @@ class SVGQualityChecker:
         print(f"\n[REPORT] Check report exported: {output_file}")
 
 
+def _filter_svg_pages(svg_files: List[Path], pages_spec: str) -> List[Path]:
+    """Filter ``NN_slug.svg`` files by a --pages spec.
+
+    The spec is comma-separated: page numbers (``5``), ``N-M`` ranges
+    (``5-8``), and/or filename substrings (``cover``). A file matches when
+    its leading number is selected or its stem contains a name token.
+    """
+    nums = set()
+    names = []
+    for token in pages_spec.split(','):
+        token = token.strip()
+        if not token:
+            continue
+        m = re.fullmatch(r'(\d+)\s*-\s*(\d+)', token)
+        if m:
+            lo, hi = int(m.group(1)), int(m.group(2))
+            nums.update(range(min(lo, hi), max(lo, hi) + 1))
+        elif token.isdigit():
+            nums.add(int(token))
+        else:
+            names.append(token.lower())
+    picked = []
+    for f in svg_files:
+        m = re.match(r'(\d+)', f.stem)
+        if m and int(m.group(1)) in nums:
+            picked.append(f)
+        elif names and any(t in f.stem.lower() for t in names):
+            picked.append(f)
+    return picked
+
+
 def print_usage() -> None:
     """Print CLI usage information."""
     print("PPT Master - SVG Quality Check Tool\n")
@@ -4471,6 +4523,13 @@ def print_usage() -> None:
     print("  python3 scripts/svg_quality_checker.py templates/decks/招商银行/templates --template-mode")
     print("\nOptions:")
     print("  --format <ppt169|ppt43|...>   Expected canvas format")
+    print("  --pages <spec>                Check only matching pages (milestone-gate")
+    print("                                  incremental mode): page numbers, N-M ranges,")
+    print("                                  and/or filename substrings, comma-separated")
+    print("                                  (e.g. --pages 5-8  /  --pages 1,cover).")
+    print("                                  Deck-wide contract checks are skipped and no")
+    print("                                  pass stamp is written — the final full sweep")
+    print("                                  still covers everything.")
     print("  --template-mode               Validate a template workspace's templates/ directory:")
     print("                                  glob *.svg directly and skip spec_lock checks;")
     print("                                  always enforce roster consistency and emit placeholder hints.")
@@ -4507,6 +4566,15 @@ def main() -> None:
         if idx + 1 < len(sys.argv):
             expected_format = sys.argv[idx + 1]
 
+    pages_spec = None
+    if '--pages' in sys.argv:
+        idx = sys.argv.index('--pages')
+        if idx + 1 < len(sys.argv):
+            pages_spec = sys.argv[idx + 1]
+        else:
+            print("[ERROR] --pages requires a value (e.g. --pages 5-8)")
+            sys.exit(1)
+
     # Execute check
     if target == '--all':
         # Check all example projects
@@ -4520,10 +4588,28 @@ def main() -> None:
             print('=' * 80)
             checker.check_directory(str(project))
     else:
-        checker.check_directory(target, expected_format)
+        checker.check_directory(target, expected_format, pages=pages_spec)
 
     # Print summary
     checker.print_summary()
+
+    # Record a clean full project sweep so verify_deck.py can skip an
+    # unchanged re-run (mtime comparison). Partial (--pages), template-mode,
+    # and --all runs never stamp.
+    if (not template_mode and pages_spec is None and target != '--all'
+            and checker.summary['errors'] == 0):
+        target_path = Path(target)
+        if target_path.is_dir() and (target_path / 'svg_output').is_dir():
+            stamp = {
+                'passed_at': datetime.now(timezone.utc).isoformat(),
+                'svg_count': len(list(
+                    (target_path / 'svg_output').glob('*.svg'))),
+            }
+            try:
+                (target_path / '.qc_pass.json').write_text(
+                    json.dumps(stamp), encoding='utf-8')
+            except OSError:
+                pass
 
     # Export report (if specified)
     if '--export' in sys.argv:

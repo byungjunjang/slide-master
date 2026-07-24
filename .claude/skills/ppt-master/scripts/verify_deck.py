@@ -76,6 +76,17 @@ def _newest_mtime(paths: list[Path]) -> float:
     return max((p.stat().st_mtime for p in paths), default=0.0)
 
 
+def _stamp_fresh(stamp: Path, inputs: list[Path]) -> bool:
+    """True when a recorded pass stamp is newer than every input artifact —
+    the gate's inputs are unchanged, so re-running it recomputes the same
+    result."""
+    if not stamp.exists():
+        return False
+    stamp_mtime = stamp.stat().st_mtime
+    return all(p.stat().st_mtime <= stamp_mtime
+               for p in inputs if p.exists())
+
+
 def _native_pptx_files(project: Path) -> list[Path]:
     exports = project / "exports"
     if not exports.is_dir():
@@ -297,17 +308,38 @@ def run_checks(project: Path) -> tuple[list[str], list[str]]:
             failures.append(f"exports/{newest.name} is older than svg_output/ "
                             f"— re-run finalize_svg.py + svg_to_pptx.py")
 
-    # 5. planning artifacts
+    # 5. planning artifacts (skip when unchanged since the recorded pass —
+    # validate_spec.py writes .spec_pass.json on PASS)
     if (project / "design_spec.md").exists() and (project / "spec_lock.md").exists():
-        if _run_script("validate_spec.py", [str(project)]) != 0:
+        if _stamp_fresh(project / ".spec_pass.json",
+                        [project / "design_spec.md",
+                         project / "spec_lock.md"]):
+            print("[verify_deck] validate_spec: skipped — spec files "
+                  "unchanged since the last recorded pass")
+        elif _run_script("validate_spec.py", [str(project)]) != 0:
             failures.append("validate_spec.py reported errors on "
                             "design_spec.md / spec_lock.md")
     else:
         warnings.append("design_spec.md / spec_lock.md missing — plan "
                         "validation skipped")
 
-    # 6. SVG quality (svg_output is the checked source; finalize masks violations)
-    if _run_script("svg_quality_checker.py", [str(project)]) != 0:
+    # 6. SVG quality (svg_output is the checked source; finalize masks
+    # violations). Skip when unchanged since the recorded clean full sweep —
+    # the checker writes .qc_pass.json on a 0-error full project run.
+    qc_stamp = project / ".qc_pass.json"
+    qc_fresh = _stamp_fresh(qc_stamp, pages + [project / "design_spec.md",
+                                               project / "spec_lock.md"])
+    if qc_fresh:
+        try:
+            qc_fresh = json.loads(
+                qc_stamp.read_text(encoding="utf-8")
+            ).get("svg_count") == len(pages)
+        except (OSError, ValueError):
+            qc_fresh = False
+    if qc_fresh:
+        print("[verify_deck] svg_quality_checker: skipped — svg_output/ and "
+              "spec files unchanged since the last clean full sweep")
+    elif _run_script("svg_quality_checker.py", [str(project)]) != 0:
         failures.append("svg_quality_checker.py reported errors on svg_output/")
 
     # 7. notes mapping (opt-in artifact; only checked when present)

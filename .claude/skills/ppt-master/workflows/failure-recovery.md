@@ -20,6 +20,7 @@ Central recovery rules for common PPT Master failures. Route-specific workflow f
 | Missing final confirmation | Yes | None | User must confirm or change the values | Step 4 final confirmation |
 | Formula rendering provider failure | No if fallback succeeds; yes if selected formulas remain missing | Provider fallback chain; otherwise mark affected rows manual only if acceptable | Only if rendered formula files are required and unavailable | Step 4 formula rendering / Step 7 image readiness gate |
 | AI image generation failure | No | Diagnose Path A (codex): CLI missing / not logged in → print install (`npm install -g @openai/codex`) / `codex login` guidance and rerun after the user confirms; then Path B API backend only if a key is already configured; then offer the web-sourcing switch; finally mark row `Needs-Manual` (user-drop) | Codex install/login fix, web-switch consent, or supplying files before export | Step 5 / Step 7 image readiness gate |
+| Step-4 background acquisition failed or still running at Step 6 | No — blocks only image-placing pages | Author image-less pages first (Step 6 deferred-image-pages rule); at the image-page boundary read the written-back statuses and run the normal ladder for `Failed` rows | Same as the AI/web rows above | Step 5 collection point / Step 6 deferred image pages |
 | Web image search/download failure | No | Adjust query/source per image-searcher rules, then mark `Needs-Manual` if unresolved | Only if the resource is required and no acceptable substitute exists | Step 5 |
 | Slice sheet missing | Yes for derived slice rows | Wait for parent sheet; run `slice_images.py`; rerun image analysis | Yes when sheet was manual/offline | Step 5 slice handling / Step 7 image readiness gate |
 | Residual `Pending` or `Failed` image row before Executor | Yes | Re-run path or mark `Needs-Manual` | Only if file must be supplied manually | Step 5 terminal-state check |
@@ -62,6 +63,7 @@ Central recovery rules for common PPT Master failures. Route-specific workflow f
 | Stage 1 confirmation exists, Stage 2 missing | Write Stage 2 recommendations, then `confirm_ui/server.py <project> --wait-only --wait-stage stage2` |
 | `design_spec.md` and `spec_lock.md` complete, split mode selected | [`resume-execute`](./resume-execute.md) |
 | Images acquired but SVGs not started | `SKILL.md` Step 6 |
+| Background acquisition launched, spec complete, statuses unread | `SKILL.md` Step 5 collection point |
 | SVGs complete and checker passed, requested notes missing | Step 6 Logic Construction |
 | SVGs complete (and notes complete when requested) | Step 7.1 (skip when no notes) |
 | Step 7.1 complete, export not complete | Step 7.2 |

@@ -9,8 +9,10 @@
 > **These encode geometry, NOT skin.** Re-skin every color/font from `spec_lock.md`
 > (tokens below name the role, e.g. `{{ACCENT}}`, `{{TITLE_STACK}}`). Sizes shown
 > are the `balanced` ramp (body 24); if the deck's `body` differs, scale the ramp.
-> **Run `text_fit.py` on every filled text line** before committing (§4 of the
-> cheat-card). For another canvas size, scale coordinates from the `viewBox`.
+> **Run `text_fit.py` ONCE per page as a `--batch` page object** (blocks +
+> obstacles; §4 of the cheat-card) covering the filled risk lines — not one
+> call per line, and skip trivially-short lines. For another canvas size,
+> scale coordinates from the `viewBox`.
 > These are authoring aids you hand-edit — never generate pages from them by script.
 
 Token legend (pull HEX/stacks from `spec_lock.md`): `{{BG}}` bg · `{{PRIMARY}}`
