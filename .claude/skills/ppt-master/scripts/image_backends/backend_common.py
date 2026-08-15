@@ -178,7 +178,10 @@ def is_rate_limit_error(exc: Exception) -> bool:
     err_str = str(exc).lower()
     return (
         "429" in err_str
-        or "rate" in err_str
+        or "rate limit" in err_str
+        or "rate-limit" in err_str
+        or "ratelimit" in err_str
+        or "too many requests" in err_str
         or "quota" in err_str
         or "resource_exhausted" in err_str
     )

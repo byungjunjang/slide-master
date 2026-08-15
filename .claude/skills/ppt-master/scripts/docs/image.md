@@ -61,6 +61,7 @@ Backends are grouped into Core / Extended / Experimental tiers. Run `python3 scr
 Backend selection:
 
 ```bash
+python3 scripts/image_gen.py "An editorial technical illustration" --backend agy
 python3 scripts/image_gen.py "A cat" --backend openai
 python3 scripts/image_gen.py "A cinematic portrait" --backend minimax
 python3 scripts/image_gen.py "A product launch hero image" --backend qwen
@@ -77,7 +78,31 @@ Configuration sources:
    - Clone repo root
    - `~/.ppt-master/.env`
 
-When `IMAGE_BACKEND` is unset, the `codex` backend is used by default (Codex CLI via ChatGPT OAuth — requires `codex login`, no API key or `.env`). Set `IMAGE_BACKEND` explicitly to select an API provider instead.
+When `IMAGE_BACKEND` is unset, the `codex` backend is used by default (Codex CLI via ChatGPT OAuth — requires `codex login`, no API key or `.env`). Set `IMAGE_BACKEND` explicitly to select another CLI or API provider.
+
+Antigravity subscription backend (no API key):
+
+```env
+IMAGE_BACKEND=agy
+# Optional overrides
+# AGY_BIN=/absolute/path/to/agy
+# AGY_MODEL=gemini-3.1-pro
+# AGY_EFFORT=high
+# AGY_TIMEOUT_MINUTES=10
+# AGY_BRAIN_DIR=~/.gemini/antigravity-cli/brain
+```
+
+A reasoning model such as `gemini-3.1-pro` rejects a run that omits the reasoning
+effort, so `--effort` is always sent — `high` by default, overridable through
+`AGY_EFFORT` (`low` / `high`). Set `AGY_EFFORT=` (empty) only for a model that
+refuses the flag entirely.
+
+The adapter preserves the manifest prompt verbatim, instructs Antigravity to call
+its built-in `generate_image` tool exactly once, and recovers the generated file
+from the conversation directory. It never enables `--dangerously-skip-permissions`
+and rejects runs whose transcript does not contain a real `GENERATE_IMAGE` event.
+The requested aspect ratio is passed to the tool, while native resolution remains
+provider-controlled.
 
 Example `.env`:
 

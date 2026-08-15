@@ -473,7 +473,7 @@ C (AI-generated) resolves through one ladder — two automated engines, then two
 
 | Order | Path | Mechanism | Trigger |
 |---|---|---|---|
-| 1 | **Path A — codex** | `image_gen.py --manifest` with the default `codex` backend (Codex CLI, ChatGPT OAuth — no API key / `.env`) | Default; always tried first |
+| 1 | **Path A — subscription CLI** | `image_gen.py --manifest` with a keyless CLI backend: `codex` (Codex CLI, ChatGPT OAuth) by default, or `agy` (Antigravity CLI, Gemini subscription) when `IMAGE_BACKEND=agy` is configured | Default; always tried first |
 | 2 | **Path B — API backend** | `image_gen.py --manifest` with an explicit `IMAGE_BACKEND` + provider API key | Only when a key is already configured; the lowest-priority generation engine |
 | 3 | **Web-sourcing switch** | Affected rows flip to `Acquire Via: web`; [`image-searcher.md`](./image-searcher.md) pipeline runs (keyless providers first) | Offered to the user when generation is unavailable |
 | 4 | **User-drop** | User places their chosen image files at `project/images/<filename>` | Terminal fallback |
@@ -485,13 +485,15 @@ C (AI-generated) resolves through one ladder — two automated engines, then two
    - `codex` → Path A only; on unrecovered failure skip Path B and go to step 4.
    - `api` → Path B directly (requires `IMAGE_BACKEND` + key; unavailable → step 4).
    - Legacy `host-native` → treat as `auto`. Legacy `manual` → skip generation; go straight to the user-drop handoff below.
-1. **Path A (codex)** — run `image_gen.py --manifest` with `IMAGE_BACKEND` unset. On failure, apply step 2 **before** falling through.
+1. **Path A (subscription CLI)** — run `image_gen.py --manifest`. A configured keyless CLI backend wins: with `IMAGE_BACKEND=agy` set in the environment / `.env`, run it as-is so that backend is used; otherwise run with `IMAGE_BACKEND` unset for the `codex` default. On failure, apply step 2 **before** falling through.
 2. **Path A recovery — diagnose, guide, retry**:
 
    | Failure signature | Action |
    |---|---|
    | `Codex CLI not found` | Print in chat: install `npm install -g @openai/codex`, then `codex login` (ChatGPT OAuth). Ask the user to confirm; on confirmation rerun the same manifest (idempotent — only `Pending` / `Failed` rows re-run). |
-   | auth / `401` / `login` | Print `codex login` guidance; same confirm-then-rerun. |
+   | `Antigravity CLI not found` (agy backend) | Print in chat: install/configure `agy`, then authenticate the Antigravity subscription and confirm `agy --version`. Same confirm-then-rerun. |
+   | `agy reported: ... requires --effort` (agy backend) | The installed CLI rejects the model/effort pair. Print the reported line and set `AGY_EFFORT` (`low` / `high`) or `AGY_MODEL` accordingly; same confirm-then-rerun. |
+   | auth / `401` / `login` | Print `codex login` guidance (or Antigravity re-authentication on the `agy` backend); same confirm-then-rerun. |
    | Transient (network / rate limit) | The CLI already retries once per item; if the run still fails, fall through. |
 
    The user may decline recovery ("skip" / "넘어가자") — then fall through to step 3.
@@ -503,7 +505,7 @@ C (AI-generated) resolves through one ladder — two automated engines, then two
 
 > All paths share one output contract: file at `project/images/<filename>`. Step 6 SVG references are path-agnostic.
 
-### Path A — `image_gen.py --manifest` (codex backend, default)
+### Path A — `image_gen.py --manifest` (subscription CLI backend)
 
 ```bash
 python3 scripts/image_gen.py \
@@ -511,7 +513,7 @@ python3 scripts/image_gen.py \
   --output project/images
 ```
 
-With `IMAGE_BACKEND` unset, this runs the `codex` backend — Codex CLI's `image_gen` tool via ChatGPT OAuth (`codex login`); no API key or `.env` is needed. Path B reuses the exact same command with an explicit `IMAGE_BACKEND`.
+With `IMAGE_BACKEND` unset, this runs the `codex` backend — Codex CLI's `image_gen` tool via ChatGPT OAuth (`codex login`); no API key or `.env` is needed. With `IMAGE_BACKEND=agy`, the same command runs the Antigravity CLI against a Gemini subscription (`agy`), also keyless — the option for a host without a ChatGPT subscription. Path B reuses the exact same command with an explicit API-provider `IMAGE_BACKEND`.
 
 The CLI iterates `items[]` with adaptive concurrency, writes `status` back per item, and is **idempotent**: re-running only re-processes entries whose status is `Pending` or `Failed`.
 

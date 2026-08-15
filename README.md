@@ -95,15 +95,21 @@ pip install -r requirements.txt
 
 **4단계 (선택) — AI 이미지 생성**
 
-표지·인포그래픽에 AI 이미지를 쓰려면 둘 중 하나:
+표지·인포그래픽에 AI 이미지를 쓰려면 셋 중 하나:
 
 ```bash
-# A) Codex CLI OAuth (API 키 불필요)
+# A) Codex CLI OAuth (API 키 불필요) — ChatGPT 구독 필요
 npm install -g @openai/codex
 codex login
 
-# B) API 키 — 환경변수 또는 .env에 OPENAI_API_KEY / GEMINI_API_KEY 등
+# B) Antigravity CLI (API 키 불필요) — Gemini 구독으로 생성
+#    agy 설치·로그인 후 `agy --version` 확인, 그 다음 저장소 루트 .env에:
+#    IMAGE_BACKEND=agy
+
+# C) API 키 — 환경변수 또는 .env에 OPENAI_API_KEY / GEMINI_API_KEY 등
 ```
+
+> ChatGPT 구독이 없다면 **B**를 쓰면 됩니다. `.env`에 `IMAGE_BACKEND=agy` 한 줄만 넣으면 이미지 생성 단계가 Antigravity로 갑니다.
 
 **5단계 (선택) — 수출 PPTX 검증 도구**
 

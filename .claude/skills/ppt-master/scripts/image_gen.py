@@ -7,6 +7,7 @@ Dispatches to the appropriate backend based on explicit provider configuration.
 Backend selection (`IMAGE_BACKEND` in `.env` or the current process environment;
 defaults to `codex` when unset — Codex CLI OAuth, no API key or .env needed):
   IMAGE_BACKEND=codex       -> Codex CLI backend (codex exec + image_gen tool, DEFAULT)
+  IMAGE_BACKEND=agy         -> Antigravity CLI backend (Gemini subscription, no API key)
   IMAGE_BACKEND=gemini      -> Gemini backend (google-genai SDK)
   IMAGE_BACKEND=openai      -> OpenAI-compatible backend (raw HTTP via requests)
   IMAGE_BACKEND=minimax     -> MiniMax image backend
@@ -63,6 +64,7 @@ configure_utf8_stdio()
 ENV_PATH = resolve_env_path()
 IMAGE_ENV_PREFIXES = (
     "IMAGE_",
+    "AGY_",
     "GEMINI_",
     "OPENAI_",
     "MINIMAX_",
@@ -105,6 +107,14 @@ BACKEND_REGISTRY = {
         "default_model": "gpt-image-2",
         "key_hint": "codex login (no API key)",
         "aliases": ["codex-image", "codex_image", "codex-cli"],
+    },
+    "agy": {
+        "module": "backend_agy",
+        "tier": "core",
+        "label": "Antigravity CLI (Gemini subscription)",
+        "default_model": "gemini-3.1-pro",
+        "key_hint": "agy subscription login (no API key)",
+        "aliases": ["antigravity", "antigravity-cli"],
     },
     "gemini": {
         "module": "backend_gemini",
