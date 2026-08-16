@@ -482,7 +482,8 @@ C (AI-generated) resolves through one ladder — two automated engines, then two
 
 0. **Confirmed override (wins)** — honor the confirmed image path. The **chat choice is canonical**; the Confirm UI is only a convenience surface that, when used, records the same choice to `<project>/confirm_ui/result.json` as `image_ai_path` (so there is no `result.json` on the chat path — read the choice from the conversation):
    - `auto` / absent → walk the ladder below.
-   - `codex` → Path A only; on unrecovered failure skip Path B and go to step 4.
+   - `codex` → Path A with the `codex` backend only; on unrecovered failure skip Path B and go to step 4.
+   - `agy` → Path A with `IMAGE_BACKEND=agy` (Antigravity subscription, keyless), whatever the ambient default is; on unrecovered failure skip Path B and go to step 4.
    - `api` → Path B directly (requires `IMAGE_BACKEND` + key; unavailable → step 4).
    - Legacy `host-native` → treat as `auto`. Legacy `manual` → skip generation; go straight to the user-drop handoff below.
 1. **Path A (subscription CLI)** — run `image_gen.py --manifest`. A configured keyless CLI backend wins: with `IMAGE_BACKEND=agy` set in the environment / `.env`, run it as-is so that backend is used; otherwise run with `IMAGE_BACKEND` unset for the `codex` default. On failure, apply step 2 **before** falling through.
