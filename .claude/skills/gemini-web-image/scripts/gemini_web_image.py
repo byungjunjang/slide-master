@@ -52,7 +52,13 @@ RATIO_PREFIX = "Generate a {ar} image (aspect ratio exactly {ar}).\n\n"
 
 DOWNLOADS = Path("~/Downloads").expanduser()
 DOWNLOAD_GLOB = "Gemini_Generated_Image_*"
-DOWNLOAD_WAIT = 20
+# A download that works lands in a few seconds; waiting longer only pays for the
+# refusals. And a browser that refuses one refuses them all, so the attempt is
+# dropped for the rest of the run after the first refusal rather than costing
+# this wait on every row.
+DOWNLOAD_WAIT = 10
+SWEEP_INTERVAL = 10
+_download_refused = False
 CHUNK = 120_000
 RATIO_TOLERANCE = 0.04
 
@@ -228,9 +234,10 @@ def export_to(dest: Path, session: str) -> tuple:
     original file. Its click reports success even when the browser refuses the
     download, so a file's arrival is the only proof, and the canvas readback
     covers the refusal."""
+    global _download_refused
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    found = DOWNLOAD_BUTTON_RE.search(snapshot(session))
+    found = None if _download_refused else DOWNLOAD_BUTTON_RE.search(snapshot(session))
     if found:
         started = time.time()
         call("click", {"selector": found.group(1)}, session)
@@ -246,7 +253,9 @@ def export_to(dest: Path, session: str) -> tuple:
                     landed.unlink(missing_ok=True)
                     log("    original file via the page's download control")
                     return png_size(raw) + (len(raw),)
-        log("    download refused; reading the rendered image instead")
+        _download_refused = True
+        log("    download refused; reading the rendered image instead, and not "
+            "attempting the download again this run")
 
     meta_raw = evaluate(CANVAS_JS, session)
     if not meta_raw:
@@ -276,44 +285,61 @@ def export_to(dest: Path, session: str) -> tuple:
 
 def collect(manifest: dict, manifest_path: Path, out_dir: Path,
             slots: list, settle: int) -> int:
-    """Read every slot's own tab. No slot is ever navigated or reloaded."""
+    """Sweep every slot's own tab, repeatedly, until each gives up its image.
+
+    A slot is checked once per sweep and never blocks the others. The first
+    version waited on each slot in turn for its full share of the budget, so a
+    slow slot spent that share while the rest finished behind it — and because
+    the sweep never came back, two images that completed during that wait were
+    reported as failures with the files sitting ready in their tabs.
+    """
+    remaining = list(slots)
     saved = 0
-    for index, item in slots:
-        session = slot_name(index)
-        state = {}
-        deadline = time.time() + settle
-        while time.time() < deadline:
+    deadline = time.time() + settle
+    started = time.time()
+    sweep = 0
+
+    while remaining and time.time() < deadline:
+        sweep += 1
+        still_waiting = []
+        for index, item in remaining:
+            session = slot_name(index)
             raw = evaluate(READY_JS, session)
-            if raw:
-                state = json.loads(raw)
-                if state.get("decoded"):
-                    break
-            time.sleep(5)
-        if not state.get("decoded"):
-            item["last_error"] = "gemini-web: image not ready within the settle window"
-            log(f"  {item['filename']}: not ready after {settle}s — left Pending")
-            continue
+            state = json.loads(raw) if raw else {}
+            if not state.get("decoded"):
+                still_waiting.append((index, item))
+                continue
 
-        got = export_to(out_dir / item["filename"], session)
-        if not got:
-            item["last_error"] = "gemini-web: image could not be extracted"
-            log(f"  {item['filename']}: extraction failed")
-            continue
+            got = export_to(out_dir / item["filename"], session)
+            if not got:
+                item["last_error"] = "gemini-web: image could not be extracted"
+                log(f"  {item['filename']}: extraction failed")
+                continue
 
-        width, height, size = got
-        actual = width / height if height else 0
-        target = aspect_ratio_value(item["aspect_ratio"])
-        drift = abs(actual - target) / target if target else 0
-        note = "" if drift <= RATIO_TOLERANCE else "  ** ratio off, review this row"
-        log(f"  saved {item['filename']} {width}x{height} "
-            f"ratio {actual:.3f} vs {item['aspect_ratio']} ({size:,} bytes){note}")
+            width, height, size = got
+            actual = width / height if height else 0
+            target = aspect_ratio_value(item["aspect_ratio"])
+            drift = abs(actual - target) / target if target else 0
+            note = "" if drift <= RATIO_TOLERANCE else "  ** ratio off, review this row"
+            log(f"  saved {item['filename']} {width}x{height} "
+                f"ratio {actual:.3f} vs {item['aspect_ratio']} ({size:,} bytes) "
+                f"[sweep {sweep}, {time.time() - started:.0f}s in]{note}")
 
-        item["status"] = "Generated"
-        item.pop("last_error", None)
-        saved += 1
-        manifest_path.write_text(
-            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
+            item["status"] = "Generated"
+            item.pop("last_error", None)
+            saved += 1
+            manifest_path.write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8")
+
+        remaining = still_waiting
+        if remaining:
+            log(f"  sweep {sweep}: {len(remaining)} still generating")
+            time.sleep(SWEEP_INTERVAL)
+
+    for _index, item in remaining:
+        item["last_error"] = "gemini-web: still generating when the budget ran out"
+        log(f"  {item['filename']}: not ready within {settle}s — left Pending")
 
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -335,8 +361,11 @@ def main() -> None:
                              "starts refusing")
     parser.add_argument("--generate-wait", type=int, default=150,
                         help="Seconds to let the images generate before reading")
-    parser.add_argument("--settle", type=int, default=300,
-                        help="Extra seconds to wait per slot for its image")
+    parser.add_argument("--settle", type=int, default=1200,
+                        help="Total seconds to keep sweeping for images after the "
+                             "batch wait (default 1200). This is a budget for the "
+                             "whole batch, not per row — concurrent generations "
+                             "slow each other down, so a larger batch needs more")
     parser.add_argument("--collect-only", action="store_true",
                         help="Skip submission and read the slots already open")
     args = parser.parse_args()

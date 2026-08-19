@@ -68,8 +68,13 @@ python3 .claude/skills/gemini-web-image/scripts/gemini_web_image.py \
 | `--output` / `-o` | Output directory | Manifest's folder |
 | `--batch` | Rows submitted in one pass, one tab each | `20` |
 | `--generate-wait` | Seconds to let the batch generate before reading | `150` |
-| `--settle` | Extra seconds to wait per slot | `300` |
+| `--settle` | Total seconds to keep sweeping after the batch wait | `1200` |
 | `--collect-only` | Skip submission; read the slots already open | off |
+
+Collection sweeps every slot repeatedly rather than waiting on each in turn. A
+slot that is still generating is skipped and looked at again next sweep, so one
+slow row cannot spend the budget the others needed. `--settle` is the budget for
+the whole batch, not per row.
 
 Generate the whole set at once. A deck needs as many images as it needs, and
 they all generate concurrently, so splitting the run into passes only adds
@@ -92,6 +97,7 @@ Each of these is a failure that already happened, not a preference.
 |---|---|
 | Drive `gemini.google.com/images`, never `/app` | That surface runs the image model and takes a bare prompt. The chat surface may answer with text |
 | Put the ratio in the prompt's first line | The page exposes no aspect-ratio control. `Generate a 16:9 image (aspect ratio exactly 16:9).` returned 2752x1536; the 4:3 form returned 2400x1792 and 1:1 returned 2048x2048 |
+| Sweep the slots repeatedly; never block on one | Waiting out a slow row in place spends the budget the others needed, and a single pass never returns — two finished images were reported as failures with the files sitting ready in their tabs |
 | **Never use `find_tab`** | It returns `"ok": true` without switching tabs. A collection loop built on it wrote one image under four different file names |
 | **Never navigate a slot after submitting** | The tab already holds the finished image. Re-opening the conversation is what makes it slow to decode or bounce to `/app` |
 | Try the page's download control first | `원본 크기 이미지 다운로드` hands over the original file rather than the displayed copy |
@@ -146,7 +152,7 @@ wrong more often than the skill has.
 | `naturalWidth` stays 0 | The image is outside the viewport and has not lazily decoded. Scroll it into view and keep polling |
 | No download button in the snapshot | The answer is still rendering. Keep polling; it appears with the finished image |
 | Download refused every time | Expected where the browser blocks automatic downloads. The canvas fallback covers it at the displayed size |
-| Still nothing after `--settle` | Leave the row `Pending` with `last_error` and resubmit it in the next pass |
+| Still nothing after `--settle` | Concurrent generations slow each other down — six at once took about sixteen minutes for the third image, where two at once took three. Raise `--settle`, or re-run with `--collect-only` to sweep the tabs that are still open |
 
 Rows this skill cannot finish stay `Pending`. Hand them back to the caller; the
 manifest is the record.
