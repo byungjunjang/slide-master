@@ -46,6 +46,7 @@ moved tab's new URL instead of the conversation it used to hold.
 |---|---|
 | WebBridge daemon | `list_tabs` on any session returns `"ok": true` |
 | Gemini signed in | The account chip renders on `gemini.google.com`; a signed-out page has no prompt box |
+| Browser UI in Korean | Elements are found by accessible name, and the names this skill matches are Korean (`메시지 보내기`, `원본 크기 이미지 다운로드`). Another UI language needs those four patterns re-read from a live page first — do not guess them |
 | Manifest | Valid `image_prompts.json` with at least one non-`Generated` row |
 | Downloads land silently (optional) | With `gemini.google.com` allowed under the browser's automatic-downloads setting, images arrive at original size; without it the canvas fallback still finishes the run at the displayed size |
 

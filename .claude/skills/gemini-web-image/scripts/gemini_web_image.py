@@ -56,6 +56,10 @@ DOWNLOAD_WAIT = 20
 CHUNK = 120_000
 RATIO_TOLERANCE = 0.04
 
+# Elements are located by their accessible name, which the page renders in the
+# browser's UI language. These are the Korean names; a browser set to another
+# language will not match them, and that is what a "never appeared" failure
+# below almost always means.
 PROMPT_BOX_RE = re.compile(
     r"'role': 'textbox', 'name': 'Gemini 프롬프트 입력'[^}]*?'ref': '(@e\d+)'"
 )
@@ -170,7 +174,9 @@ def submit(item: dict, session: str) -> bool:
             box = found.group(1)
             break
     if not box:
-        log(f"  prompt box never appeared for {item['filename']}")
+        log(f"  prompt box never appeared for {item['filename']} — the page may "
+            "still be loading, the session may be signed out, or the browser's "
+            "UI language may not be Korean (this skill matches Korean labels)")
         return False
 
     if not call("fill", {"selector": box, "value": prompt}, session).get("ok"):
@@ -186,7 +192,8 @@ def submit(item: dict, session: str) -> bool:
             send = found.group(1)
             break
     if not send:
-        log(f"  send button never appeared for {item['filename']}")
+        log(f"  send button never appeared for {item['filename']} — check the "
+            "browser's UI language if the prompt box was found by luck")
         return False
 
     if not call("click", {"selector": send}, session).get("ok"):
