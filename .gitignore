@@ -28,3 +28,4 @@ docs/superpowers/
 # OS
 .DS_Store
 Thumbs.db
+autoresearch-*/
