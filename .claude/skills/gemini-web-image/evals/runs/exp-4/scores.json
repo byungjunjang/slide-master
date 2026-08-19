@@ -1,0 +1,84 @@
+{
+  "binary_passes": 40,
+  "binary_applicable": 42,
+  "binary_pass_rate": 0.9524,
+  "per_scenario": {
+    "S1": {
+      "B1_no_find_tab": true,
+      "B2_download_first": true,
+      "B3_click_unproven": true,
+      "B4_session_per_row": true,
+      "B5_ratio_in_prompt": true,
+      "B7_precondition_stop": "n/a",
+      "B8_force_decode": true,
+      "B9_no_slot_navigation": true,
+      "B10_recorded_slot": "n/a"
+    },
+    "S2": {
+      "B1_no_find_tab": true,
+      "B2_download_first": true,
+      "B3_click_unproven": true,
+      "B4_session_per_row": true,
+      "B5_ratio_in_prompt": true,
+      "B7_precondition_stop": "n/a",
+      "B8_force_decode": true,
+      "B9_no_slot_navigation": true,
+      "B10_recorded_slot": true
+    },
+    "S3": {
+      "B1_no_find_tab": true,
+      "B2_download_first": "n/a",
+      "B3_click_unproven": "n/a",
+      "B4_session_per_row": "n/a",
+      "B5_ratio_in_prompt": "n/a",
+      "B7_precondition_stop": true,
+      "B8_force_decode": "n/a",
+      "B9_no_slot_navigation": "n/a",
+      "B10_recorded_slot": "n/a"
+    },
+    "S4": {
+      "B1_no_find_tab": true,
+      "B2_download_first": true,
+      "B3_click_unproven": true,
+      "B4_session_per_row": true,
+      "B5_ratio_in_prompt": false,
+      "B7_precondition_stop": "n/a",
+      "B8_force_decode": false,
+      "B9_no_slot_navigation": true,
+      "B10_recorded_slot": "n/a"
+    },
+    "S5": {
+      "B1_no_find_tab": true,
+      "B2_download_first": true,
+      "B3_click_unproven": true,
+      "B4_session_per_row": true,
+      "B5_ratio_in_prompt": "n/a",
+      "B7_precondition_stop": "n/a",
+      "B8_force_decode": true,
+      "B9_no_slot_navigation": true,
+      "B10_recorded_slot": "n/a"
+    },
+    "S6": {
+      "B1_no_find_tab": true,
+      "B2_download_first": true,
+      "B3_click_unproven": true,
+      "B4_session_per_row": true,
+      "B5_ratio_in_prompt": "n/a",
+      "B7_precondition_stop": "n/a",
+      "B8_force_decode": "n/a",
+      "B9_no_slot_navigation": true,
+      "B10_recorded_slot": "n/a"
+    },
+    "S7": {
+      "B1_no_find_tab": true,
+      "B2_download_first": true,
+      "B3_click_unproven": true,
+      "B4_session_per_row": true,
+      "B5_ratio_in_prompt": "n/a",
+      "B7_precondition_stop": "n/a",
+      "B8_force_decode": true,
+      "B9_no_slot_navigation": true,
+      "B10_recorded_slot": true
+    }
+  }
+}

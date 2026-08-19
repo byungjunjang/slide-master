@@ -8,21 +8,85 @@ import re
 import sys
 from pathlib import Path
 
+# "No find_tab, ever" and "no find_tab anywhere" are negations, and three plans
+# were failed for writing them that way. \bno\b does not match "not"/"nothing",
+# so the bare quantifier can be added without swallowing unrelated prose.
 NEGATION = re.compile(
-    r"never|not use|don't|do not|avoid|forbidden|instead of|rather than"
+    r"never|\bno\b|not use|don't|do not|avoid|forbidden|instead of|rather than"
     r"|금지|쓰지|사용하지|대신", re.IGNORECASE)
 
 # Plans are markdown. Emphasis lands mid-phrase ("do **not** use", "Submits
 # **all** rows first") and split every phrase match until it was stripped.
-MARKUP = re.compile(r"[*`_]+")
+# Underscores are deliberately kept: stripping them turned RATIO_PREFIX into
+# RATIOPREFIX and Gemini_Generated_Image into GeminiGeneratedImage, so every
+# check that named a snake_case identifier could never fire. Four plans that
+# quoted those identifiers exactly were scored as failures on that alone.
+MARKUP = re.compile(r"[*`]+")
+
+# Where a paragraph starts, for unwrapping.
+BLOCK_START = re.compile(r"^\s*(?:[-*+>|#]|\d+[.)])")
 
 
 def flatten(text):
     return MARKUP.sub("", text)
 
 
+def logical_lines(text):
+    """Undo the hard wrapping before any per-line test runs.
+
+    Plans are wrapped at ~78 columns, so a sentence is routinely split across
+    two lines and a per-line test sees half of it. That misread S3: the plan
+    quoted the script's own "Start the daemon" error, the opening quotation mark
+    fell on one line and the imperative on the next, and the line carrying the
+    imperative looked like the plan improvising. The same hazard applies to
+    every check that pairs a term with a qualifier on its line.
+    """
+    out = []
+    for raw in flatten(text).splitlines():
+        if not raw.strip():
+            out.append("")
+        elif out and out[-1].strip() and not BLOCK_START.match(raw):
+            out[-1] = out[-1].rstrip() + " " + raw.strip()
+        else:
+            out.append(raw)
+    return out
+
+
+LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s")
+
+
+def contextual_lines(text):
+    """Each logical line, carrying the structure that qualifies it.
+
+    Plans state a prohibition once, in a table header ("| Do not | Why |") or a
+    heading ("Things I deliberately do not do"), and then list the forbidden
+    calls plainly underneath. Read alone, those rows are indistinguishable from
+    instructions, and two plans that forbade find_tab in exactly this shape were
+    scored as planning to call it. A table row is therefore read together with
+    its header row, and a list item with whatever introduced the list.
+    """
+    out, table_header, list_intro = [], "", ""
+    for line in logical_lines(text):
+        stripped = line.strip()
+        is_row = stripped.startswith("|")
+        if not is_row:
+            table_header = ""
+        elif not table_header:
+            table_header = stripped
+        if stripped and not is_row and not LIST_ITEM.match(line):
+            list_intro = stripped
+
+        if is_row and table_header != stripped:
+            out.append(table_header + " ¦ " + line)
+        elif LIST_ITEM.match(line):
+            out.append(list_intro + " ¦ " + line)
+        else:
+            out.append(line)
+    return out
+
+
 def lines_with(text, needle):
-    return [ln for ln in flatten(text).splitlines() if needle.lower() in ln.lower()]
+    return [ln for ln in contextual_lines(text) if needle.lower() in ln.lower()]
 
 
 def b1_no_find_tab(text, sid):
@@ -42,12 +106,24 @@ def b2_download_first(text, sid):
         flatten(text), re.I))
 
 
-def b8_lazy_scroll(text, sid):
-    """naturalWidth 0 means not yet in the viewport, not a dead conversation."""
+def b8_force_decode(text, sid):
+    """naturalWidth 0 is an undecoded image, not a dead conversation.
+
+    Scrolling alone was the old remedy and it does not work: the result element
+    is routinely laid out at zero size, where scrollIntoView is a no-op. A plan
+    that only says "scroll it into view" is repeating the superseded advice, so
+    the eager/decode remedy is what earns the point; the lazy vocabulary alone
+    no longer does.
+    """
     if sid in {"S3", "S6"}:
         return None
-    return bool(re.search(r"scrollIntoView|scroll .{0,25}(?:into view|viewport)"
-                          r"|lazy|뷰포트|스크롤", flatten(text), re.I))
+    flat = flatten(text)
+    # "force the decode" names the same remedy without quoting the two calls,
+    # and it is still incompatible with the superseded "scroll it into view".
+    return bool(re.search(
+        r"loading\s*=\s*['\"]?eager|\.decode\(\)|eager"
+        r"|forc\w*\s+the\s+decode|디코드를?\s*강제",
+        flat, re.I))
 
 
 def b3_click_unproven(text, sid):
@@ -85,7 +161,7 @@ def b10_recorded_slot(text, sid):
     spots = any(
         re.search(r"collect[- ]?only", ln, re.I)
         and re.search(r"enumerat|index 0|slot_name\(0\)|re-?number", ln, re.I)
-        for ln in flat.splitlines())
+        for ln in logical_lines(text))
     return bool(follows or spots)
 
 
@@ -126,7 +202,7 @@ def b7_precondition_stop(text, sid):
     improvises = any(
         re.search(r"start the daemon|launch the daemon|brew install|npm install", ln, re.I)
         and not quoted.search(ln)
-        for ln in flat.splitlines())
+        for ln in logical_lines(text))
     return bool(stops) and not improvises
 
 
@@ -137,7 +213,7 @@ BINARY = [
     ("B4_session_per_row", b4_session_per_row),
     ("B5_ratio_in_prompt", b5_ratio_line),
     ("B7_precondition_stop", b7_precondition_stop),
-    ("B8_lazy_scroll", b8_lazy_scroll),
+    ("B8_force_decode", b8_force_decode),
     ("B9_no_slot_navigation", b9_no_slot_navigation),
     ("B10_recorded_slot", b10_recorded_slot),
 ]
