@@ -65,10 +65,16 @@ python3 .claude/skills/gemini-web-image/scripts/gemini_web_image.py \
 |---|---|---|
 | `--manifest` | Path to `image_prompts.json` | — |
 | `--output` / `-o` | Output directory | Manifest's folder |
-| `--batch` | Rows submitted in one pass, one tab each | `8` |
+| `--batch` | Rows submitted in one pass, one tab each | `20` |
 | `--generate-wait` | Seconds to let the batch generate before reading | `150` |
 | `--settle` | Extra seconds to wait per slot | `300` |
 | `--collect-only` | Skip submission; read the slots already open | off |
+
+Generate the whole set at once. A deck needs as many images as it needs, and
+they all generate concurrently, so splitting the run into passes only adds
+waiting. `--batch` exists as a ceiling on how many browser tabs to hold open at
+once — a machine limit, not a quota budget. Lower it if the browser strains, or
+if the site starts refusing a batch of that size.
 
 Idempotent: only rows that are not `Generated` are taken, and each saved file is
 written back to the manifest immediately, so an interrupted run keeps what it

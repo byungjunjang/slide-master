@@ -85,8 +85,8 @@ This was measured the hard way. PPT Master used to ship an `agy` backend (Antigr
 
 The lesson generalizes to any keyless path, none of which publish their image limits:
 
-- Plan a pass at **8 AI images**, keeping room for re-rolls. Re-rolling a weak composition is normal work, and a pass that spends the whole allowance leaves you with whatever came out first.
-- Rows beyond that can stay `Pending`. Re-running is idempotent — only `Pending` and `Failed` rows re-run — so you can finish the deck later.
+- Generate the set you need in one go rather than rationing it — but expect a wall, and notice where it falls. The number that matters is how many images you get before requests start being refused, and it is not the number on any dashboard.
+- Rows that hit the wall stay `Pending`. Re-running is idempotent — only `Pending` and `Failed` rows re-run — so you can finish the deck once the allowance resets.
 - Running more requests in parallel does not get you more images. The limit is the allowance, not elapsed time, so extra workers only reach the same wall sooner.
 - Not every slide needs a generated figure, and small decorative illustrations are produced as one sliced sheet rather than one generation each, so a typical deck stays inside this budget.
 

@@ -321,8 +321,11 @@ def main() -> None:
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--output", "-o", default=None,
                         help="Output directory (default: the manifest's folder)")
-    parser.add_argument("--batch", type=int, default=8,
-                        help="Rows submitted in one pass, one tab each (default 8)")
+    parser.add_argument("--batch", type=int, default=20,
+                        help="Rows submitted in one pass, one tab each (default 20). "
+                             "This is a ceiling on open browser tabs, not a quota "
+                             "budget — lower it if the machine strains or the site "
+                             "starts refusing")
     parser.add_argument("--generate-wait", type=int, default=150,
                         help="Seconds to let the images generate before reading")
     parser.add_argument("--settle", type=int, default=300,
