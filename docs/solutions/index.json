@@ -9,14 +9,15 @@
       "image-generation"
     ],
     "category": "bug-fix",
-    "confidence": 0.5,
+    "confidence": 0.65,
     "created": "2026-08-19",
     "last_reinforced": "2026-08-19",
-    "reinforcement_count": 0,
+    "reinforcement_count": 1,
     "supersedes": null,
     "superseded_by": null,
     "related": [
-      "sol-20260819-002"
+      "sol-20260819-002",
+      "sol-20260819-003"
     ]
   },
   {
@@ -29,6 +30,26 @@
       "image-generation"
     ],
     "category": "tool-usage",
+    "confidence": 0.5,
+    "created": "2026-08-19",
+    "last_reinforced": "2026-08-19",
+    "reinforcement_count": 0,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260819-001"
+    ]
+  },
+  {
+    "id": "sol-20260819-003",
+    "title": "A saturated eval suite is a floor, not a ceiling — read the plans",
+    "tags": [
+      "evals",
+      "autoresearch",
+      "skill-design",
+      "review"
+    ],
+    "category": "workflow",
     "confidence": 0.5,
     "created": "2026-08-19",
     "last_reinforced": "2026-08-19",
