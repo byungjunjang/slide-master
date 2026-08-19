@@ -18,7 +18,8 @@ Examples:
 
 Dependencies:
     Kimi WebBridge daemon on http://127.0.0.1:10086 and a browser already
-    signed in to Gemini. Standard library only.
+    signed in to Gemini, with downloads landing in ~/Downloads without a
+    save-as prompt. Standard library only.
 """
 
 import sys
@@ -45,9 +46,6 @@ CONVERSATION_MARK = "/app/"
 # 1024x765 on 2026-08-19.
 RATIO_PREFIX = "Generate a {ar} image (aspect ratio exactly {ar}).\n\n"
 
-# A data URL for a 1024px image runs past 600k characters, which one bridge
-# response will not carry.
-CHUNK = 120_000
 RATIO_TOLERANCE = 0.04
 
 PROMPT_BOX_RE = re.compile(
@@ -56,30 +54,46 @@ PROMPT_BOX_RE = re.compile(
 SEND_BUTTON_RE = re.compile(r"'role': 'button', 'name': '메시지 보내기', 'ref': '(@e\d+)'")
 ONBOARDING_RE = re.compile(r"'role': 'button', 'name': '사용해 보기', 'ref': '(@e\d+)'")
 
-# The generated image is only ever a blob: URL on the page. Reading it needs a
-# canvas — fetch() on a blob URL fails from the bridge's isolated world.
-PROBE_JS = """(() => {
-  const img = [...document.querySelectorAll('img')]
-    .find(i => i.src.startsWith('blob:') && i.complete && i.naturalWidth > 300);
-  const text = (document.body.innerText || '').replace(/\\s+/g, ' ');
-  return JSON.stringify({
-    ready: !!img,
-    w: img ? img.naturalWidth : 0,
-    h: img ? img.naturalHeight : 0,
-    text: text.slice(0, 6000)
-  });
-})()"""
+# The page renders its result as a blob: URL, and a blob that will not decode
+# cannot be read through a canvas at all. The download control has neither
+# problem and hands over the original file rather than the displayed copy —
+# 2752x1536 where a canvas export of the same answer gave 1024x572.
+DOWNLOAD_BUTTON_RE = re.compile(
+    r"'role': 'button', 'name': '원본 크기 이미지 다운로드', 'ref': '(@e\d+)'"
+)
+DOWNLOADS = Path("~/Downloads").expanduser()
+DOWNLOAD_GLOB = "Gemini_Generated_Image_*"
+DOWNLOAD_WAIT = 20
 
-EXPORT_JS = """(() => {
+# Reading the rendered image back through a canvas is the fallback. It yields
+# the displayed copy rather than the original, but it needs no cooperation from
+# the browser's download machinery, which refused every synthetic click after
+# the first one on 2026-08-19.
+CANVAS_JS = """(() => {
   const img = [...document.querySelectorAll('img')]
     .find(i => i.src.startsWith('blob:') && i.complete && i.naturalWidth > 300);
-  if (!img) return JSON.stringify({error: 'image element vanished'});
+  if (!img) return JSON.stringify({error: 'no decoded image'});
   const c = document.createElement('canvas');
   c.width = img.naturalWidth;
   c.height = img.naturalHeight;
   c.getContext('2d').drawImage(img, 0, 0);
   window.__pptMasterGrab = c.toDataURL('image/png');
   return JSON.stringify({len: window.__pptMasterGrab.length, w: c.width, h: c.height});
+})()"""
+CHUNK = 120_000
+
+# The result image carries loading="lazy", so it decodes only once it is in the
+# viewport. Polling a conversation without scrolling to it reports width 0 for
+# an image that is perfectly fine, which read as a dead blob for a while.
+READY_JS = """(() => {
+  const img = [...document.querySelectorAll('img')].find(i => i.src.startsWith('blob:'));
+  if (img && img.naturalWidth < 300) img.scrollIntoView({block: 'center'});
+  const text = (document.body.innerText || '').replace(/\\s+/g, ' ');
+  return JSON.stringify({
+    present: !!img,
+    decoded: !!img && img.complete && img.naturalWidth > 300,
+    text: text.slice(0, 6000)
+  });
 })()"""
 
 
@@ -201,9 +215,68 @@ def conversation_urls() -> list:
     return sorted({t["url"] for t in tabs if CONVERSATION_MARK in t.get("url", "")})
 
 
+def wait_for_conversations(before: set, expected: int, timeout: int = 300) -> list:
+    """Poll until the submitted tabs carry conversation ids.
+
+    A tab sits on /images for roughly two minutes after the prompt is sent
+    before its URL becomes /app/<id>, and only the /app form identifies a
+    conversation. A fixed sleep here silently collected nothing whenever the
+    submissions were quick enough not to cover that gap."""
+    deadline = time.time() + timeout
+    fresh: list = []
+    while time.time() < deadline:
+        time.sleep(10)
+        fresh = [u for u in conversation_urls() if u not in before]
+        if len(fresh) >= expected:
+            return fresh
+        log(f"  {len(fresh)}/{expected} conversation id(s) so far")
+    return fresh
+
+
+def newest_download(after: float) -> Path:
+    """The Gemini download that landed since `after`, or None."""
+    newest, newest_time = None, after
+    for path in DOWNLOADS.glob(DOWNLOAD_GLOB):
+        try:
+            stamp = path.stat().st_mtime
+        except OSError:
+            continue
+        if stamp > newest_time:
+            newest, newest_time = path, stamp
+    return newest
+
+
 def export_to(dest: Path) -> tuple:
-    """Copy the current tab's generated image into dest. Returns (w, h, bytes)."""
-    meta_raw = evaluate(EXPORT_JS)
+    """Save the current tab's image into dest. Returns (width, height, bytes).
+
+    The page's download control is tried first because it hands over the
+    original file. A click on it reports success even when the browser refuses
+    the download, so the file's arrival is the only proof, and the canvas
+    readback covers the refusal."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+
+    found = DOWNLOAD_BUTTON_RE.search(snapshot_tree())
+    if found:
+        started = time.time()
+        call("click", {"selector": found.group(1)})
+        landed = None
+        for _ in range(DOWNLOAD_WAIT // 2):
+            time.sleep(2)
+            landed = newest_download(started)
+            if landed:
+                size = landed.stat().st_size
+                time.sleep(1)
+                if size and landed.stat().st_size == size:
+                    break
+        if landed:
+            raw = landed.read_bytes()
+            dest.write_bytes(raw)
+            landed.unlink(missing_ok=True)
+            log("    original file via the page's download control")
+            return png_size(raw) + (len(raw),)
+        log("    download refused; reading the rendered image instead")
+
+    meta_raw = evaluate(CANVAS_JS)
     if not meta_raw:
         return ()
     meta = json.loads(meta_raw)
@@ -224,9 +297,15 @@ def export_to(dest: Path) -> tuple:
     if not data_url.startswith("data:image/png;base64,"):
         return ()
     raw = base64.b64decode(data_url.split(",", 1)[1])
-    dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(raw)
     return meta["w"], meta["h"], len(raw)
+
+
+def png_size(raw: bytes) -> tuple:
+    """Width and height from a PNG IHDR chunk."""
+    if len(raw) < 24 or raw[:8] != b"\x89PNG\r\n\x1a\n":
+        return (0, 0)
+    return (int.from_bytes(raw[16:20], "big"), int.from_bytes(raw[20:24], "big"))
 
 
 def collect(manifest: dict, manifest_path: Path, out_dir: Path,
@@ -247,16 +326,14 @@ def collect(manifest: dict, manifest_path: Path, out_dir: Path,
         state = {}
         for _ in range(settle_seconds // 5):
             time.sleep(5)
-            raw = evaluate(PROBE_JS)
+            raw = evaluate(READY_JS)
             if not raw:
                 continue
             state = json.loads(raw)
-            if state.get("ready"):
+            if state.get("decoded"):
                 break
-        if not state.get("ready"):
-            # A blob whose creating tab was navigated away can stay undecodable.
-            log(f"  {url[-16:]} holds no readable image — leave it Pending "
-                "and resubmit that row")
+        if not state.get("decoded"):
+            log(f"  {url[-16:]} shows no decoded image yet — left Pending")
             continue
 
         match = next((fp for fp in wanted if fp in state["text"]), None)
@@ -333,8 +410,7 @@ def main() -> None:
         before = set(conversation_urls())
         accepted = [it for it in batch if submit(it)]
         log(f"{len(accepted)} submitted; waiting for conversation ids")
-        time.sleep(45)
-        fresh = [u for u in conversation_urls() if u not in before]
+        fresh = wait_for_conversations(before, len(accepted))
         log(f"{len(fresh)} new conversation(s)")
         saved = collect(manifest, manifest_path, out_dir, fresh, args.settle)
 
