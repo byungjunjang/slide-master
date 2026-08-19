@@ -108,14 +108,6 @@ BACKEND_REGISTRY = {
         "key_hint": "codex login (no API key)",
         "aliases": ["codex-image", "codex_image", "codex-cli"],
     },
-    "agy": {
-        "module": "backend_agy",
-        "tier": "core",
-        "label": "Antigravity CLI (Gemini subscription)",
-        "default_model": "gemini-3.1-pro",
-        "key_hint": "agy subscription login (no API key)",
-        "aliases": ["antigravity", "antigravity-cli"],
-    },
     "gemini": {
         "module": "backend_gemini",
         "tier": "core",

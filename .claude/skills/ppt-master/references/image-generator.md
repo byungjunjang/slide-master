@@ -473,7 +473,8 @@ C (AI-generated) resolves through one ladder — two automated engines, then two
 
 | Order | Path | Mechanism | Trigger |
 |---|---|---|---|
-| 1 | **Path A — subscription CLI** | `image_gen.py --manifest` with a keyless CLI backend: `codex` (Codex CLI, ChatGPT OAuth) by default, or `agy` (Antigravity CLI, Gemini subscription) when `IMAGE_BACKEND=agy` is configured | Default; always tried first |
+| 1 | **Path A — subscription CLI** | `image_gen.py --manifest` with the keyless `codex` backend (Codex CLI, ChatGPT OAuth) | Default; always tried first |
+| 1b | **Path A2 — Gemini web** | [`gemini-web-image`](../../gemini-web-image/SKILL.md) drives the signed-in browser through the WebBridge daemon | Path A unavailable — no ChatGPT plan — and the host has a Gemini subscription |
 | 2 | **Path B — API backend** | `image_gen.py --manifest` with an explicit `IMAGE_BACKEND` + provider API key | Only when a key is already configured; the lowest-priority generation engine |
 | 3 | **Web-sourcing switch** | Affected rows flip to `Acquire Via: web`; [`image-searcher.md`](./image-searcher.md) pipeline runs (keyless providers first) | Offered to the user when generation is unavailable |
 | 4 | **User-drop** | User places their chosen image files at `project/images/<filename>` | Terminal fallback |
@@ -483,18 +484,19 @@ C (AI-generated) resolves through one ladder — two automated engines, then two
 0. **Confirmed override (wins)** — honor the confirmed image path. The **chat choice is canonical**; the Confirm UI is only a convenience surface that, when used, records the same choice to `<project>/confirm_ui/result.json` as `image_ai_path` (so there is no `result.json` on the chat path — read the choice from the conversation):
    - `auto` / absent → walk the ladder below.
    - `codex` → Path A with the `codex` backend only; on unrecovered failure skip Path B and go to step 4.
-   - `agy` → Path A with `IMAGE_BACKEND=agy` (Antigravity subscription, keyless), whatever the ambient default is; on unrecovered failure skip Path B and go to step 4.
+   - `gemini-web` → Path A2 only; on unrecovered failure skip Path B and go to step 4.
    - `api` → Path B directly (requires `IMAGE_BACKEND` + key; unavailable → step 4).
    - Legacy `host-native` → treat as `auto`. Legacy `manual` → skip generation; go straight to the user-drop handoff below.
-1. **Path A (subscription CLI)** — run `image_gen.py --manifest`. A configured keyless CLI backend wins: with `IMAGE_BACKEND=agy` set in the environment / `.env`, run it as-is so that backend is used; otherwise run with `IMAGE_BACKEND` unset for the `codex` default. On failure, apply step 2 **before** falling through.
+1. **Path A (subscription CLI)** — run `image_gen.py --manifest` with `IMAGE_BACKEND` unset for the `codex` default. On failure, apply step 2 **before** falling through.
+1b. **Path A2 (Gemini web)** — when Path A cannot run because the host has no ChatGPT plan, and the browser is signed in to Gemini, hand the same manifest to [`gemini-web-image`](../../gemini-web-image/SKILL.md). It honors this manifest contract, so Step 6 is unaffected.
 2. **Path A recovery — diagnose, guide, retry**:
 
    | Failure signature | Action |
    |---|---|
    | `Codex CLI not found` | Print in chat: install `npm install -g @openai/codex`, then `codex login` (ChatGPT OAuth). Ask the user to confirm; on confirmation rerun the same manifest (idempotent — only `Pending` / `Failed` rows re-run). |
-   | `Antigravity CLI not found` (agy backend) | Print in chat: install/configure `agy`, then authenticate the Antigravity subscription and confirm `agy --version`. Same confirm-then-rerun. |
-   | `agy reported: ... requires --effort` (agy backend) | The installed CLI rejects the model/effort pair. Print the reported line and set `AGY_EFFORT` (`low` / `high`) or `AGY_MODEL` accordingly; same confirm-then-rerun. |
-   | auth / `401` / `login` | Print `codex login` guidance (or Antigravity re-authentication on the `agy` backend); same confirm-then-rerun. |
+   | `Codex CLI not found` **and** no ChatGPT plan | Codex needs a paid plan, so installing it is not a fix. Offer Path A2 when the browser is signed in to Gemini; otherwise go to step 3. |
+   | WebBridge not answering (Path A2) | Print in chat: start the Kimi WebBridge daemon and confirm the browser extension is connected. Same confirm-then-rerun. |
+   | auth / `401` / `login` | Print `codex login` guidance; same confirm-then-rerun. |
    | Transient (network / rate limit) | The CLI already retries once per item; if the run still fails, fall through. |
 
    The user may decline recovery ("skip" / "넘어가자") — then fall through to step 3.
@@ -514,7 +516,7 @@ python3 scripts/image_gen.py \
   --output project/images
 ```
 
-With `IMAGE_BACKEND` unset, this runs the `codex` backend — Codex CLI's `image_gen` tool via ChatGPT OAuth (`codex login`); no API key or `.env` is needed. With `IMAGE_BACKEND=agy`, the same command runs the Antigravity CLI against a Gemini subscription (`agy`), also keyless — the option for a host without a ChatGPT subscription. Path B reuses the exact same command with an explicit API-provider `IMAGE_BACKEND`.
+With `IMAGE_BACKEND` unset, this runs the `codex` backend — Codex CLI's `image_gen` tool via ChatGPT OAuth (`codex login`); no API key or `.env` is needed. Codex requires a paid ChatGPT plan; a host without one uses Path A2 instead. Path B reuses the exact same command with an explicit API-provider `IMAGE_BACKEND`.
 
 The CLI iterates `items[]` with adaptive concurrency, writes `status` back per item, and is **idempotent**: re-running only re-processes entries whose status is `Pending` or `Failed`.
 
@@ -566,33 +568,27 @@ Precedence:
 - Rate-limited items requeue automatically; per-item failures are recorded with `last_error` and skipped
 - Interrupting mid-run is safe — completed items keep `status: Generated` and are skipped on re-run
 
-#### agy backend — image allowance budget
+#### Path A2 — Gemini web (`gemini-web-image`)
 
-The `agy` backend draws on an image allowance that is **separate from the model
-quota Antigravity's usage panel reports, and far smaller**. Measured 2026-08-19:
-11 generations succeeded over ~22 minutes and every later call was refused, while
-the panel still read 99% weekly / 93% five-hour remaining. Treat the panel as
-silent on this limit.
+For a host with a Gemini subscription but no paid ChatGPT plan. The skill reads
+and writes the same `image_prompts.json`, so nothing downstream changes.
 
-| Rows to generate in one pass | Action |
-|---|---|
-| ≤ 8 | Run the manifest as-is |
-| > 8 | Run the first pass, then leave the rest `Pending` until the allowance resets and re-run the same manifest |
+```bash
+python3 .claude/skills/gemini-web-image/scripts/gemini_web_image.py \
+  --manifest project/images/image_prompts.json
+```
 
-The allowance resets about five hours after the window's first image, and the
-CLI names the remaining wait in its refusal ("It will reset in approximately 1
-hour and 47 minutes"). Read that number out of the failure rather than retrying
-blind. Plan a deck around one window instead of expecting hourly recovery.
+Each row runs in its own WebBridge session, which pins one browser tab per row:
+the batch is submitted, left to generate once, then read tab by tab. Rows it
+cannot finish stay `Pending` with `last_error`, and rerunning takes only those.
+Its own rules and failure table live in
+[`gemini-web-image/SKILL.md`](../../gemini-web-image/SKILL.md).
 
-Cap the first pass at **8 rows** and keep the remaining 2-3 of the window for
-re-rolls. Re-rolling a weak composition is ordinary work, and a pass that spends
-the whole allowance makes the first result the only result.
-
-| Rule | Reason |
-|---|---|
-| Do not raise `--concurrency` to go faster | The limit is the allowance, not wall time. More workers reach the same wall sooner |
-| A refusal is not a transient error | The CLI states it as prose on stdout with exit code `0`; the adapter stops the run instead of retrying, since retries only spend more of the allowance |
-| Do not treat a spent allowance as a ladder failure | Re-running the manifest after the reset is idempotent — only `Pending` / `Failed` rows re-run. Fall to the web-sourcing switch only when the deck cannot wait |
+> The retired `agy` backend (Antigravity CLI) is why this path exists. Its image
+> allowance was metered separately from the quota Antigravity's usage panel
+> reports and ran out after about eleven images per five-hour window, which a
+> single ten-image deck exhausts. Record:
+> [`agy-image-backend-investigation.md`](../../../../docs/agy-image-backend-investigation.md).
 
 ### Path B — API Backend (lowest-priority generation engine)
 

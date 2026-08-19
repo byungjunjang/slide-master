@@ -98,18 +98,17 @@ pip install -r requirements.txt
 표지·인포그래픽에 AI 이미지를 쓰려면 셋 중 하나:
 
 ```bash
-# A) Codex CLI OAuth (API 키 불필요) — ChatGPT 구독 필요
+# A) Codex CLI OAuth (API 키 불필요) — 유료 ChatGPT 플랜 필요
 npm install -g @openai/codex
 codex login
 
-# B) Antigravity CLI (API 키 불필요) — Gemini 구독으로 생성
-#    agy 설치·로그인 후 `agy --version` 확인, 그 다음 저장소 루트 .env에:
-#    IMAGE_BACKEND=agy
+# B) Gemini 웹 (API 키 불필요) — Gemini 구독 + 로그인된 브라우저
+#    Kimi WebBridge 데몬을 띄운 뒤 gemini-web-image 스킬로 실행
 
 # C) API 키 — 환경변수 또는 .env에 OPENAI_API_KEY / GEMINI_API_KEY 등
 ```
 
-> ChatGPT 구독이 없다면 **B**를 쓰면 됩니다. `.env`에 `IMAGE_BACKEND=agy` 한 줄만 넣으면 이미지 생성 단계가 Antigravity로 갑니다.
+> ChatGPT 유료 플랜이 없다면 **B**를 쓰면 됩니다. 브라우저의 Gemini 세션을 그대로 이용하며, 같은 `image_prompts.json` 계약을 지키므로 이후 단계는 달라지지 않습니다. 실행 규칙은 [`gemini-web-image`](.claude/skills/gemini-web-image/SKILL.md)에 있습니다.
 
 **5단계 (선택) — 수출 PPTX 검증 도구**
 

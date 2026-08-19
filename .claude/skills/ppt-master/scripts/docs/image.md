@@ -61,7 +61,6 @@ Backends are grouped into Core / Extended / Experimental tiers. Run `python3 scr
 Backend selection:
 
 ```bash
-python3 scripts/image_gen.py "An editorial technical illustration" --backend agy
 python3 scripts/image_gen.py "A cat" --backend openai
 python3 scripts/image_gen.py "A cinematic portrait" --backend minimax
 python3 scripts/image_gen.py "A product launch hero image" --backend qwen
@@ -80,53 +79,20 @@ Configuration sources:
 
 When `IMAGE_BACKEND` is unset, the `codex` backend is used by default (Codex CLI via ChatGPT OAuth — requires `codex login`, no API key or `.env`). Set `IMAGE_BACKEND` explicitly to select another CLI or API provider.
 
-Antigravity subscription backend (no API key):
+Gemini web fallback (no API key, no CLI):
 
-```env
-IMAGE_BACKEND=agy
-# Optional overrides
-# AGY_BIN=/absolute/path/to/agy
-# AGY_MODEL=gemini-3.1-pro
-# AGY_EFFORT=high
-# AGY_TIMEOUT_MINUTES=10
-# AGY_BRAIN_DIR=~/.gemini/antigravity-cli/brain
+A host with a Gemini subscription but no paid ChatGPT plan has no keyless CLI
+image path — `codex` needs the plan, and the `agy` (Antigravity CLI) backend was
+retired because its image allowance ran out after about eleven images per
+five-hour window. Use the
+[`gemini-web-image`](../../gemini-web-image/SKILL.md) skill instead; it drives
+the signed-in browser through the Kimi WebBridge daemon and honors this same
+manifest contract.
+
+```bash
+python3 .claude/skills/gemini-web-image/scripts/gemini_web_image.py \
+  --manifest project/images/image_prompts.json
 ```
-
-A reasoning model such as `gemini-3.1-pro` rejects a run that omits the reasoning
-effort, so `--effort` is always sent — `low` by default, since one tool call needs
-no deliberation. Override it through `AGY_EFFORT` (`low` / `medium` / `high`), and
-set `AGY_EFFORT=` (empty) only for a model that refuses the flag entirely.
-
-The adapter preserves the manifest prompt verbatim, instructs Antigravity to call
-its built-in `generate_image` tool exactly once, and recovers the generated file
-from the conversation directory. It never enables `--dangerously-skip-permissions`.
-The requested aspect ratio is passed to the tool, while native resolution remains
-provider-controlled.
-
-**How the adapter reads the result.** The CLI takes no output-path argument, so
-one `agy --print` run per image writes its image into
-`<AGY_BRAIN_DIR>/<conversation-id>/<ImageName>_<epoch-ms>.jpg` and records what it
-did in `<conversation-id>/.system_generated/logs/transcript.jsonl`. The adapter
-recovers the conversation id from the `--log-file` output (falling back to a job
-token embedded in the prompt), then reads that transcript for two things: a
-recorded `generate_image` tool call, and the tool's own closing sentence
-`Generated image is saved at <path>`. The reported path is the only file it will
-accept, which is what keeps a script-written stand-in out.
-
-**Image allowance.** The Antigravity image path has its own small allowance,
-separate from the model quota the usage panel shows — 11 generations in ~22
-minutes exhausted it on 2026-08-19 while the panel read 99% weekly remaining.
-The CLI announces it as prose on stdout (`the model's capacity has been
-exhausted`, `a quota exhaustion error`) with exit code `0`, an empty stderr, and
-no error line in the log, so the adapter matches the wording and stops the run
-rather than spending the rest on retries. Budget a manifest pass at 8 images and
-keep the remainder for re-rolls; raising `--concurrency` reaches the same wall
-sooner rather than generating more.
-
-> Do **not** gate acceptance on the transcript step type. The CLI labels the
-> tool-result step `GENERATE_IMAGE` in some runs and `GENERIC` in others; a check
-> on that label rejected finished images and burned the retry budget re-making
-> them.
 
 Example `.env`:
 

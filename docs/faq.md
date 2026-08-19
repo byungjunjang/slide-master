@@ -71,17 +71,23 @@ For better contemporary stock photography, set `PEXELS_API_KEY` and/or `PIXABAY_
 
 Be clear on what this buys you: **web search only finds *a* relevant, downloadable, license-clean image — it does not guarantee the image is good or right for that page**, because ranking sees text metadata, not the picture. During generation a multimodal model reads a thumbnail to sanity-check and re-queries a poor fit, but **the most reliable route to high quality is to search yourself**: find a better image anywhere, hand the AI its URL, and it downloads and swaps it in via `image_search.py --from-url <url>` (recorded as a manual source; rights are yours to verify). Replacement can happen any time — mid-generation or from live preview — without stopping the run. In short: treat web search as a placeholder fallback and manual picking as the polish step.
 
-## Q: How many AI images can I generate per run on a keyless CLI backend?
+## Q: I have no paid ChatGPT plan — can I still generate images without an API key?
 
-Fewer than you might expect, and the number is not the one your subscription dashboard shows. On the `agy` backend (Antigravity CLI) image generation draws on an allowance metered separately from the general model quota the product displays. The `codex` backend has not been measured the same way, so treat the caution below as applying to any keyless CLI path until you have your own numbers.
+Yes, through your Gemini subscription and your own browser. The `codex` backend needs a paid ChatGPT plan, so on a host without one the keyless path is the [`gemini-web-image`](../.claude/skills/gemini-web-image/SKILL.md) skill: it drives the Gemini web app through the Kimi WebBridge daemon using your existing signed-in session, and writes into the same `image_prompts.json` the rest of the pipeline reads. Each image gets its own browser tab, so a batch is submitted together and read back together — four images take about three minutes end to end, at the site's original resolution.
 
-Measured on the `agy` backend, 2026-08-19: 11 images generated over about 22 minutes, after which every further request was refused — while Antigravity's own usage panel still reported 99% of the weekly model limit remaining. Treat the panel as silent on image generation rather than as evidence that you have room. The CLI reported the allowance resetting about five hours after the first image of the window, so plan a working session around one window rather than expecting a fresh budget each hour.
+Two things to know before you rely on it. It automates a logged-in web session, which is generally outside Google's terms — your account, your call. And it is a browser path: the page's layout is not a stable API, so it needs occasional maintenance in a way the CLI and API backends do not.
 
-Practical guidance:
+## Q: How many AI images can a keyless backend produce before it runs out?
 
-- Plan a manifest pass at **8 AI images**, keeping the rest of the window for re-rolls. Re-rolling a weak composition is normal work, and a pass that spends the whole allowance leaves you with whatever came out first.
-- Rows beyond that can stay `Pending`. Re-running `image_gen.py --manifest` is idempotent — only `Pending` and `Failed` rows re-run — so you can finish the deck after the allowance resets.
-- Raising `--concurrency` does not get you more images. The limit is the allowance, not elapsed time, so more parallel workers only reach the same wall sooner.
+Fewer than you might expect, and the number is not the one your subscription dashboard shows.
+
+This was measured the hard way. PPT Master used to ship an `agy` backend (Antigravity CLI) for exactly the no-ChatGPT-plan case. On 2026-08-19 it produced 11 images over about 22 minutes and then refused everything, while Antigravity's own usage panel still reported 99% of the weekly model limit remaining — image generation was metered separately and the panel said nothing about it. The allowance reset about five hours after the window's first image. A single ten-image deck exhausts that, so the backend was retired rather than left as a trap. The full record is in [`agy-image-backend-investigation.md`](agy-image-backend-investigation.md).
+
+The lesson generalizes to any keyless path, none of which publish their image limits:
+
+- Plan a pass at **8 AI images**, keeping room for re-rolls. Re-rolling a weak composition is normal work, and a pass that spends the whole allowance leaves you with whatever came out first.
+- Rows beyond that can stay `Pending`. Re-running is idempotent — only `Pending` and `Failed` rows re-run — so you can finish the deck later.
+- Running more requests in parallel does not get you more images. The limit is the allowance, not elapsed time, so extra workers only reach the same wall sooner.
 - Not every slide needs a generated figure, and small decorative illustrations are produced as one sliced sheet rather than one generation each, so a typical deck stays inside this budget.
 
 ## Q: Can I edit the generated presentations?
