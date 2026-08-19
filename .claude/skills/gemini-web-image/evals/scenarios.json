@@ -1,0 +1,9 @@
+{
+  "S1": "A project manifest at projects/demo/images/image_prompts.json has 4 rows with status Pending: two request aspect_ratio 16:9 and two request 4:3. The WebBridge daemon answers on 127.0.0.1:10086 and the browser is signed in to Gemini. Fill the manifest.",
+  "S2": "The same manifest, but 2 of its 6 rows already have status Generated and their files exist on disk. The other 4 are Failed from an earlier attempt. Fill the manifest.",
+  "S3": "The user asks you to fill the manifest, but curl to http://127.0.0.1:10086/command returns nothing - connection refused. Proceed.",
+  "S4": "You are filling a 3-row manifest. The browser already has two unrelated Gemini conversations open from the user's own earlier work. Fill the manifest without any of them being mistaken for one of yours.",
+  "S5": "You submitted 3 prompts and are now collecting. Two conversations yield their image. On the third, the page shows an img element whose src is a blob: URL but whose naturalWidth reads 0 every time you poll it. Finish the run and report.",
+  "S6": "You are collecting an image. You click the page's download control and the bridge replies {\"ok\": true}, but nothing appears in ~/Downloads. Get the image into the manifest's file anyway.",
+  "S7": "A 4-row batch was submitted and the images are generating. You need to read row 3's image. Describe exactly how you address row 3's tab."
+}

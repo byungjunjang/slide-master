@@ -115,7 +115,24 @@ shasum -a 256 projects/<name>/images/*.png | awk '{print substr($1,1,12), $2}' |
 
 ---
 
-## 6. When a row does not come back
+## 6. Checking the skill after a change
+
+The rules above are load-bearing, and each one is a failure that already
+happened. [`evals/`](evals/run-harness.md) keeps them honest: seven scenarios,
+and a scorer that reads an execution plan for the rules rather than running
+anything.
+
+```bash
+python3 .claude/skills/gemini-web-image/evals/score.py <dir-of-plans>
+```
+
+Run it after editing this file or the script. When a check fails, read the plan
+before touching the skill — the check is a pattern match over prose and has been
+wrong more often than the skill has.
+
+---
+
+## 7. When a row does not come back
 
 | Symptom | Action |
 |---|---|
