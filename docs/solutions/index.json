@@ -9,15 +9,105 @@
       "image-generation"
     ],
     "category": "bug-fix",
-    "confidence": 0.65,
+    "confidence": 0.8,
     "created": "2026-08-19",
-    "last_reinforced": "2026-08-19",
-    "reinforcement_count": 1,
+    "last_reinforced": "2026-08-20",
+    "reinforcement_count": 2,
     "supersedes": null,
     "superseded_by": null,
     "related": [
       "sol-20260819-002",
-      "sol-20260819-003"
+      "sol-20260819-003",
+      "sol-20260820-001",
+      "sol-20260820-002"
+    ]
+  },
+  {
+    "id": "sol-20260820-002",
+    "title": "A fallback that never announces itself hides the defect it works around",
+    "tags": [
+      "fallback",
+      "silent-degradation",
+      "browser-automation",
+      "quality"
+    ],
+    "category": "pattern",
+    "confidence": 0.65,
+    "created": "2026-08-20",
+    "last_reinforced": "2026-08-20",
+    "reinforcement_count": 1,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260820-001",
+      "sol-20260819-001",
+      "sol-20260820-003",
+      "sol-20260820-004"
+    ]
+  },
+  {
+    "id": "sol-20260820-001",
+    "title": "Time the other system and your own detection separately, or you will bill them for your blindness",
+    "tags": [
+      "instrumentation",
+      "polling",
+      "latency",
+      "attribution",
+      "browser-automation"
+    ],
+    "category": "pattern",
+    "confidence": 0.5,
+    "created": "2026-08-20",
+    "last_reinforced": "2026-08-20",
+    "reinforcement_count": 0,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260820-002",
+      "sol-20260819-001"
+    ]
+  },
+  {
+    "id": "sol-20260820-003",
+    "title": "An instrument you have never seen fire is not evidence",
+    "tags": [
+      "verification",
+      "evals",
+      "instrumentation",
+      "false-confidence"
+    ],
+    "category": "pattern",
+    "confidence": 0.5,
+    "created": "2026-08-20",
+    "last_reinforced": "2026-08-20",
+    "reinforcement_count": 0,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260819-003",
+      "sol-20260820-001",
+      "sol-20260820-002"
+    ]
+  },
+  {
+    "id": "sol-20260820-004",
+    "title": "State a shared rule once and name who executes it",
+    "tags": [
+      "contract",
+      "doc-code-drift",
+      "prompt-assembly",
+      "browser-automation"
+    ],
+    "category": "pattern",
+    "confidence": 0.5,
+    "created": "2026-08-20",
+    "last_reinforced": "2026-08-20",
+    "reinforcement_count": 0,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260820-002",
+      "sol-20260820-003"
     ]
   },
   {
