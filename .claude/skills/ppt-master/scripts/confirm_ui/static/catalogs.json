@@ -166,6 +166,18 @@
       "desc_ko": "개념을 분해하고 단계별로 진행하며 병렬 개념을 명확히 설명합니다. 교육·튜토리얼·과학 해설·지식 공유에 적합."
     },
     {
+      "id": "paper-explainer",
+      "label": "paper explainer",
+      "label_zh": "论文解读",
+      "label_en": "paper explainer",
+      "label_ja": "論文解説",
+      "label_ko": "논문 정보전달",
+      "desc_zh": "沿研究问题、方法、关键结果与作者解释重建论文逻辑，以图表和原始证据为中心，帮助未读论文的听众理解。机制由生成图解逐一呈现，论文原图配阅读指引单独成页。",
+      "desc_en": "Reconstruct a paper from research question through methods, key results, and author interpretation, using figures and data as the evidence spine. Mechanisms get purpose-generated diagrams; the paper's own figures get dedicated pages with a reading guide and credit. Best for audiences who have not read the paper.",
+      "desc_ja": "研究課題、方法、主要結果、著者の解釈を原図とデータに沿って再構成し、論文を未読の聴衆にも理解できるようにします。機序は生成図解で一つずつ描き、原論文の図は読み方ガイドを添えて専用ページに載せます。",
+      "desc_ko": "연구 질문→방법→핵심 결과→저자 해석을 원문 그림과 데이터 중심으로 연결해, 논문을 읽지 않은 청중도 내용을 따라가게 합니다. 기전은 생성형 도해로 하나씩 그리고, 원문 그림은 판독 가이드와 출처를 붙여 전용 슬라이드로 싣습니다."
+    },
+    {
       "id": "showcase",
       "label": "showcase",
       "label_zh": "展演",
