@@ -312,8 +312,11 @@ def collect(manifest: dict, manifest_path: Path, out_dir: Path,
 
             got = export_to(out_dir / item["filename"], session)
             if not got:
-                item["last_error"] = "gemini-web: image could not be extracted"
-                log(f"  {item['filename']}: extraction failed")
+                # Kept in the sweep rather than dropped: the overall budget bounds
+                # the retries, and dropping it here silently ended the row's run.
+                item["last_error"] = "gemini-web: image could not be extracted yet"
+                log(f"  {item['filename']}: extraction failed, retrying next sweep")
+                still_waiting.append((index, item))
                 continue
 
             width, height, size = got
@@ -327,6 +330,7 @@ def collect(manifest: dict, manifest_path: Path, out_dir: Path,
 
             item["status"] = "Generated"
             item.pop("last_error", None)
+            item.pop("slot", None)
             saved += 1
             manifest_path.write_text(
                 json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
@@ -385,11 +389,29 @@ def main() -> None:
         log(f"{len(pending)} rows pending; taking {len(batch)} this pass")
 
     if args.collect_only:
-        slots = list(enumerate(batch))
+        slots = [(it["slot"], it) for it in batch if isinstance(it.get("slot"), int)]
+        missing = [it["filename"] for it in batch if not isinstance(it.get("slot"), int)]
+        if missing:
+            log("no recorded slot for " + ", ".join(missing) +
+                " — these rows were never submitted from this manifest, so their "
+                "tabs cannot be identified. Resubmit them instead of collecting.")
+        if not slots:
+            log("nothing to collect")
+            return
     else:
         log(f"submitting {len(batch)} prompt(s), one tab each")
-        slots = [(i, item) for i, item in enumerate(batch)
-                 if submit(item, slot_name(i))]
+        slots = []
+        for i, item in enumerate(batch):
+            if not submit(item, slot_name(i)):
+                continue
+            # The slot is written down because a later --collect-only cannot
+            # recompute it: by then some rows are Generated, so re-numbering the
+            # survivors points them at other rows' tabs.
+            item["slot"] = i
+            slots.append((i, item))
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8")
         log(f"{len(slots)} submitted; letting them generate for "
             f"{args.generate_wait}s")
         time.sleep(args.generate_wait)

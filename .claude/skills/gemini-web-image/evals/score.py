@@ -71,6 +71,24 @@ def b4_session_per_row(text, sid):
         r"|slot_name|세션.{0,10}(?:하나|당|per)|슬롯", flatten(text), re.I))
 
 
+def b10_recorded_slot(text, sid):
+    """A slot recomputed at collect time points at another row's tab."""
+    if sid not in {"S2", "S7"}:
+        return None
+    flat = flatten(text)
+    # Either the plan follows the rule (use the slot written down at submit
+    # time) or it names the hazard (recomputing slots at collect time points a
+    # row at another row's tab). Both show the same understanding.
+    follows = re.search(
+        r"recorded slot|slot.{0,25}(?:written|recorded|persisted|manifest)"
+        r"|item\[.slot.\]", flat, re.I)
+    spots = any(
+        re.search(r"collect[- ]?only", ln, re.I)
+        and re.search(r"enumerat|index 0|slot_name\(0\)|re-?number", ln, re.I)
+        for ln in flat.splitlines())
+    return bool(follows or spots)
+
+
 def b9_no_slot_navigation(text, sid):
     """Re-opening a slot's conversation is what breaks this path."""
     if sid == "S3":
@@ -121,6 +139,7 @@ BINARY = [
     ("B7_precondition_stop", b7_precondition_stop),
     ("B8_lazy_scroll", b8_lazy_scroll),
     ("B9_no_slot_navigation", b9_no_slot_navigation),
+    ("B10_recorded_slot", b10_recorded_slot),
 ]
 
 

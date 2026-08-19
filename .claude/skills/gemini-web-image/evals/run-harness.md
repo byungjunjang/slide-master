@@ -30,7 +30,11 @@ must handle. Scenarios are fixed across experiments so scores stay comparable.
 
 ## Execution
 
-For each scenario, dispatch one subagent with:
+**One subagent per scenario.** Batching several scenarios into one agent
+makes their plans correlated — a single misreading fails every plan that
+agent wrote — and only its first plan is a cold read, which is the
+condition this suite is meant to measure. Dispatch one subagent per
+scenario with:
 
 - the full text of `.claude/skills/gemini-web-image/SKILL.md`
 - the full text of `.claude/skills/gemini-web-image/scripts/gemini_web_image.py`
