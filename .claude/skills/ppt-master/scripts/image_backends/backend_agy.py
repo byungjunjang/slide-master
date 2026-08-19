@@ -54,6 +54,7 @@ import time
 import uuid
 
 from image_backends.backend_common import (
+    AllowanceExhausted,
     normalize_image_size,
     resolve_output_path,
     save_image_bytes,
@@ -81,22 +82,25 @@ _SAVED_IMAGE_RE = re.compile(
     re.IGNORECASE,
 )
 # The CLI reports a spent image allowance only as model-written prose, and the
-# wording moves between runs — 2026-08-19 produced both "the model's capacity has
-# been exhausted ... once your quota resets" and "I encountered a quota exhaustion
-# error". Nothing machine-readable accompanies it: the exit code is 0, stderr is
-# empty, and the CLI log carries no error line. So this stays a broad match over
-# the phrasings the limit is announced in, plus the codes other providers use.
-_QUOTA_RE = re.compile(
-    r"capacity\s+(?:has\s+been\s+)?exhausted"
-    r"|quota\s+(?:exhaustion|exhausted|exceeded)"
-    r"|quota\s+resets"
-    r"|RESOURCE_EXHAUSTED"
-    r"|(?:daily\s*)?limit\s*(?:reached|exceeded)"
-    r"|out\s+of\s+credits"
-    r"|insufficient\s+credits"
-    r"|429\s+too\s+many\s+requests",
+# wording is different every time — 2026-08-19 alone produced "the model's
+# capacity has been exhausted", "I encountered a quota exhaustion error", and
+# "the image generation quota is currently exhausted". Nothing machine-readable
+# comes with it: exit code 0, empty stderr, no error line in the log. Chasing
+# each phrasing leaked two of the three, so a line qualifies when it names the
+# resource AND says that resource is gone. The CLI's own logs mention quota
+# routinely while healthy (`quota_manager`, `doRefreshQuota`) but never pair it
+# with an exhaustion word, which is what keeps those out.
+_QUOTA_RESOURCE_RE = re.compile(
+    r"quota|capacity|allowance|credits|RESOURCE_EXHAUSTED|\b429\b",
     re.IGNORECASE,
 )
+_QUOTA_SPENT_RE = re.compile(
+    r"exhaust|exceed|depleted|spent|ran\s+out|run\s+out|used\s+up"
+    r"|insufficient|reach|throttl|rate[\s-]*limit|too\s+many\s+requests",
+    re.IGNORECASE,
+)
+
+
 
 
 def _find_agy() -> str:
@@ -191,7 +195,7 @@ def _quota_evidence(text: str) -> str:
     caller that only learned "quota" could never tell a real limit from a false
     hit on an unrelated log line."""
     for line in text.splitlines():
-        if _QUOTA_RE.search(line):
+        if _QUOTA_RESOURCE_RE.search(line) and _QUOTA_SPENT_RE.search(line):
             stripped = line.strip()
             return stripped[:300] + ("..." if len(stripped) > 300 else "")
     return ""
@@ -285,17 +289,6 @@ def _scan_transcript(brain_root: Path, conversation: str) -> tuple[bool, list[Pa
                 Path(match.group("path")) for match in _SAVED_IMAGE_RE.finditer(content)
             ]
     return tool_called, saved
-
-
-def _verify_generation(brain_root: Path, conversation: str) -> list[Path]:
-    """Reject a conversation that produced no image, and hand back the paths."""
-    tool_called, saved = _scan_transcript(brain_root, conversation)
-    if not tool_called and not saved:
-        raise RuntimeError(
-            "Antigravity did not execute its generate_image tool. The subscription "
-            "image-generation path may be unavailable; no fallback image was accepted."
-        )
-    return saved
 
 
 def _reported_image(
@@ -406,44 +399,54 @@ def generate(
                 pass
             combined = "\n".join((log_text, result.stdout or "", result.stderr or ""))
 
-            quota_line = _quota_evidence(combined)
-            if quota_line:
-                raise RuntimeError(
-                    "Antigravity reports its image allowance as spent, so this run "
-                    "stops rather than spend more of it on retries. This limit is "
-                    "the image path's own and is not the model quota the Antigravity "
-                    "usage panel shows — that panel can read nearly full while image "
-                    "generation is blocked. Wait for it to reset, or acquire the "
-                    f"images another way. CLI reported: {quota_line}"
-                )
-
             conversation = _conversation_from_text(combined)
             if not conversation:
                 conversation = _conversation_from_token(brain_root, token, started_at)
-            if not conversation:
-                last_detail = (
-                    f"agy exit={result.returncode}; conversation id was not "
-                    f"recoverable. {_cli_error(result)}"
-                ).strip()
-                print(f"  [FAIL] {last_detail}")
-                continue
 
-            try:
-                reported = _verify_generation(brain_root, conversation)
-            except RuntimeError as exc:
-                last_detail = str(exc)
-                print(f"  [FAIL] {last_detail}")
-                continue
+            # Ask what came out before asking what went wrong. A run that met a
+            # transient 429, retried inside the session, and finished the image
+            # still complains about quota in its log — judging the complaint
+            # first would throw that finished image away.
+            generated = None
+            tool_called = False
+            if conversation:
+                try:
+                    tool_called, reported = _scan_transcript(brain_root, conversation)
+                except RuntimeError as exc:
+                    last_detail = str(exc)
+                    print(f"  [FAIL] {last_detail}")
+                    continue
+                generated = _reported_image(brain_root, conversation, reported)
 
-            generated = _reported_image(brain_root, conversation, reported)
             if generated is None:
-                # The CLI log is deleted with the temp dir below, so whatever it
-                # said about the failure has to travel out in this message.
-                last_detail = (
-                    "Antigravity started generate_image, but conversation "
-                    f"{conversation} names no image file it finished writing. "
-                    f"agy exit={result.returncode}. {_cli_error(result)}"
-                ).strip()
+                quota_line = _quota_evidence(combined)
+                if quota_line:
+                    raise AllowanceExhausted(
+                        "Antigravity reports its image allowance as spent, so this run "
+                        "stops rather than spend more of it on retries. This limit is "
+                        "the image path's own and is not the model quota the Antigravity "
+                        "usage panel shows — that panel can read nearly full while image "
+                        "generation is blocked. Wait for it to reset, or acquire the "
+                        f"images another way. CLI reported: {quota_line}"
+                    )
+
+                if not conversation:
+                    last_detail = (
+                        f"agy exit={result.returncode}; conversation id was not "
+                        f"recoverable. {_cli_error(result)}"
+                    ).strip()
+                elif not tool_called:
+                    last_detail = (
+                        "Antigravity did not execute its generate_image tool. The "
+                        "subscription image-generation path may be unavailable; no "
+                        "fallback image was accepted."
+                    )
+                else:
+                    last_detail = (
+                        "Antigravity started generate_image, but conversation "
+                        f"{conversation} names no image file it finished writing. "
+                        f"agy exit={result.returncode}. {_cli_error(result)}"
+                    ).strip()
                 print(f"  [FAIL] {last_detail}")
                 continue
 

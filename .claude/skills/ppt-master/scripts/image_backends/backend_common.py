@@ -37,6 +37,17 @@ RETRY_BASE_DELAY = 10
 RETRY_BACKOFF = 2
 
 
+class AllowanceExhausted(RuntimeError):
+    """The provider's allowance is spent, so waiting inside this run cannot help.
+
+    Distinct from a rate limit, which clears on its own in seconds. A backend
+    raises this when the provider says the budget itself is gone; the manifest
+    runner must record the item and move on instead of requeueing it, or it
+    would retry an item that cannot succeed until the allowance resets.
+    """
+
+
+
 def resolve_output_path(prompt: str, output_dir: str = None,
                         filename: str = None, ext: str = ".png") -> str:
     """Compute the final output file path based on parameters."""
@@ -174,7 +185,15 @@ def normalize_image_size(image_size: str) -> str:
 
 
 def is_rate_limit_error(exc: Exception) -> bool:
-    """Check whether the exception appears to be rate limiting."""
+    """Check whether the exception appears to be rate limiting.
+
+    A spent allowance is excluded even though providers announce it in the same
+    vocabulary. Quoting the provider's own wording into the error message is
+    what makes the verdict auditable, and that wording would otherwise classify
+    a terminal condition as a transient one.
+    """
+    if isinstance(exc, AllowanceExhausted):
+        return False
     err_str = str(exc).lower()
     return (
         "429" in err_str

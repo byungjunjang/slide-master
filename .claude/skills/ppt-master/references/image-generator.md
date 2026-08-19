@@ -579,6 +579,11 @@ silent on this limit.
 | ≤ 8 | Run the manifest as-is |
 | > 8 | Run the first pass, then leave the rest `Pending` until the allowance resets and re-run the same manifest |
 
+The allowance resets about five hours after the window's first image, and the
+CLI names the remaining wait in its refusal ("It will reset in approximately 1
+hour and 47 minutes"). Read that number out of the failure rather than retrying
+blind. Plan a deck around one window instead of expecting hourly recovery.
+
 Cap the first pass at **8 rows** and keep the remaining 2-3 of the window for
 re-rolls. Re-rolling a weak composition is ordinary work, and a pass that spends
 the whole allowance makes the first result the only result.

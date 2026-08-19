@@ -75,7 +75,7 @@ Be clear on what this buys you: **web search only finds *a* relevant, downloadab
 
 Fewer than you might expect, and the number is not the one your subscription dashboard shows. On the `agy` backend (Antigravity CLI) image generation draws on an allowance metered separately from the general model quota the product displays. The `codex` backend has not been measured the same way, so treat the caution below as applying to any keyless CLI path until you have your own numbers.
 
-Measured on the `agy` backend, 2026-08-19: 11 images generated over about 22 minutes, after which every further request was refused — while Antigravity's own usage panel still reported 99% of the weekly model limit remaining. Treat the panel as silent on image generation rather than as evidence that you have room.
+Measured on the `agy` backend, 2026-08-19: 11 images generated over about 22 minutes, after which every further request was refused — while Antigravity's own usage panel still reported 99% of the weekly model limit remaining. Treat the panel as silent on image generation rather than as evidence that you have room. The CLI reported the allowance resetting about five hours after the first image of the window, so plan a working session around one window rather than expecting a fresh budget each hour.
 
 Practical guidance:
 

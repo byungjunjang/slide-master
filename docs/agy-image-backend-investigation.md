@@ -261,6 +261,59 @@ stderr는 비어 있으며, `agy.log`에는 해당 오류 줄이 아예 없습�
 
 ---
 
+## 7-1. 한도의 리셋 주기와 거절 문구 (13:52 재실행)
+
+첫 소진으로부터 약 3시간 뒤, 남은 6장을 동시 실행 6으로 다시 돌렸습니다. 여전히
+전부 거절됐고, 이때 CLI가 리셋 시각을 알려 줬습니다.
+
+```
+I attempted to generate the image, but the image generation quota is currently
+exhausted. It will reset in approximately 1 hour and 47 minutes.
+```
+
+13:53 기준 1시간 47분 뒤는 **약 15:40**입니다. 오늘 첫 이미지 생성이 10:40이었으므로
+**약 5시간 주기의 윈도**이고, 윈도는 첫 사용 시점부터 세는 것으로 보입니다. 길이가
+사용량 화면의 "Five Hour Limit"과 같지만 버킷은 별개입니다. 이미지가 막힌 동안에도
+그 화면은 93%가 남았다고 표시했습니다.
+
+### 거절 문구는 매번 다르게 쓰인다
+
+이 실행 한 번에서만 **서로 다른 거절 문구 15종**이 나왔습니다.
+
+| 유형 | 예 |
+|---|---|
+| capacity 계열 | `the model capacity has been exhausted` |
+| quota 계열 | `the image generation quota is currently exhausted` |
+| limit 계열 | `a quota limit being reached for the image generation model` |
+| rate limit 계열 | `I encountered a rate limit from the image generation service` |
+| HTTP 계열 | `the API returned a 429 Too Many Requests error` |
+
+모델이 매번 새로 쓰는 문장이라 고정 문구를 쫓는 방식으로는 계속 샙니다. 그래서
+판정을 **자원 이름**(quota / capacity / allowance / credits / 429)과 **소진 상태**
+(exhaust / exceed / reach / rate limit / too many requests …)가 같은 줄에 함께
+나타나는지로 바꿨습니다. 15종 전부 잡히고, 정상 동작 중 계속 찍히는 `quota_manager`,
+`doRefreshQuota` 같은 로그는 소진 어휘가 없어 걸리지 않습니다.
+
+### 판정 순서 — 결과물을 먼저 본다
+
+과거 대화 138건으로 검증하다가 오탐 한 건을 찾았습니다. 일시적 429를 만났지만 세션
+안에서 재시도해 **이미지를 만들어 낸** 실행인데, 로그에 429 문구가 남아 있어 한도
+소진으로 판정될 상태였습니다.
+
+그래서 순서를 뒤집었습니다. 먼저 이미지가 나왔는지 확인하고, **나온 것이 없을 때만**
+한도를 따집니다. 결과물이 있으면 도중에 무슨 불평이 있었든 그 실행은 성공입니다.
+
+### 재큐잉 무한 루프
+
+한도 소진 오류 메시지에 CLI 원문을 실으면서 "quota"라는 단어가 들어갔는데, 매니페스트
+러너의 rate-limit 판정기가 그 단어를 보고 일시적 제한으로 오인해 항목을 무한히 다시
+큐에 넣을 상태였습니다. 한도는 실행 중에 회복되지 않으므로 끝나지 않는 루프입니다.
+
+공용 모듈에 `AllowanceExhausted` 예외를 두고, 판정기가 이 예외만은 일시적 제한에서
+제외하도록 했습니다. 진짜 429는 그대로 재큐잉됩니다.
+
+---
+
 ## 8. 운영 기준 — agy만으로 충분한 범위
 
 수정 후 실행에서 한도 벽에 닿기 전까지의 성공률은 **11회 시도 중 11회**였습니다.
