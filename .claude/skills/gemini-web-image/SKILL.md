@@ -21,21 +21,40 @@ CLI or API backend can run, and the browser is signed in to Gemini.
 
 ---
 
-## 1. Preconditions
+## 1. The one idea this skill rests on
 
-| Requirement | Check |
-|---|---|
-| Downloads land silently (optional) | With `gemini.google.com` allowed under the browser's automatic-downloads setting, images arrive at original size. Without it the run still completes through the canvas fallback at the displayed size |
-| WebBridge daemon | `curl -s -m 5 -X POST http://127.0.0.1:10086/command -d '{"action":"list_tabs","args":{},"session":"ppt-master-images"}'` returns `"ok":true` |
-| Gemini signed in | The account chip renders on `gemini.google.com`; a signed-out page has no prompt box |
-| Manifest | Valid `image_prompts.json` with at least one non-`Generated` row |
+**One bridge session per row.** The bridge scopes its "current tab" to the
+session name, so a session is a handle on one tab that nothing else can move.
+Give row *n* the session `ppt-master-image-n` and that row owns a tab for the
+whole run.
 
-Stop and tell the user which precondition failed. Do not fall back to another
-image path from inside this skill — that decision belongs to the caller.
+Everything else follows from it. Submit every row into its own tab, wait once
+for the batch, then read each tab exactly where it stands. Nothing navigates,
+nothing reloads, and which tab holds which row is the slot number — not
+something to infer from URLs or page text.
+
+Sharing one tab across rows is what makes this path fail. Every reload
+re-fetches an image that then decodes slowly or not at all, the SPA sometimes
+answers a conversation URL with `/app`, and `list_tabs` starts reporting the
+moved tab's new URL instead of the conversation it used to hold.
 
 ---
 
-## 2. Run
+## 2. Preconditions
+
+| Requirement | Check |
+|---|---|
+| WebBridge daemon | `list_tabs` on any session returns `"ok": true` |
+| Gemini signed in | The account chip renders on `gemini.google.com`; a signed-out page has no prompt box |
+| Manifest | Valid `image_prompts.json` with at least one non-`Generated` row |
+| Downloads land silently (optional) | With `gemini.google.com` allowed under the browser's automatic-downloads setting, images arrive at original size; without it the canvas fallback still finishes the run at the displayed size |
+
+Stop and name the failed precondition. Do not fall back to another image path
+from inside this skill — that decision belongs to the caller.
+
+---
+
+## 3. Run
 
 ```bash
 python3 .claude/skills/gemini-web-image/scripts/gemini_web_image.py \
@@ -46,50 +65,49 @@ python3 .claude/skills/gemini-web-image/scripts/gemini_web_image.py \
 |---|---|---|
 | `--manifest` | Path to `image_prompts.json` | — |
 | `--output` / `-o` | Output directory | Manifest's folder |
-| `--batch` | Rows submitted in one pass | `8` |
-| `--settle` | Seconds to wait per conversation for its image | `180` |
-| `--collect-only` | Skip submission; collect conversations already open | off |
-| `--url` | Collect one conversation URL (repeatable) | — |
+| `--batch` | Rows submitted in one pass, one tab each | `8` |
+| `--generate-wait` | Seconds to let the batch generate before reading | `150` |
+| `--settle` | Extra seconds to wait per slot | `300` |
+| `--collect-only` | Skip submission; read the slots already open | off |
 
-The script is idempotent: only rows that are not `Generated` are submitted, and
-each saved file is written back to the manifest immediately, so an interrupted
-run keeps everything it finished.
-
-Announce the tab group once — this task's pages collect under one group and are
-closed only when the user asks.
+Idempotent: only rows that are not `Generated` are taken, and each saved file is
+written back to the manifest immediately, so an interrupted run keeps what it
+finished. Tell the user once that this task's pages collect under a tab group,
+and leave them open until the user asks otherwise.
 
 ---
 
-## 3. Rules that the browser path forces
+## 4. Rules the browser path forces
 
-These are not preferences. Each one is a failure that has already happened.
+Each of these is a failure that already happened, not a preference.
 
 | Rule | Why |
 |---|---|
-| Drive `gemini.google.com/images`, never `/app` | The image surface runs Nano Banana 2 and accepts a bare prompt. The chat surface may answer with text instead of an image |
-| Put the ratio in the prompt's first line | The page exposes no aspect-ratio control. `Generate a 16:9 image (aspect ratio exactly 16:9).` returned 1024x572; the same form with 4:3 returned 1024x765 |
-| **Never use `find_tab`** | It returns `"ok": true` without switching tabs, so every later read hits one page and writes that one image under every file name. Move a single tab with `navigate` instead |
-| Identify a conversation by its prompt text | Position mapping breaks the moment an unrelated conversation is open. Match `fingerprint(prompt)` against the page's own text |
-| Try the page's download control first | `원본 크기 이미지 다운로드` hands over the original file — 2752x1536 where the rendered copy is 1024x572 — so it is always worth one attempt |
-| Treat a click on it as unproven until a file lands | The click reports success even when the browser refuses the download. Only a new `~/Downloads/Gemini_Generated_Image_*` proves anything; after roughly 20 seconds, fall through |
-| Fall back to reading the rendered image through a canvas | `fetch()` on the blob fails from the bridge's isolated world, but `drawImage` then `toDataURL` works and needs nothing from the browser's download machinery. The data URL runs past 300k characters, so slice it in ~120k pieces |
-| Scroll the image into view before judging it ready | The result carries `loading="lazy"` and decodes only inside the viewport. Polling without scrolling reports `naturalWidth` 0 for an image that is perfectly fine — that reading is what made a working conversation look dead |
-| Submit every row first, then collect | Generation takes about two minutes; submission takes about seven seconds. Overlapping the waits is the entire speed argument for this path |
-| Send the bridge body as a file | An inlined JSON body loses non-ASCII prompt text and breaks on quoting |
-| Click the send button, do not press Enter | The bridge has no key-press tool, and the button only renders after the box holds text |
+| Drive `gemini.google.com/images`, never `/app` | That surface runs the image model and takes a bare prompt. The chat surface may answer with text |
+| Put the ratio in the prompt's first line | The page exposes no aspect-ratio control. `Generate a 16:9 image (aspect ratio exactly 16:9).` returned 2752x1536; the 4:3 form returned 2400x1792 and 1:1 returned 2048x2048 |
+| **Never use `find_tab`** | It returns `"ok": true` without switching tabs. A collection loop built on it wrote one image under four different file names |
+| **Never navigate a slot after submitting** | The tab already holds the finished image. Re-opening the conversation is what makes it slow to decode or bounce to `/app` |
+| Try the page's download control first | `원본 크기 이미지 다운로드` hands over the original file rather than the displayed copy |
+| Treat that click as unproven until a file lands | It reports success even when the browser refuses the download. Only a new `~/Downloads/Gemini_Generated_Image_*` proves anything; after ~20s, fall through to the canvas readback |
+| Scroll the image into view before judging it ready | The result carries `loading="lazy"` and decodes only inside the viewport. Polling it off-screen reports `naturalWidth` 0 for a healthy image |
+| Click the send button; do not press Enter | The bridge has no key-press tool, and the button renders only once the box holds text |
+| Send every bridge body as a file | An inlined JSON body loses non-ASCII prompt text and breaks on quoting |
 | Dismiss the onboarding dialog | A first visit shows `사용해 보기` over the prompt box |
+
+> The thread running through half of these: **this bridge reports success for
+> actions it did not perform.** `find_tab`, `click`, and `navigate` all do it.
+> Verify the effect — the tab's URL, the file on disk — never the return value.
 
 ---
 
-## 4. Verify before reporting success
+## 5. Verify before reporting success
 
-1. Every row the caller asked for reads `Generated`, and the file exists.
+1. Every requested row reads `Generated` and its file exists.
 2. Each file's ratio is within 4% of its row's `aspect_ratio`. The script prints
-   `** ratio off` when it is not; that row needs a resubmit, not a note.
-3. No two output files share a checksum. Identical files mean tab switching
-   failed and the run must be redone.
-4. `~/Downloads` holds no leftover `Gemini_Generated_Image_*`; each one is moved
-   into the project, not copied.
+   `** ratio off` otherwise; that row needs a resubmit, not a footnote.
+3. No two output files share a checksum. Identical files mean slot isolation
+   broke and the run must be redone.
+4. `~/Downloads` holds no leftover `Gemini_Generated_Image_*`.
 
 ```bash
 shasum -a 256 projects/<name>/images/*.png | awk '{print substr($1,1,12), $2}' | sort
@@ -97,15 +115,14 @@ shasum -a 256 projects/<name>/images/*.png | awk '{print substr($1,1,12), $2}' |
 
 ---
 
-## 5. When a row does not come back
+## 6. When a row does not come back
 
 | Symptom | Action |
 |---|---|
-| `naturalWidth` stays 0 | The image is outside the viewport and has not lazily decoded. Scroll it into view and keep polling — do not conclude the conversation is dead |
+| `naturalWidth` stays 0 | The image is outside the viewport and has not lazily decoded. Scroll it into view and keep polling |
 | No download button in the snapshot | The answer is still rendering. Keep polling; it appears with the finished image |
-| Download refused every time | Expected on a browser that blocks automatic downloads. The canvas fallback covers it; report the smaller size rather than stalling |
-| Prompt box never appears | The page is signed out or still loading. Report the precondition failure |
-| A conversation's text matches no manifest row | Someone else's conversation is open. Skip it — never guess |
+| Download refused every time | Expected where the browser blocks automatic downloads. The canvas fallback covers it at the displayed size |
+| Still nothing after `--settle` | Leave the row `Pending` with `last_error` and resubmit it in the next pass |
 
-Rows this skill cannot finish stay `Pending` with `last_error` set. Hand them
-back to the caller; the manifest is the record.
+Rows this skill cannot finish stay `Pending`. Hand them back to the caller; the
+manifest is the record.
