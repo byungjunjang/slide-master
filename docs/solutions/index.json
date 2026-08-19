@@ -1,0 +1,42 @@
+[
+  {
+    "id": "sol-20260819-001",
+    "title": "Verify an external CLI's work by its recorded action, not its transcript label",
+    "tags": [
+      "agy",
+      "antigravity",
+      "cli-integration",
+      "image-generation"
+    ],
+    "category": "bug-fix",
+    "confidence": 0.5,
+    "created": "2026-08-19",
+    "last_reinforced": "2026-08-19",
+    "reinforcement_count": 0,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260819-002"
+    ]
+  },
+  {
+    "id": "sol-20260819-002",
+    "title": "Antigravity's image allowance is separate from its usage panel and small",
+    "tags": [
+      "agy",
+      "antigravity",
+      "quota",
+      "image-generation"
+    ],
+    "category": "tool-usage",
+    "confidence": 0.5,
+    "created": "2026-08-19",
+    "last_reinforced": "2026-08-19",
+    "reinforcement_count": 0,
+    "supersedes": null,
+    "superseded_by": null,
+    "related": [
+      "sol-20260819-001"
+    ]
+  }
+]

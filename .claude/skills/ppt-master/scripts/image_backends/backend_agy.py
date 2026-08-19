@@ -16,9 +16,11 @@ Dependencies:
     only when its JPEG result must be transcoded to the requested PNG filename.
 
 The CLI tool does not accept an output path. It writes generated images under
-~/.gemini/antigravity-cli/brain/<conversation-id>/, so this adapter identifies
-the conversation from the per-run log, verifies that generate_image actually
-ran, then copies the resulting image into the normal ppt-master output contract.
+~/.gemini/antigravity-cli/brain/<conversation-id>/ and records what it wrote in
+that conversation's transcript, so this adapter identifies the conversation from
+the per-run log, reads the transcript for proof that generate_image ran and for
+the file name the tool reported, then copies that image into the normal
+ppt-master output contract.
 """
 
 import sys
@@ -42,6 +44,7 @@ if __name__ == "__main__":
         0 if any(arg in {"-h", "--help", "help"} for arg in sys.argv[1:]) else 1
     )
 
+import json
 import os
 import re
 import shutil
@@ -61,16 +64,39 @@ DEFAULT_MODEL = "gemini-3.1-pro"
 # One tool call needs no deliberation, and the low tier reaches it far sooner.
 DEFAULT_EFFORT = "low"
 DEFAULT_TIMEOUT_MINUTES = 10
-# The upstream drops the generate_image call often enough — roughly half of the
-# observed runs — that one transient error must not end the run. Three attempts
-# cost nothing on a healthy run, since a retry only follows a failure.
+# The CLI does occasionally end a session without finishing the image, so one
+# transient error must not end the run. Three attempts cost nothing on a healthy
+# run, since a retry only follows a failure. (An earlier note here blamed the
+# upstream for dropping about half of all calls; that was this adapter misreading
+# finished runs, not a real upstream failure rate.)
 MAX_ATTEMPTS = 3
 
 _CONVERSATION_RE = re.compile(
     r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 )
-_GENERATE_IMAGE_RE = re.compile(r'"type"\s*:\s*"GENERATE_IMAGE"')
-_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
+# The tool closes with one sentence naming the file it wrote. That sentence is
+# the only exact statement of the output path the CLI ever gives us.
+_SAVED_IMAGE_RE = re.compile(
+    r"Generated image is saved at\s+(?P<path>\S.*?\.(?:png|jpe?g|webp))",
+    re.IGNORECASE,
+)
+# The CLI reports a spent image allowance only as model-written prose, and the
+# wording moves between runs — 2026-08-19 produced both "the model's capacity has
+# been exhausted ... once your quota resets" and "I encountered a quota exhaustion
+# error". Nothing machine-readable accompanies it: the exit code is 0, stderr is
+# empty, and the CLI log carries no error line. So this stays a broad match over
+# the phrasings the limit is announced in, plus the codes other providers use.
+_QUOTA_RE = re.compile(
+    r"capacity\s+(?:has\s+been\s+)?exhausted"
+    r"|quota\s+(?:exhaustion|exhausted|exceeded)"
+    r"|quota\s+resets"
+    r"|RESOURCE_EXHAUSTED"
+    r"|(?:daily\s*)?limit\s*(?:reached|exceeded)"
+    r"|out\s+of\s+credits"
+    r"|insufficient\s+credits"
+    r"|429\s+too\s+many\s+requests",
+    re.IGNORECASE,
+)
 
 
 def _find_agy() -> str:
@@ -154,6 +180,23 @@ Use the following image prompt verbatim as the visual specification:
 """
 
 
+def _quota_evidence(text: str) -> str:
+    """The line that reads as a spent subscription allowance, or "" for none.
+
+    The CLI states a spent allowance in prose on stdout rather than as an error
+    code, and its internal logs mention quota routinely, so this matches the
+    sentence it actually prints plus the other signatures such limits arrive
+    under. Returning the matched line rather than a bare yes/no is what makes
+    the verdict checkable: the CLI log is discarded when the run ends, so a
+    caller that only learned "quota" could never tell a real limit from a false
+    hit on an unrelated log line."""
+    for line in text.splitlines():
+        if _QUOTA_RE.search(line):
+            stripped = line.strip()
+            return stripped[:300] + ("..." if len(stripped) > 300 else "")
+    return ""
+
+
 def _cli_error(result: subprocess.CompletedProcess) -> str:
     """First error line the CLI printed. Without it a setup mistake such as a
     rejected model surfaces only as an unrecoverable conversation id."""
@@ -197,7 +240,17 @@ def _conversation_from_token(brain_root: Path, token: str, started_at: float) ->
     return ""
 
 
-def _verify_generation(brain_root: Path, conversation: str) -> None:
+def _scan_transcript(brain_root: Path, conversation: str) -> tuple[bool, list[Path]]:
+    """Read one conversation for proof that the built-in image tool ran.
+
+    The CLI labels the tool-result step "GENERATE_IMAGE" in some runs and the
+    unspecific "GENERIC" in others, so that label alone cannot decide whether an
+    image was made — runs whose image was already on disk were being rejected on
+    it. Both shapes do record the `generate_image` tool call and the sentence the
+    tool writes naming the file it saved, so those two signals are read instead.
+
+    Returns whether the tool ran and every output path the transcript reported.
+    """
     transcript = _transcript_path(brain_root, conversation)
     try:
         text = transcript.read_text(encoding="utf-8", errors="replace")
@@ -206,38 +259,73 @@ def _verify_generation(brain_root: Path, conversation: str) -> None:
             "Antigravity conversation was created, but its transcript could not be read. "
             "Check AGY_BRAIN_DIR and the Antigravity login state."
         ) from exc
-    if not _GENERATE_IMAGE_RE.search(text):
+
+    tool_called = False
+    saved: list[Path] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            record = json.loads(stripped)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(record, dict):
+            continue
+        if record.get("type") == "GENERATE_IMAGE":
+            tool_called = True
+        for call in record.get("tool_calls") or []:
+            # A bare text search would also hit the tool inventory the CLI
+            # pastes into every conversation, so read the recorded call itself.
+            if isinstance(call, dict) and call.get("name") == "generate_image":
+                tool_called = True
+        content = record.get("content")
+        if isinstance(content, str):
+            saved += [
+                Path(match.group("path")) for match in _SAVED_IMAGE_RE.finditer(content)
+            ]
+    return tool_called, saved
+
+
+def _verify_generation(brain_root: Path, conversation: str) -> list[Path]:
+    """Reject a conversation that produced no image, and hand back the paths."""
+    tool_called, saved = _scan_transcript(brain_root, conversation)
+    if not tool_called and not saved:
         raise RuntimeError(
             "Antigravity did not execute its generate_image tool. The subscription "
             "image-generation path may be unavailable; no fallback image was accepted."
         )
+    return saved
 
 
-def _find_generated_image(
+def _reported_image(
     brain_root: Path,
     conversation: str,
-    image_name: str,
-    started_at: float,
+    reported: list[Path],
 ) -> Path | None:
+    """Resolve the file the tool reported, confined to its own conversation.
+
+    Every conversation that holds an image also names that image in its
+    transcript, so no directory scan is needed. Declining to look past the
+    reported name is also what keeps a script-written stand-in out: a fallback
+    that ranked the directory by modification time would accept one.
+    """
     conversation_dir = brain_root / conversation
     if not conversation_dir.is_dir():
         return None
 
-    candidates = []
-    for path in conversation_dir.iterdir():
-        if not path.is_file() or path.suffix.lower() not in _IMAGE_SUFFIXES:
-            continue
+    root = conversation_dir.resolve()
+    for path in reversed(reported):
+        candidate = path.expanduser()
+        if not candidate.is_absolute():
+            candidate = conversation_dir / candidate
         try:
-            if path.stat().st_mtime >= started_at - 5:
-                candidates.append(path)
+            resolved = candidate.resolve()
         except OSError:
             continue
-
-    preferred = [path for path in candidates if path.name.startswith(f"{image_name}_")]
-    pool = preferred or candidates
-    if not pool:
-        return None
-    return max(pool, key=lambda path: path.stat().st_mtime)
+        if resolved.is_file() and resolved.is_relative_to(root):
+            return resolved
+    return None
 
 
 def generate(
@@ -317,6 +405,18 @@ def generate(
             except OSError:
                 pass
             combined = "\n".join((log_text, result.stdout or "", result.stderr or ""))
+
+            quota_line = _quota_evidence(combined)
+            if quota_line:
+                raise RuntimeError(
+                    "Antigravity reports its image allowance as spent, so this run "
+                    "stops rather than spend more of it on retries. This limit is "
+                    "the image path's own and is not the model quota the Antigravity "
+                    "usage panel shows — that panel can read nearly full while image "
+                    "generation is blocked. Wait for it to reset, or acquire the "
+                    f"images another way. CLI reported: {quota_line}"
+                )
+
             conversation = _conversation_from_text(combined)
             if not conversation:
                 conversation = _conversation_from_token(brain_root, token, started_at)
@@ -329,23 +429,21 @@ def generate(
                 continue
 
             try:
-                _verify_generation(brain_root, conversation)
+                reported = _verify_generation(brain_root, conversation)
             except RuntimeError as exc:
                 last_detail = str(exc)
                 print(f"  [FAIL] {last_detail}")
                 continue
 
-            generated = _find_generated_image(
-                brain_root,
-                conversation,
-                image_name,
-                started_at,
-            )
+            generated = _reported_image(brain_root, conversation, reported)
             if generated is None:
+                # The CLI log is deleted with the temp dir below, so whatever it
+                # said about the failure has to travel out in this message.
                 last_detail = (
-                    "Antigravity executed generate_image, but the generated file "
-                    f"was not found under conversation {conversation}."
-                )
+                    "Antigravity started generate_image, but conversation "
+                    f"{conversation} names no image file it finished writing. "
+                    f"agy exit={result.returncode}. {_cli_error(result)}"
+                ).strip()
                 print(f"  [FAIL] {last_detail}")
                 continue
 
@@ -354,4 +452,9 @@ def generate(
             print(f"  [DONE] Image generated ({elapsed:.1f}s)")
             return saved_path
 
-    raise RuntimeError(f"Antigravity image generation failed. {last_detail}")
+    raise RuntimeError(
+        f"Antigravity image generation failed after {attempts} attempts. "
+        f"{last_detail} A spent daily allowance looks the same from here as a "
+        "transient upstream error, so check the subscription's remaining image "
+        "usage before treating this as a fault."
+    )

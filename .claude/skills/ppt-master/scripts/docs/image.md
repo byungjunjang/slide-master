@@ -93,16 +93,40 @@ IMAGE_BACKEND=agy
 ```
 
 A reasoning model such as `gemini-3.1-pro` rejects a run that omits the reasoning
-effort, so `--effort` is always sent — `high` by default, overridable through
-`AGY_EFFORT` (`low` / `high`). Set `AGY_EFFORT=` (empty) only for a model that
-refuses the flag entirely.
+effort, so `--effort` is always sent — `low` by default, since one tool call needs
+no deliberation. Override it through `AGY_EFFORT` (`low` / `medium` / `high`), and
+set `AGY_EFFORT=` (empty) only for a model that refuses the flag entirely.
 
 The adapter preserves the manifest prompt verbatim, instructs Antigravity to call
 its built-in `generate_image` tool exactly once, and recovers the generated file
-from the conversation directory. It never enables `--dangerously-skip-permissions`
-and rejects runs whose transcript does not contain a real `GENERATE_IMAGE` event.
+from the conversation directory. It never enables `--dangerously-skip-permissions`.
 The requested aspect ratio is passed to the tool, while native resolution remains
 provider-controlled.
+
+**How the adapter reads the result.** The CLI takes no output-path argument, so
+one `agy --print` run per image writes its image into
+`<AGY_BRAIN_DIR>/<conversation-id>/<ImageName>_<epoch-ms>.jpg` and records what it
+did in `<conversation-id>/.system_generated/logs/transcript.jsonl`. The adapter
+recovers the conversation id from the `--log-file` output (falling back to a job
+token embedded in the prompt), then reads that transcript for two things: a
+recorded `generate_image` tool call, and the tool's own closing sentence
+`Generated image is saved at <path>`. The reported path is the only file it will
+accept, which is what keeps a script-written stand-in out.
+
+**Image allowance.** The Antigravity image path has its own small allowance,
+separate from the model quota the usage panel shows — 11 generations in ~22
+minutes exhausted it on 2026-08-19 while the panel read 99% weekly remaining.
+The CLI announces it as prose on stdout (`the model's capacity has been
+exhausted`, `a quota exhaustion error`) with exit code `0`, an empty stderr, and
+no error line in the log, so the adapter matches the wording and stops the run
+rather than spending the rest on retries. Budget a manifest pass at 8 images and
+keep the remainder for re-rolls; raising `--concurrency` reaches the same wall
+sooner rather than generating more.
+
+> Do **not** gate acceptance on the transcript step type. The CLI labels the
+> tool-result step `GENERATE_IMAGE` in some runs and `GENERIC` in others; a check
+> on that label rejected finished images and burned the retry budget re-making
+> them.
 
 Example `.env`:
 

@@ -566,6 +566,29 @@ Precedence:
 - Rate-limited items requeue automatically; per-item failures are recorded with `last_error` and skipped
 - Interrupting mid-run is safe — completed items keep `status: Generated` and are skipped on re-run
 
+#### agy backend — image allowance budget
+
+The `agy` backend draws on an image allowance that is **separate from the model
+quota Antigravity's usage panel reports, and far smaller**. Measured 2026-08-19:
+11 generations succeeded over ~22 minutes and every later call was refused, while
+the panel still read 99% weekly / 93% five-hour remaining. Treat the panel as
+silent on this limit.
+
+| Rows to generate in one pass | Action |
+|---|---|
+| ≤ 8 | Run the manifest as-is |
+| > 8 | Run the first pass, then leave the rest `Pending` until the allowance resets and re-run the same manifest |
+
+Cap the first pass at **8 rows** and keep the remaining 2-3 of the window for
+re-rolls. Re-rolling a weak composition is ordinary work, and a pass that spends
+the whole allowance makes the first result the only result.
+
+| Rule | Reason |
+|---|---|
+| Do not raise `--concurrency` to go faster | The limit is the allowance, not wall time. More workers reach the same wall sooner |
+| A refusal is not a transient error | The CLI states it as prose on stdout with exit code `0`; the adapter stops the run instead of retrying, since retries only spend more of the allowance |
+| Do not treat a spent allowance as a ladder failure | Re-running the manifest after the reset is idempotent — only `Pending` / `Failed` rows re-run. Fall to the web-sourcing switch only when the deck cannot wait |
+
 ### Path B — API Backend (lowest-priority generation engine)
 
 **Trigger**: Path A failed and its recovery was declined or did not resolve, **and** `IMAGE_BACKEND` + the matching provider API key are already present in the environment / `.env`. Also runs directly when the confirmed `image_ai_path` is `api`.
