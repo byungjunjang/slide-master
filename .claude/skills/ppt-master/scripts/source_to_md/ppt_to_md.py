@@ -159,11 +159,25 @@ def _safe_position(shape: object, attr: str) -> int:
         return 0
 
 
+def _safe_shape_type(shape: object) -> object | None:
+    """Read a shape's ``shape_type``, tolerating unrecognized geometry.
+
+    A shape whose XML omits both ``prstGeom`` and ``custGeom`` (seen in some
+    externally-generated decks) makes python-pptx raise NotImplementedError
+    on this property. Treat it as an ordinary non-group, non-picture shape
+    rather than aborting the whole conversion.
+    """
+    try:
+        return shape.shape_type
+    except NotImplementedError:
+        return None
+
+
 def iter_leaf_shapes(shapes: object) -> list[LeafShape]:
     """Return a flattened, reading-order list of shapes."""
     items: list[LeafShape] = []
     for shape in shapes:
-        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+        if _safe_shape_type(shape) == MSO_SHAPE_TYPE.GROUP:
             items.extend(iter_leaf_shapes(shape.shapes))
             continue
         items.append(
@@ -1092,7 +1106,7 @@ def convert_presentation_to_markdown(
                 emitted_diagram_ids.add(str(diagram.get("diagram_id")))
                 continue
 
-            is_picture_shape = shape.shape_type in {
+            is_picture_shape = _safe_shape_type(shape) in {
                 MSO_SHAPE_TYPE.PICTURE,
                 MSO_SHAPE_TYPE.LINKED_PICTURE,
             }
