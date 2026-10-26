@@ -288,10 +288,10 @@ def run_checks(project: Path) -> tuple[list[str], list[str]]:
     if not fin_pages:
         print("[verify_deck] svg_final/ absent — deferred finalize "
               "(run finalize_svg.py when SVG previews are needed)")
-    elif len(fin_pages) != len(pages):
+    elif {p.name for p in fin_pages} != {p.name for p in pages}:
         failures.append(f"svg_final/ ({len(fin_pages)}) != svg_output/ "
                         f"({len(pages)}) — re-run finalize_svg.py")
-    elif _newest_mtime(fin_pages) < _newest_mtime(pages):
+    elif any((fin_dir / p.name).stat().st_mtime_ns < p.stat().st_mtime_ns for p in pages):
         failures.append("svg_final/ is older than svg_output/ — SVGs were "
                         "edited after finalize; re-run finalize_svg.py")
 
