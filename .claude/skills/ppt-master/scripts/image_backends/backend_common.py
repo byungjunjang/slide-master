@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
 import io
 import os
+import re
 import time
 
 import requests
@@ -35,6 +36,21 @@ except ImportError:
 MAX_RETRIES = 3
 RETRY_BASE_DELAY = 10
 RETRY_BACKOFF = 2
+
+# Match explicit rate-limit wording only. A bare "rate" substring also hits
+# "generated" / "generate", which misread unrelated failures as rate limits.
+_RATE_LIMIT_RE = re.compile(
+    r"\b429\b|rate[ _-]?limit|too many requests|quota|resource_exhausted",
+    re.IGNORECASE,
+)
+
+
+class QuotaExhaustedError(RuntimeError):
+    """Account usage quota is spent; retrying before the reset only burns calls.
+
+    Batch runners must stop scheduling new work when they see this, instead
+    of treating it as a transient rate limit.
+    """
 
 
 def resolve_output_path(prompt: str, output_dir: str = None,
@@ -175,13 +191,9 @@ def normalize_image_size(image_size: str) -> str:
 
 def is_rate_limit_error(exc: Exception) -> bool:
     """Check whether the exception appears to be rate limiting."""
-    err_str = str(exc).lower()
-    return (
-        "429" in err_str
-        or "rate" in err_str
-        or "quota" in err_str
-        or "resource_exhausted" in err_str
-    )
+    if isinstance(exc, QuotaExhaustedError):
+        return False
+    return bool(_RATE_LIMIT_RE.search(str(exc)))
 
 
 def retry_delay(attempt: int, rate_limited: bool) -> int:

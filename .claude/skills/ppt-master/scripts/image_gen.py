@@ -389,6 +389,8 @@ STATUS_FAILED = "Failed"
 STATUS_NEEDS_MANUAL = "Needs-Manual"
 VALID_STATUSES = {STATUS_PENDING, STATUS_GENERATED, STATUS_FAILED, STATUS_NEEDS_MANUAL}
 RETRYABLE_STATUSES = {STATUS_PENDING, STATUS_FAILED}
+# Per-item cap on rate-limit requeues within one manifest run.
+MAX_RATE_LIMIT_REQUEUES = 3
 REQUIRED_ITEM_FIELDS = ("filename", "prompt", "aspect_ratio", "status")
 
 
@@ -476,7 +478,11 @@ def _run_manifest(manifest: dict, manifest_path: str, backend_module, *,
     Strategy:
       - Start at `initial_concurrency` workers per batch.
       - On any rate-limit error in a batch, halve concurrency (min 1) and
-        requeue the rate-limited items.
+        requeue the rate-limited items, at most MAX_RATE_LIMIT_REQUEUES
+        times per item; past that the item is recorded as Failed.
+      - On QuotaExhaustedError (account usage limit) the item is recorded
+        as Failed and no further items are started; the rest keep their
+        status for the next run.
       - Per-item failures are recorded as `status: Failed` + `last_error`
         and not retried within this run. `Failed` remains retryable and
         non-terminal; the Step 5 gate must resolve it by rerunning this
@@ -487,7 +493,10 @@ def _run_manifest(manifest: dict, manifest_path: str, backend_module, *,
 
     Returns (ok_count, failed_count, skipped_count).
     """
-    from image_backends.backend_common import is_rate_limit_error
+    from image_backends.backend_common import (
+        QuotaExhaustedError,
+        is_rate_limit_error,
+    )
 
     items = manifest["items"]
     pending_idx = [
@@ -513,6 +522,8 @@ def _run_manifest(manifest: dict, manifest_path: str, backend_module, *,
     fail_count = 0
     current = max(1, initial_concurrency)
     state_lock = threading.Lock()
+    requeues: dict[int, int] = {}
+    quota_message = ""
 
     def _one(idx: int):
         item = items[idx]
@@ -551,10 +562,21 @@ def _run_manifest(manifest: dict, manifest_path: str, backend_module, *,
                         item.pop("last_error", None)
                         ok_count += 1
                         print(f"  [OK]   {item['filename']}")
-                    elif is_rate_limit_error(exc):
+                    elif isinstance(exc, QuotaExhaustedError):
+                        quota_message = str(exc)
+                        item["status"] = STATUS_FAILED
+                        item["last_error"] = quota_message[:500]
+                        fail_count += 1
+                        print(f"  [QUOTA] {item['filename']}: {exc}")
+                    elif (is_rate_limit_error(exc)
+                          and requeues.get(idx, 0) < MAX_RATE_LIMIT_REQUEUES):
                         rate_limited = True
+                        requeues[idx] = requeues.get(idx, 0) + 1
                         queue.append(idx)
-                        print(f"  [RATE] {item['filename']} — requeued")
+                        print(
+                            f"  [RATE] {item['filename']} — requeued "
+                            f"({requeues[idx]}/{MAX_RATE_LIMIT_REQUEUES})"
+                        )
                     else:
                         item["status"] = STATUS_FAILED
                         item["last_error"] = str(exc)[:500]
@@ -565,6 +587,12 @@ def _run_manifest(manifest: dict, manifest_path: str, backend_module, *,
                         )
                     save_manifest(manifest_path, manifest)
 
+        if quota_message:
+            print(
+                f"\n  ⛔ Usage limit reached — stopping this run; "
+                f"{len(queue)} queued item(s) not started. {quota_message}\n"
+            )
+            break
         if rate_limited and current > 1:
             new_current = max(1, current // 2)
             print(

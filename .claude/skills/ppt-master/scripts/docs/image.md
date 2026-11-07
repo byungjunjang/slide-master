@@ -79,6 +79,13 @@ Configuration sources:
 
 When `IMAGE_BACKEND` is unset, the `codex` backend is used by default (Codex CLI via ChatGPT OAuth — requires `codex login`, no API key or `.env`). Set `IMAGE_BACKEND` explicitly to select an API provider instead.
 
+Codex backend recovery and stop rules (`scripts/image_backends/backend_codex.py`):
+
+- **Session-folder recovery** — Codex sometimes draws the image but leaves it in `~/.codex/generated_images/<session-id>/exec-*.png` instead of copying it to the requested path. When the target file is missing after `codex exec` (including after a timeout), the backend takes the session id from the CLI output (`session id: …`) or from the `~/.codex/sessions/**/rollout-*-<id>.jsonl` file that mentions the target path, then copies the newest PNG written to that session folder since the run started. A recovered image counts as success and is never regenerated. `CODEX_HOME` overrides `~/.codex`.
+- **Attempt cap** — at most 2 `codex exec` calls per image (`MAX_ATTEMPTS`), whatever `max_retries` asks for.
+- **Usage limit** — a "usage limit" reply raises `QuotaExhaustedError` on the first attempt with the reset time Codex reported (e.g. `resets at 10:50 AM`). Manifest mode records that item as `Failed`, starts no further items (the rest keep their status), and you rerun the manifest after the reset.
+- **Rate-limit requeue cap** — manifest mode requeues a rate-limited item at most `MAX_RATE_LIMIT_REQUEUES` (3) times, then records it as `Failed`. Rate limits are detected by explicit wording (`429`, `rate limit`, `too many requests`, `quota`, `resource_exhausted`); a bare `rate` substring (e.g. `generated_images`) no longer counts.
+
 Example `.env`:
 
 ```env
