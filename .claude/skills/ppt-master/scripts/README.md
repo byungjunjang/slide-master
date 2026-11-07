@@ -222,7 +222,7 @@ python3 scripts/update_repo.py
 | Pipeline gates | `preflight.py` (environment, after project init), `validate_spec.py` (planning artifacts, after Step 4 spec output), `verify_deck.py` (final deck verification after Step 7, including the one-pass contact-sheet render; add `--no-render` only to skip that render while re-exporting during iteration) | script docstrings |
 | Run measurement | `run_telemetry.py`, `measure_run.py`, `benchmark_pipeline_ab.py` | section above; script docstrings |
 | Image tools | `image_gen.py`, `latex_render.py`, `analyze_images.py`, `gemini_watermark_remover.py` | [docs/image.md](./docs/image.md) |
-| Repo maintenance | `update_repo.py`, `sync_codex_stubs.py` (regenerate `.codex/skills` Codex discovery stubs after editing canonical skill frontmatter; `--check` is enforced by `preflight.py`), `check_runtime_contracts.py` (standalone contributor drift diagnostic; not a preflight gate) | README install/update section; script docstrings |
+| Repo maintenance | `update_repo.py`, `sync_codex_stubs.py` (regenerate `.codex/skills` Codex discovery stubs after editing canonical skill frontmatter; `--check` is enforced by `preflight.py`), `check_runtime_contracts.py` (standalone contributor drift diagnostic; not a preflight gate), `check_export_regressions.py` (contributor regression check for partial preset `avLst` and paragraph-mode frame width; not a gate) | README install/update section; script docstrings |
 | Troubleshooting | validation, preview, export, dependency issues | [docs/troubleshooting.md](./docs/troubleshooting.md) |
 
 ## High-Frequency Commands

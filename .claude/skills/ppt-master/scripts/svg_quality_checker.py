@@ -89,6 +89,13 @@ except ImportError:
     _validate_preset_geometry_metadata = None
 
 try:
+    from svg_to_pptx.drawingml.elements import (
+        find_partial_preset_adjustments as _find_partial_preset_adjustments,
+    )
+except ImportError:
+    _find_partial_preset_adjustments = None
+
+try:
     from pptx_to_svg.preset_authoring import (
         AUTHORING_ATTR as _AUTHORING_ATTR,
         validate_authored_preset_tree as _validate_authored_preset_tree,
@@ -1778,12 +1785,22 @@ class SVGQualityChecker:
             return
 
         issues = set()
+        partial_warnings = set()
         for elem in marked:
             tag = _local_name(elem)
             elem_id = elem.get('id')
             label = f'<{tag} id="{elem_id}">' if elem_id else f'<{tag}>'
             for error in _validate_preset_geometry_metadata(elem):
                 issues.add(f'{label} has invalid PPTX shape metadata: {error}')
+            if _find_partial_preset_adjustments is not None and tag != "g":
+                missing = _find_partial_preset_adjustments(elem)
+                if missing:
+                    partial_warnings.add(
+                        f'{label} sets only part of the '
+                        f'{elem.get("data-pptx-prst")} adjustment list; '
+                        f'missing {", ".join(missing)} (export fills preset '
+                        'defaults — state every data-pptx-av-* explicitly)'
+                    )
         if _validate_authored_preset_tree is None:
             if any(
                 elem.get(_AUTHORING_ATTR) is not None
@@ -1826,6 +1843,7 @@ class SVGQualityChecker:
                         f'<g id="{elem_id}"> has a stale PPTX preset preview; '
                         'update the native carrier or restore the generated detail paths'
                     )
+        result['warnings'].extend(sorted(partial_warnings))
         result['errors'].extend(sorted(issues))
 
     def _check_preset_geometry_transforms(

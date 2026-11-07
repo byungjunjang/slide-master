@@ -106,7 +106,7 @@ embedding source OOXML or relying on an imported-payload marker.
 |---|---|
 | `data-pptx-authoring="preset"` | Appears on the logical group and hidden carrier; distinguishes the strict new authoring contract from legacy/imported metadata. |
 | `data-pptx-object` | `shape` or `connector`; connector-family presets must use `connector`, and `connector` must use a connector-family preset. Authored connectors require `fill="none"` plus a visible stroke and export as unconnected `p:cxnSp`. |
-| `data-pptx-prst`, `data-pptx-frame`, `data-pptx-av-*` | Generated together from the locked registry; group and carrier values must be identical. |
+| `data-pptx-prst`, `data-pptx-frame`, `data-pptx-av-*` | Generated together from the locked registry; group and carrier values must be identical. When any `data-pptx-av-*` is set, every adjustment handle of that preset is listed (`render` fills omitted handles with registry defaults): PowerPoint desktop refuses a package whose `a:avLst` lists only some handles, so export always writes the full list and the quality checker warns on a partial source. |
 | One direct `path[data-pptx-part="geometry"]` | Hidden native export authority; carries the same semantics and solid paint used for regeneration. |
 | One direct `g[data-pptx-part="geometry-preview"]` | Complete browser-visible preview with one ordered detail path per registry path. |
 | `data-pptx-preview-sha256` | Identical on group/carrier and equal to an independent registry rerender of metadata, paint, and preview. |

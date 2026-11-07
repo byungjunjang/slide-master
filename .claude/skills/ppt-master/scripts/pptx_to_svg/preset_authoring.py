@@ -92,6 +92,13 @@ def render_preset_shape_fragment(
     x, y, width, height = _validate_frame(frame, object_kind)
     adjustment_values = _normalize_adjustments(adjustments or {})
     _validate_adjustments(preset, adjustment_values)
+    if adjustment_values:
+        # A partial avLst makes PowerPoint reject the whole package, so
+        # authored fragments always state every handle (defaults fill gaps).
+        adjustment_values = {
+            guide.name: adjustment_values.get(guide.name, guide.formula)
+            for guide in registry.get(preset).adjustments
+        }
     registry.evaluate(
         preset,
         width,

@@ -71,6 +71,9 @@ class ConvertContext:
     # Default-on flag: merge mergeable paragraph blocks into one editable
     # text frame with multiple <a:p>. Disable it for strict line fidelity.
     merge_paragraphs: bool = True
+    # Slide-space (x, y, w, h) px of the nearest data-pptx-placeholder-bounds
+    # group; lets a placeholder carrier text size itself to its design zone.
+    placeholder_bounds: tuple[float, float, float, float] | None = None
     # Explicit opt-in: convert data-pptx-native table/chart marker groups to
     # native PowerPoint graphicFrames. Default stays off to preserve SVG output.
     native_objects_enabled: bool = False
@@ -228,6 +231,7 @@ class ConvertContext:
             # only the root-level context's list is read by the builder.
             animation_group_overrides=self.animation_group_overrides,
             merge_paragraphs=self.merge_paragraphs,
+            placeholder_bounds=self.placeholder_bounds,
             native_objects_enabled=self.native_objects_enabled,
             image_optimize=self.image_optimize,
             image_max_dimension=self.image_max_dimension,
