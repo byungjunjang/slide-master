@@ -94,6 +94,13 @@ from svg_to_pptx.geometry_properties import (  # noqa: E402
     INLINE_GEOMETRY_PROPERTIES,
     materialize_inline_geometry_properties,
 )
+from total_md_split import (  # noqa: E402
+    HEADING_RE as _NOTES_HEADING_RE,
+    HR_RE as _NOTES_HR_RE,
+    build_match_maps,
+    match_title,
+    parse_total_md,
+)
 
 _ICONS_DIR = _SCRIPTS_DIR.parent.parent / 'templates' / 'icons'
 _USE_ICON_PATTERN = re.compile(r'<use\s+[^>]*data-icon="[^"]*"[^>]*/>')
@@ -307,6 +314,101 @@ def _append_annotation_log(project_path: Path, record: dict) -> None:
     _append_live_preview_log(project_path, ANNOTATION_LOG_NAME, record)
 
 
+# Speaker notes: notes/total.md is the source of truth (Step 7.1 splits it into
+# notes/<stem>.md). Editor writes update both so a later split cannot revert them.
+NOTES_DIR_NAME = 'notes'
+TOTAL_NOTES_NAME = 'total.md'
+_MAX_NOTES_LEN = 20000
+
+
+def _normalize_notes_text(text: str) -> str:
+    """Normalize line endings and trailing whitespace of a notes body."""
+    lines = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+    return '\n'.join(line.rstrip() for line in lines).strip()
+
+
+def _read_slide_notes(project_path: Path, stem: str, svg_stems: list[str]) -> tuple[str, str]:
+    """Return ``(notes_text, source)``; source is ``total``, ``file`` or ``none``."""
+    notes_dir = project_path / NOTES_DIR_NAME
+    total_md = notes_dir / TOTAL_NOTES_NAME
+    if total_md.is_file():
+        sections = parse_total_md(total_md, svg_stems, verbose=False)
+        if stem in sections:
+            return sections[stem], 'total'
+    per_slide = notes_dir / f'{stem}.md'
+    if per_slide.is_file():
+        return per_slide.read_text(encoding='utf-8').strip(), 'file'
+    return '', 'none'
+
+
+def _replace_total_md_section(
+    content: str,
+    stem: str,
+    text: str,
+    svg_stems: list[str],
+) -> str:
+    """Replace the body under the heading matching ``stem``; append it if absent.
+
+    The section's trailing separator (blank lines and ``---``) is preserved so
+    the file layout written by the notes generator stays intact.
+    """
+    exact, norm_map, num_map = build_match_maps(svg_stems)
+    lines = content.split('\n')
+    headings: list[tuple[int, str]] = []
+    for index, line in enumerate(lines):
+        match = _NOTES_HEADING_RE.match(line)
+        if not match:
+            continue
+        matched = match_title(match.group(2).strip(), exact, norm_map, num_map, svg_stems)
+        if matched:
+            headings.append((index, matched))
+
+    body = text.split('\n') if text else []
+    for pos, (start, matched) in enumerate(headings):
+        if matched != stem:
+            continue
+        end = headings[pos + 1][0] if pos + 1 < len(headings) else len(lines)
+        body_end = end
+        while body_end > start + 1 and (
+            not lines[body_end - 1].strip() or _NOTES_HR_RE.match(lines[body_end - 1])
+        ):
+            body_end -= 1
+        tail = lines[body_end:end]
+        return '\n'.join(lines[:start + 1] + [''] + body + tail + lines[end:])
+
+    base = content.rstrip('\n')
+    separator = '\n\n---\n\n' if base else ''
+    return f'{base}{separator}# {stem}\n\n{text}\n'
+
+
+def _newline_style(path: Path, fallback: str = '\n') -> str:
+    """Return the line ending an existing file uses, so rewrites keep its style."""
+    try:
+        return '\r\n' if b'\r\n' in path.read_bytes() else '\n'
+    except OSError:
+        return fallback
+
+
+def _write_slide_notes(project_path: Path, stem: str, text: str, svg_stems: list[str]) -> str:
+    """Write one slide's notes; returns ``total`` or ``file`` (where the source lives)."""
+    notes_dir = project_path / NOTES_DIR_NAME
+    notes_dir.mkdir(parents=True, exist_ok=True)
+    total_md = notes_dir / TOTAL_NOTES_NAME
+    per_slide = notes_dir / f'{stem}.md'
+    source = 'file'
+    newline = '\n'
+    if total_md.is_file():
+        newline = _newline_style(total_md)
+        content = total_md.read_text(encoding='utf-8')
+        updated = _replace_total_md_section(content, stem, text, svg_stems)
+        with open(total_md, 'w', encoding='utf-8', newline=newline) as handle:
+            handle.write(updated)
+        source = 'total'
+    with open(per_slide, 'w', encoding='utf-8', newline=_newline_style(per_slide, newline)) as handle:
+        handle.write(text)
+    return source
+
+
 def _find_by_id(root: ET.Element, element_id: str) -> Optional[ET.Element]:
     for elem in root.iter():
         if elem.get('id') == element_id:
@@ -417,6 +519,10 @@ def create_app(
     # Per-file staged direct edits. They affect the browser preview immediately,
     # but are written to svg_output/ only by /api/save-all.
     app.config['PENDING_EDITS'] = {}
+
+    # Staged speaker-notes bodies: {filename: text}. Written by /api/save-all.
+    app.config['PENDING_NOTES'] = {}
+    notes_lock = threading.Lock()
 
     # Idle timeout: auto-shutdown if no one connects within idle_timeout seconds
     app.config['LAST_REQUEST_TIME'] = time.time()
@@ -579,6 +685,10 @@ def create_app(
                 'name': svg_file.name,
                 'annotated': annotation_count > 0,
                 'annotation_count': annotation_count,
+                # Staged-but-unapplied state, so a reloaded tab can still mark
+                # pending slides in the list and the pending strip.
+                'pending_edits': len(app.config['PENDING_EDITS'].get(svg_file.name) or []),
+                'notes_pending': svg_file.name in app.config['PENDING_NOTES'],
                 'ok': ok,
                 'error': error_msg,
                 'mtime': mtime,
@@ -679,6 +789,63 @@ def create_app(
             'mtime': mtime,
             'undo_depth': len(pending_edits),
         })
+
+    def _svg_stems() -> list[str]:
+        return [p.stem for p in sorted(svg_dir.glob('*.svg'))] if svg_dir.exists() else []
+
+    @app.route('/api/slide/<name>/notes')
+    def get_notes(name: str):
+        """Return the slide's speaker notes (staged text wins over disk)."""
+        svg_file = _safe_svg_path(name)
+        if svg_file is None:
+            return jsonify({'error': 'Invalid slide name'}), 400
+        if not svg_file.exists():
+            return jsonify({'error': 'Slide not found'}), 404
+        try:
+            disk_text, source = _read_slide_notes(project_path, svg_file.stem, _svg_stems())
+        except OSError as exc:
+            return jsonify({'error': f'Failed to read speaker notes: {exc}'}), 500
+        pending = app.config['PENDING_NOTES']
+        staged = name in pending
+        resp = jsonify({
+            'name': name,
+            'notes': pending[name] if staged else disk_text,
+            'staged': staged,
+            'source': source,
+            'file': f'{svg_file.stem}.md',
+        })
+        resp.headers['Cache-Control'] = 'no-store'
+        return resp
+
+    @app.route('/api/slide/<name>/notes', methods=['POST'])
+    def post_notes(name: str):
+        """Stage a speaker-notes body; disk writes happen in /api/save-all."""
+        svg_file = _safe_svg_path(name)
+        if svg_file is None:
+            return jsonify({'error': 'Invalid slide name'}), 400
+        if not svg_file.exists():
+            return jsonify({'error': 'Slide not found'}), 404
+        data = request.get_json(silent=True) or {}
+        text = data.get('notes')
+        if not isinstance(text, str) or len(text) > _MAX_NOTES_LEN:
+            return jsonify({'error': f'notes must be a string (max {_MAX_NOTES_LEN} chars)'}), 400
+        text = _normalize_notes_text(text)
+        for line in text.split('\n'):
+            if _NOTES_HEADING_RE.match(line):
+                return jsonify({
+                    'error': 'Speaker notes cannot contain lines starting with "#" '
+                             '(they would split notes/total.md). Remove the leading "#".',
+                }), 400
+        try:
+            disk_text, _ = _read_slide_notes(project_path, svg_file.stem, _svg_stems())
+        except OSError as exc:
+            return jsonify({'error': f'Failed to read speaker notes: {exc}'}), 500
+        pending = app.config['PENDING_NOTES']
+        if text == _normalize_notes_text(disk_text):
+            pending.pop(name, None)
+        else:
+            pending[name] = text
+        return jsonify({'status': 'ok', 'staged': name in pending, 'pending_notes': len(pending)})
 
     @app.route('/api/slide/<name>/annotate', methods=['POST'])
     def post_annotate(name: str):
@@ -864,6 +1031,32 @@ def create_app(
         pending_edits = app.config['PENDING_EDITS']
         modified = []
 
+        # Notes first: a write failure here aborts before any SVG is touched.
+        notes_modified = []
+        pending_notes = app.config['PENDING_NOTES']
+        if pending_notes:
+            stems = _svg_stems()
+            with notes_lock:
+                for filename in sorted(pending_notes):
+                    svg_file = _safe_svg_path(filename)
+                    if svg_file is None or not svg_file.exists():
+                        continue
+                    new_text = pending_notes[filename]
+                    try:
+                        old_text, _ = _read_slide_notes(project_path, svg_file.stem, stems)
+                        target = _write_slide_notes(project_path, svg_file.stem, new_text, stems)
+                    except OSError as exc:
+                        return jsonify({
+                            'error': f'Failed to write speaker notes for {filename}: {exc}',
+                        }), 500
+                    _append_edit_log(project_path, {
+                        'ts': time.time(), 'file': filename, 'element_id': None,
+                        'action': 'notes_edit', 'kind': 'notes', 'key': target,
+                        'old': old_text, 'new': new_text,
+                    })
+                    notes_modified.append(filename)
+            app.config['PENDING_NOTES'] = {}
+
         filenames = sorted(set(annotations.keys()) | set(pending_edits.keys()))
         for filename in filenames:
             anns = annotations.get(filename, {})
@@ -935,7 +1128,11 @@ def create_app(
         app.config['ANNOTATIONS'] = {}
         app.config['PENDING_EDITS'] = {}
 
-        return jsonify({'status': 'ok', 'files_modified': modified})
+        return jsonify({
+            'status': 'ok',
+            'files_modified': modified,
+            'notes_modified': notes_modified,
+        })
 
     return app
 

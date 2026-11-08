@@ -80,7 +80,18 @@
             nav_next: "Next slide (→)",
             nav_last: "Last slide (End)",
             nav_counter: "{current} / {total}",
-            nav_empty: "— / —"
+            nav_empty: "— / —",
+            label_speaker_notes: "Speaker notes",
+            placeholder_notes: "Type the speaker notes for this slide...",
+            notes_toggle_title: "Show / hide speaker notes",
+            notes_status_pending: "Changed (click Apply changes to save)",
+            notes_status_file: "Saved in notes/{file}",
+            notes_status_none: "No notes yet (Apply changes writes them to notes/)",
+            pending_notes: "Speaker notes changed on {count} page(s)",
+            err_load_notes: "Failed to load speaker notes: ",
+            err_notes: "Speaker notes not staged: ",
+            slide_badge_tooltip: "{annotations} annotation(s), {notes} speaker-notes change",
+            modal_notes_saved: "\n\nSpeaker notes were written to notes/ (total.md and the per-slide file). Re-export the PPTX to include them."
         },
         ja: {
             page_title: "PPT Master - ライブプレビュー",
@@ -155,7 +166,18 @@
             nav_next: "次のスライド (→)",
             nav_last: "最後のスライド (End)",
             nav_counter: "{current} / {total}",
-            nav_empty: "— / —"
+            nav_empty: "— / —",
+            label_speaker_notes: "スピーカーノート",
+            placeholder_notes: "このスライドのスピーカーノートを入力…",
+            notes_toggle_title: "スピーカーノートの表示 / 非表示",
+            notes_status_pending: "変更あり(変更を適用で保存)",
+            notes_status_file: "notes/{file} に保存済み",
+            notes_status_none: "ノートなし(変更を適用で notes/ に保存)",
+            pending_notes: "スピーカーノート変更 {count} ページ",
+            err_load_notes: "スピーカーノートを読み込めませんでした: ",
+            err_notes: "スピーカーノートを一時保存できませんでした: ",
+            slide_badge_tooltip: "注釈 {annotations} 件、スピーカーノート変更 {notes} 件",
+            modal_notes_saved: "\n\nスピーカーノートを notes/(total.md とスライド別ファイル)に保存しました。PPTXに反映するには再エクスポートしてください。"
         },
         ko: {
             page_title: "PPT Master - 라이브 프리뷰",
@@ -230,7 +252,18 @@
             nav_next: "다음 슬라이드 (→)",
             nav_last: "마지막 슬라이드 (End)",
             nav_counter: "{current} / {total}",
-            nav_empty: "— / —"
+            nav_empty: "— / —",
+            label_speaker_notes: "슬라이드 노트",
+            placeholder_notes: "이 슬라이드의 발표 노트를 입력하세요…",
+            notes_toggle_title: "슬라이드 노트 보이기 / 숨기기",
+            notes_status_pending: "수정됨(변경 적용을 눌러야 저장됩니다)",
+            notes_status_file: "notes/{file}에 저장됨",
+            notes_status_none: "노트 없음(변경 적용 시 notes/에 저장됩니다)",
+            pending_notes: "슬라이드 노트 변경 {count}페이지",
+            err_load_notes: "슬라이드 노트를 불러오지 못했습니다: ",
+            err_notes: "슬라이드 노트를 임시 저장하지 못했습니다: ",
+            slide_badge_tooltip: "주석 {annotations}건, 슬라이드 노트 수정 {notes}건",
+            modal_notes_saved: "\n\n슬라이드 노트가 notes/ 폴더(total.md와 슬라이드별 파일)에 저장됐습니다. PPTX에 반영하려면 다시 내보내세요."
         },
         zh: {
             page_title: "PPT Master - 实时预览",
@@ -305,7 +338,18 @@
             nav_next: "下一页 (→)",
             nav_last: "末页 (End)",
             nav_counter: "{current} / {total}",
-            nav_empty: "— / —"
+            nav_empty: "— / —",
+            label_speaker_notes: "演讲者备注",
+            placeholder_notes: "输入本页的演讲者备注……",
+            notes_toggle_title: "显示 / 隐藏演讲者备注",
+            notes_status_pending: "已修改(点击应用修改后保存)",
+            notes_status_file: "已保存在 notes/{file}",
+            notes_status_none: "暂无备注(应用修改后写入 notes/)",
+            pending_notes: "{count} 页演讲者备注已修改",
+            err_load_notes: "加载演讲者备注失败:",
+            err_notes: "演讲者备注暂存失败:",
+            slide_badge_tooltip: "标注 {annotations} 条,演讲者备注修改 {notes} 条",
+            modal_notes_saved: "\n\n演讲者备注已写入 notes/(total.md 和单页文件)。需要更新 PPTX 时请重新导出。"
         }
     };
 
@@ -373,6 +417,7 @@
         updateAnnotationList();
         updateUndoButton();
         updatePendingStatus();
+        renderNotesStatus();
         initAnnotationQuickActions();
         loadSlides();
     }
@@ -396,6 +441,10 @@
     var modalCancel       = document.getElementById("modal-cancel");
     var elementPropsEl    = document.getElementById("element-props");
     var pendingStatusEl   = document.getElementById("pending-status");
+    var appEl             = document.getElementById("app");
+    var notesTextEl       = document.getElementById("notes-text");
+    var notesStatusEl     = document.getElementById("notes-status");
+    var btnNotesToggle    = document.getElementById("btn-notes-toggle");
 
     var navFirstBtn       = document.getElementById("nav-first");
     var navPrevBtn        = document.getElementById("nav-prev");
@@ -420,6 +469,18 @@
     var matrixEditSlides  = {};     // {name: true} when a staged edit wrote transform=matrix(...)
     var annotationsDirty  = false;  // unsaved annotations added/removed this session
     var annotationEditSlides = {};  // {name: true} when annotations changed this session
+    var notesDirtySlides  = {};     // {name: true} when staged speaker notes differ from disk
+    var slideAnnotationCounts = {}; // {name: annotation count} from /api/slides, for the list badge
+    var notesLoadedFor    = null;   // slide whose notes are currently in the textarea
+    var notesSource       = null;   // {source, file} reported by the server for that slide
+    var notesStageTimer   = null;   // debounce for staging typed notes
+    var notesStageChain   = Promise.resolve(); // serializes notes POSTs in typing order
+
+    function pendingNotesSlides() {
+        return Object.keys(notesDirtySlides).filter(function (name) {
+            return !!notesDirtySlides[name];
+        });
+    }
 
     function pendingDirectEditCount() {
         return Object.keys(editStackCount).reduce(function (total, name) {
@@ -445,17 +506,19 @@
 
     function pendingSlideNames() {
         var seen = {};
-        pendingDirectEditSlides().concat(pendingAnnotationSlides()).forEach(function (name) {
+        pendingDirectEditSlides().concat(pendingAnnotationSlides(), pendingNotesSlides()).forEach(function (name) {
             seen[name] = true;
         });
         return Object.keys(seen).sort();
     }
 
     function updatePendingStatus() {
+        refreshSlideMarkers();
         if (!pendingStatusEl) return;
         var edits = pendingDirectEditCount();
         var annotations = pendingAnnotationChangeCount();
-        if (edits === 0 && annotations === 0) {
+        var notes = pendingNotesSlides().length;
+        if (edits === 0 && annotations === 0 && notes === 0) {
             pendingStatusEl.className = "pending-status empty";
             pendingStatusEl.textContent = t("pending_none");
             return;
@@ -463,13 +526,41 @@
         var pages = pendingSlideNames();
         pendingStatusEl.className = "pending-status active";
         pendingStatusEl.innerHTML =
-            '<div>' + escapeHtml(t("pending_summary", {
+            ((edits || annotations) ? '<div>' + escapeHtml(t("pending_summary", {
                 edits: edits,
                 annotations: annotations,
-            })) + '</div>' +
+            })) + '</div>' : '') +
+            (notes ? '<div>' + escapeHtml(t("pending_notes", { count: notes })) + '</div>' : '') +
             (pages.length ? '<div class="pending-pages">' + escapeHtml(t("pending_pages", {
                 pages: pages.join(", "),
             })) + '</div>' : '');
+    }
+
+    // Slide-list badge = annotations on the slide + 1 when its speaker notes
+    // have unapplied changes. Called from updatePendingStatus so typing in the
+    // notes box updates the list without refetching it.
+    function refreshSlideMarkers() {
+        if (!slideListEl) return;
+        slideListEl.querySelectorAll(".slide-item").forEach(function (item) {
+            var name = item.getAttribute("data-name");
+            var annotations = slideAnnotationCounts[name] || 0;
+            var notes = notesDirtySlides[name] ? 1 : 0;
+            var total = annotations + notes;
+            var badge = item.querySelector(".badge");
+            if (total > 0 && !badge) {
+                badge = document.createElement("span");
+                badge.className = "badge";
+                item.appendChild(badge);
+            } else if (total === 0 && badge) {
+                badge.remove();
+                badge = null;
+            }
+            if (badge) {
+                badge.textContent = total;
+                badge.title = t("slide_badge_tooltip", { annotations: annotations, notes: notes });
+                badge.setAttribute("aria-label", badge.title);
+            }
+        });
     }
 
     function markAnnotationChanged(slide) {
@@ -514,6 +605,7 @@
     // so the user remembers to apply (browsers show their own generic prompt).
     function hasUnsavedWork() {
         if (annotationsDirty) return true;
+        if (pendingNotesSlides().length > 0) return true;
         return Object.keys(editStackCount).some(function (k) {
             return editStackCount[k] > 0;
         });
@@ -524,6 +616,130 @@
         e.returnValue = "";
         return "";
     });
+
+    // ================================================================
+    //  Speaker notes  -- GET/POST /api/slide/{name}/notes
+    //  Typed text is staged on the server (debounced) and written to
+    //  notes/total.md + notes/<stem>.md only by "Apply changes".
+    // ================================================================
+    function renderNotesStatus() {
+        if (!notesStatusEl) return;
+        notesStatusEl.className = "notes-status";
+        if (!notesLoadedFor) {
+            notesStatusEl.textContent = "";
+            return;
+        }
+        if (notesDirtySlides[notesLoadedFor]) {
+            notesStatusEl.className = "notes-status pending";
+            notesStatusEl.textContent = t("notes_status_pending");
+            return;
+        }
+        var src = notesSource || {};
+        if (src.source === "total") {
+            // The normal case: no status line, only changes need attention.
+            notesStatusEl.textContent = "";
+        } else if (src.source === "file") {
+            notesStatusEl.textContent = t("notes_status_file", { file: src.file || "" });
+        } else {
+            notesStatusEl.textContent = t("notes_status_none");
+        }
+    }
+
+    function loadNotes(name) {
+        if (!notesTextEl) return Promise.resolve();
+        notesLoadedFor = null;
+        notesSource = null;
+        notesTextEl.value = "";
+        notesTextEl.disabled = true;
+        renderNotesStatus();
+        return fetch("/api/slide/" + encodeURIComponent(name) + "/notes", { cache: "no-store" })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (currentSlide !== name) return;  // user moved on while loading
+                if (data.error) {
+                    notesStatusEl.className = "notes-status error";
+                    notesStatusEl.textContent = t("err_load_notes") + data.error;
+                    return;
+                }
+                notesTextEl.value = data.notes || "";
+                notesTextEl.disabled = false;
+                notesLoadedFor = name;
+                notesSource = { source: data.source, file: data.file };
+                notesDirtySlides[name] = !!data.staged;
+                renderNotesStatus();
+                updatePendingStatus();
+            })
+            .catch(function (err) {
+                if (currentSlide !== name) return;
+                notesStatusEl.className = "notes-status error";
+                notesStatusEl.textContent = t("err_load_notes") + err.message;
+            });
+    }
+
+    function stageNotes(name, text) {
+        notesStageChain = notesStageChain.then(function () {
+            return fetch("/api/slide/" + encodeURIComponent(name) + "/notes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ notes: text })
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.error) {
+                        showError(t("err_notes") + data.error);
+                        return;
+                    }
+                    notesDirtySlides[name] = !!data.staged;
+                    if (notesLoadedFor === name) renderNotesStatus();
+                    updatePendingStatus();
+                });
+        }).catch(function (err) {
+            showError(t("err_notes") + err.message);
+        });
+        return notesStageChain;
+    }
+
+    // Push any not-yet-staged keystrokes now (slide switch, blur, Apply changes).
+    function flushNotes() {
+        if (notesStageTimer) {
+            clearTimeout(notesStageTimer);
+            notesStageTimer = null;
+            if (notesLoadedFor) stageNotes(notesLoadedFor, notesTextEl.value);
+        }
+        return notesStageChain;
+    }
+
+    function setNotesCollapsed(collapsed) {
+        if (!appEl) return;
+        appEl.classList.toggle("notes-collapsed", collapsed);
+        if (btnNotesToggle) btnNotesToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        try { window.localStorage.setItem("ppt_notes_collapsed", collapsed ? "1" : "0"); } catch (e) { /* ignore */ }
+    }
+
+    function initNotesPanel() {
+        if (!notesTextEl) return;
+        var collapsed = false;
+        try { collapsed = window.localStorage.getItem("ppt_notes_collapsed") === "1"; } catch (e) { /* ignore */ }
+        setNotesCollapsed(collapsed);
+        if (btnNotesToggle) {
+            btnNotesToggle.addEventListener("click", function () {
+                setNotesCollapsed(!appEl.classList.contains("notes-collapsed"));
+            });
+        }
+        notesTextEl.addEventListener("input", function () {
+            if (!notesLoadedFor) return;
+            var name = notesLoadedFor;
+            notesDirtySlides[name] = true;
+            renderNotesStatus();
+            updatePendingStatus();
+            if (notesStageTimer) clearTimeout(notesStageTimer);
+            notesStageTimer = setTimeout(function () {
+                notesStageTimer = null;
+                stageNotes(name, notesTextEl.value);
+            }, 400);
+        });
+        notesTextEl.addEventListener("blur", flushNotes);
+    }
 
     function currentSlideIndex() {
         if (!currentSlide) return -1;
@@ -607,6 +823,12 @@
                     if (s.name !== currentSlide && s.mtime !== undefined) {
                         slideMtimes[s.name] = s.mtime;
                     }
+                    // Seed staged state the server still holds (e.g. after a tab
+                    // reload) without clobbering counts this tab already tracks.
+                    if (!(s.name in editStackCount) && s.pending_edits > 0) {
+                        editStackCount[s.name] = s.pending_edits;
+                    }
+                    if (s.notes_pending) notesDirtySlides[s.name] = true;
 
                     var item = document.createElement("div");
                     item.className = "slide-item" + (s.name === currentSlide ? " active" : "");
@@ -621,12 +843,8 @@
                     nameSpan.textContent = s.name;
                     item.appendChild(nameSpan);
 
-                    if (s.annotation_count > 0) {
-                        var badge = document.createElement("span");
-                        badge.className = "badge";
-                        badge.textContent = s.annotation_count;
-                        item.appendChild(badge);
-                    }
+                    // Badge is drawn by refreshSlideMarkers (annotations + notes).
+                    slideAnnotationCounts[s.name] = s.annotation_count || 0;
 
                     item.addEventListener("click", function () {
                         selectSlide(s.name, item);
@@ -658,7 +876,11 @@
         });
         if (el) el.classList.add("active");
 
+        // Stage the previous slide's unsent notes before the textarea is reused.
+        flushNotes();
+
         currentSlide = name;
+        loadNotes(name);
         selectedElementIds.clear();
         slideAnnotations = {};
         updateNavLabel();
@@ -1496,7 +1718,7 @@
             // Ctrl+A / Cmd+A: select all elements
             if ((e.ctrlKey || e.metaKey) && e.key === "a") {
                 // Don't intercept if focus is in textarea
-                if (document.activeElement === annotationText) return;
+                if (document.activeElement === annotationText || document.activeElement === notesTextEl) return;
 
                 e.preventDefault();
                 var svg = svgContent.querySelector("svg");
@@ -1514,13 +1736,13 @@
 
             // Escape: close the overlap picker first if open, else clear selection.
             if (e.key === "Escape") {
-                if (document.activeElement === annotationText) return;
+                if (document.activeElement === annotationText || document.activeElement === notesTextEl) return;
                 if (overlapPickerEl) { closeOverlapPicker(); return; }
                 clearSelection();
             }
 
             // Slide navigation: ArrowLeft/Right + Home/End (skip while typing)
-            if (document.activeElement === annotationText) return;
+            if (document.activeElement === annotationText || document.activeElement === notesTextEl) return;
             if (e.ctrlKey || e.metaKey || e.altKey) return;
 
             // Arrow keys nudge the selection (1px, Shift = 10px) instead of
@@ -1739,16 +1961,20 @@
         modalConfirm.style.display = "none";
         modalCancel.style.display = "none";
 
-        // Wait for any just-fired direct edits (drag/nudge) to land first, or
-        // save-all could race ahead and leave their edits as a fresh pending set.
+        // Wait for any just-fired direct edits (drag/nudge) and typed notes to
+        // land first, or save-all could race ahead and leave them pending.
         drainDirectEdits()
+            .then(flushNotes)
             .then(function () { return fetch("/api/save-all", { method: "POST" }); })
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 if (data.error) {
                     modalMessage.textContent = t("err_save") + data.error;
                 } else {
-                    if (hadDirectEdits && hadAnnotationChanges) {
+                    var notesSaved = (data.notes_modified || []).length > 0;
+                    if (!hadDirectEdits && !hadAnnotationChanges && notesSaved) {
+                        modalMessage.textContent = t("modal_notes_saved").replace(/^\s+/, "");
+                    } else if (hadDirectEdits && hadAnnotationChanges) {
                         modalMessage.textContent = t("modal_success_mixed");
                     } else if (hadDirectEdits) {
                         modalMessage.textContent = t("modal_success_direct_only");
@@ -1757,6 +1983,10 @@
                     } else {
                         modalMessage.textContent = t("modal_success_submit");
                     }
+                    if (notesSaved && (hadDirectEdits || hadAnnotationChanges)) {
+                        modalMessage.textContent += t("modal_notes_saved");
+                    }
+                    notesDirtySlides = {};
                     editStackCount = {};
                     matrixEditSlides = {};
                     matrixHintShown = false;
@@ -3063,5 +3293,6 @@
     initRubberBand();
     initKeyboardShortcuts();
     initSlideNav();
+    initNotesPanel();
     if (btnUndo) btnUndo.addEventListener("click", runUndo);
 })();

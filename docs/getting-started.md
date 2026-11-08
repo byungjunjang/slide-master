@@ -74,6 +74,7 @@ A browser preview opens at `http://localhost:5050` while the deck is being gener
 
 - **Watch pages render live** as the AI produces them.
 - **Edit directly, no AI** — select an element to change its text, color, font, or size in the side panel; drag it to reposition, or nudge with the arrow keys (`Shift` = 10px). `Ctrl+Z` undoes. Edits preview instantly and write to `svg_output/` when you click **Apply changes**.
+- **Edit speaker notes** — the panel under the slide shows that slide's notes. Type to change them; **Apply changes** saves them to `notes/total.md` and the per-slide notes file, and the next export puts them into the PPTX.
 - **Or annotate for the AI** — click an element, type what you want changed, hit **Submit annotations**, then say "apply my annotations" in chat and the AI rewrites that region and re-exports the PPTX.
 
 PPT Master was chat-only by design; visual editing was folded in after enough users asked for it (built on [@WodenJay](https://github.com/WodenJay)'s [PR #85](https://github.com/hugohe3/ppt-master/pull/85)).
