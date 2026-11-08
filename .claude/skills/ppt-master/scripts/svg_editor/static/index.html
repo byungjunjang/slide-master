@@ -28,6 +28,13 @@
                 <div id="svg-placeholder" data-i18n="placeholder_select_slide">Select a slide on the left to begin</div>
                 <div id="svg-content" style="display:none;"></div>
             </div>
+            <div id="notes-panel">
+                <div id="notes-header">
+                    <button id="btn-notes-toggle" class="notes-toggle" type="button" aria-expanded="true" aria-controls="notes-text" data-i18n-title="notes_toggle_title"><span class="notes-caret" aria-hidden="true">▾</span><span data-i18n="label_speaker_notes">Speaker notes</span></button>
+                    <span id="notes-status" class="notes-status"></span>
+                </div>
+                <textarea id="notes-text" spellcheck="false" disabled data-i18n-placeholder="placeholder_notes" placeholder="Speaker notes for this slide"></textarea>
+            </div>
         </div>
         <div id="panel-right">
             <div class="lang-select">
