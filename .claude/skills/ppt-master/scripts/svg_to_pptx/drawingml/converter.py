@@ -363,6 +363,16 @@ def convert_g(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
             opacity_multiplier=local_opacity,
         )
 
+    raw_bounds = elem.get('data-pptx-placeholder-bounds')
+    if placeholder is not None and raw_bounds:
+        parts = re.split(r'[\s,]+', raw_bounds.strip())
+        try:
+            values = tuple(float(part) for part in parts)
+        except ValueError:
+            values = ()
+        if len(values) == 4 and values[2] > 0 and values[3] > 0:
+            child_ctx.placeholder_bounds = values
+
     if native_subtree_active and child_ctx.opacity_multiplier < 1.0:
         raise SvgNativeConversionError(
             "Group opacity cannot be applied to data-pptx-native table/chart "

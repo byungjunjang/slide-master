@@ -36,7 +36,8 @@ from .utils import (
     rect_to_dml_xfrm,
     combine_opacity, parse_hex_color, parse_svg_color,
     resolve_url_id, get_effective_filter_id,
-    parse_inline_style, parse_font_family, is_cjk_char, estimate_text_width,
+    parse_inline_style, parse_font_family, estimate_text_width,
+    is_cjk_char, is_hangul_char,
     detect_text_lang, font_px_to_hpt, resolve_text_run_fonts,
     matrix_multiply, parse_transform_matrix, transform_point, _xml_escape,
 )
@@ -500,10 +501,13 @@ def _parse_preset_geometry_metadata(
                 raise ValueError(
                     f'data-pptx-av-{name} evaluates outside OOXML coordinate range'
                 )
+        # PowerPoint desktop refuses to open a package whose multi-handle
+        # preset carries only part of its avLst (e.g. rightArrow with adj1
+        # alone). Always emit the complete list, filling gaps with the
+        # registry defaults so geometry is unchanged.
         guides = [
-            (guide.name, guide_formulas[guide.name])
+            (guide.name, guide_formulas.get(guide.name, guide.formula))
             for guide in registry.get(prst).adjustments
-            if guide.name in guide_formulas
         ]
 
     frame = None
@@ -542,6 +546,29 @@ def _parse_preset_geometry_metadata(
         )
 
     return prst, guides, frame
+
+
+def find_partial_preset_adjustments(elem: ET.Element) -> list[str]:
+    """Return default-filled guide names when only part of an avLst is given.
+
+    The exporter fills the gaps, but the partial list is still reported so the
+    SVG source states every handle of a multi-handle preset explicitly.
+    """
+    prst = elem.get('data-pptx-prst')
+    if prst is None or prst not in PPTX_PRESET_SHAPE_TYPES:
+        return []
+    given = {
+        attr[len(_PPTX_AV_PREFIX):]
+        for attr in elem.attrib
+        if attr.startswith(_PPTX_AV_PREFIX)
+    }
+    if not given:
+        return []
+    return [
+        guide.name
+        for guide in get_preset_registry().get(prst).adjustments
+        if guide.name not in given
+    ]
 
 
 def validate_preset_geometry_metadata(elem: ET.Element) -> list[str]:
@@ -2192,6 +2219,46 @@ def _build_run_xml(
 </a:r>'''
 
 
+_LINE_BREAK_KEY = '_line_break'
+# Paragraph-mode frame headroom. The width estimate is close for CJK/Hangul
+# (1em, usually a slight over-estimate) but display faces run far wider on
+# digits and Latin: Gmarket Sans Bold measures ~1.3x the estimate there
+# ("2026 WORKSHOP 2027" at 64px: 832px real vs 640px estimated). Visual lines
+# are explicit <a:br/> breaks, so extra width never moves a break; it only
+# stops PowerPoint from wrapping a line the SVG kept whole.
+_PARAGRAPH_NON_CJK_HEADROOM_RATIO = 0.35
+_PARAGRAPH_WIDTH_HEADROOM_EM = 0.25
+
+
+def _paragraph_line_headroom(line_runs: list[dict[str, Any]]) -> float:
+    """Return extra frame width for the non-CJK glyphs of one visual line."""
+    headroom = 0.0
+    for run in line_runs:
+        non_cjk = ''.join(
+            ch for ch in run.get('text', '')
+            if not (is_cjk_char(ch) or is_hangul_char(ch))
+        )
+        if non_cjk:
+            headroom += estimate_text_width(
+                non_cjk,
+                float(run.get('font_size', 16)),
+                str(run.get('font_weight', '400')),
+            )
+    return headroom * _PARAGRAPH_NON_CJK_HEADROOM_RATIO
+
+
+def _build_line_break_xml(
+    run: dict[str, Any],
+    default_fonts: dict[str, str],
+    ctx: ConvertContext | None = None,
+) -> str:
+    """Build an <a:br> carrying the next line's run properties."""
+    run_xml = _build_run_xml({**run, 'text': ''}, default_fonts, ctx)
+    start = run_xml.index('<a:rPr')
+    end = run_xml.index('</a:rPr>') + len('</a:rPr>')
+    return f'<a:br>\n{run_xml[start:end]}\n</a:br>'
+
+
 def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
     """Convert SVG <text> to DrawingML text shape with multi-run support."""
     x = ctx_x(svg_length_x(elem.get('x'), ctx), ctx)
@@ -2260,6 +2327,7 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
     # of how many merge into one <a:p>; used to size the textbox so PowerPoint
     # has room to wrap text to the SVG's original line widths.
     visual_line_widths: list[float] = []
+    padded_line_widths: list[float] = []
     if line_height_px is not None and line_height_px > 0:
         preserve_space = _preserves_space(elem)
         paragraph_runs = []
@@ -2274,23 +2342,17 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
             if not line_runs:
                 continue
             visual_line_widths.append(_estimate_bullet_line_width(line_runs))
+            padded_line_widths.append(
+                visual_line_widths[-1] + _paragraph_line_headroom(line_runs)
+            )
             soft_break = child.get('data-paragraph-soft-break') == '1'
             if soft_break and paragraph_runs:
-                # Append to the previous paragraph. A Latin line-wrap needs a
-                # space to keep two words apart (SVG used a dy break, not
-                # punctuation); CJK wraps mid-sentence with no inter-character
-                # space, so a joining space there is a spurious artifact.
+                # Keep the author's visual line inside the same <a:p> with an
+                # explicit <a:br/>. Joining the text and letting PowerPoint
+                # re-wrap at the estimated width breaks lines differently
+                # whenever the real font is wider than the estimate.
                 prev = paragraph_runs[-1]
-                prev_text = prev[-1]['text'] if prev else ''
-                next_text = line_runs[0]['text']
-                boundary_is_cjk = (
-                    (prev_text and is_cjk_char(prev_text[-1]))
-                    or (next_text and is_cjk_char(next_text[0]))
-                )
-                if prev and not prev_text.endswith(' ') \
-                        and not next_text.startswith(' ') \
-                        and not boundary_is_cjk:
-                    prev[-1] = {**prev[-1], 'text': prev_text + ' '}
+                prev.append({**line_runs[0], 'text': '', _LINE_BREAK_KEY: True})
                 prev.extend(line_runs)
             else:
                 paragraph_runs.append(line_runs)
@@ -2300,6 +2362,7 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
             paragraph_runs = None
             paragraph_space_before = []
             visual_line_widths = []
+            padded_line_widths = []
         else:
             stripped_paragraphs: list[list[dict[str, Any]]] = []
             for line_runs in paragraph_runs:
@@ -2324,10 +2387,13 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
     # Estimate text dimensions
     if paragraph_runs is not None:
         # Use the WIDEST visual line (per-tspan as the deck author drew it),
-        # not the joined-up paragraph: soft-broken paragraphs concatenate
-        # many lines into one <a:p>, and measuring the joined string would
-        # blow the textbox past the canvas.
-        text_width = max(visual_line_widths) if visual_line_widths else 0.0
+        # not the whole paragraph: soft-broken lines share one <a:p>, and
+        # measuring the joined string would blow the textbox past the canvas.
+        # Pad each line for estimate error (see _paragraph_line_headroom).
+        text_width = (
+            max(padded_line_widths) + font_size * _PARAGRAPH_WIDTH_HEADROOM_EM
+            if padded_line_widths else 0.0
+        )
         # Total height assumes the visual line count from the SVG source;
         # if PowerPoint wraps to more or fewer lines after the user resizes,
         # the user resizes the height accordingly.
@@ -2354,6 +2420,18 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
 
     box_y = y - font_size * 0.85
     box_w = text_width + padding * 2
+    if paragraph_runs is not None and text_anchor == 'start':
+        bounds = ctx.placeholder_bounds
+        if (
+            bounds is not None
+            and elem.get('data-pptx-placeholder-carrier') == 'true'
+        ):
+            # A placeholder carrier may use the full design zone it fills.
+            box_w = max(box_w, bounds[0] + bounds[2] - box_x)
+        elif ctx.viewport_width:
+            # Headroom must not push an ordinary frame past the slide edge.
+            bare_w = max(visual_line_widths) + padding * 2
+            box_w = max(bare_w, min(box_w, ctx.viewport_width - box_x))
     box_h = text_height + padding
 
     text_transform = elem.get('transform', '')
@@ -2440,7 +2518,12 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
             if extra_px > 0:
                 spc_bef_val = round(extra_px * FONT_PX_TO_HUNDREDTHS_PT)
                 spc_bef_xml = f'<a:spcBef><a:spcPts val="{spc_bef_val}"/></a:spcBef>'
-            runs_inner = '\n'.join(_build_run_xml(r, fonts, ctx, text_effect_xml) for r in line)
+            runs_inner = '\n'.join(
+                _build_line_break_xml(r, fonts, ctx)
+                if r.get(_LINE_BREAK_KEY)
+                else _build_run_xml(r, fonts, ctx, text_effect_xml)
+                for r in line
+            )
             p_pr_xml = _paragraph_pr_xml(
                 algn=algn,
                 font_size=float(line[0].get('font_size', font_size)) if line else font_size,
@@ -2469,9 +2552,9 @@ def convert_text(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
 
     # Paragraph mode: wrap="square" so text reflows when the user resizes,
     # but NO spAutoFit — otherwise PowerPoint expands the frame to fit a
-    # long joined-up <a:p> on one line, blowing past the canvas. The cx we
-    # write below is the longest source SVG line without single-line renderer
-    # headroom; PowerPoint wraps long paragraphs inside this design width.
+    # long <a:p> on one line, blowing past the canvas. The cx we write below
+    # is the longest source SVG line plus estimate headroom (or the
+    # placeholder design zone); source lines stay explicit <a:br/> breaks.
     # Single-line text keeps wrap="none" + spAutoFit for tight fidelity.
     if paragraph_runs is not None:
         body_pr_xml = (
