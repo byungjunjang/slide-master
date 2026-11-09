@@ -10,6 +10,15 @@ No API key and no .env required. Prerequisites:
 OAuth tokens cannot call the OpenAI REST API directly (401); generation must go
 through `codex exec`, which handles auth internally and saves images under
 ~/.codex/generated_images/ before copying them to the requested output path.
+
+Codex sometimes leaves the image in ~/.codex/generated_images/<session-id>/
+without copying it. After each `codex exec`, a missing target file triggers a
+recovery pass: the session id comes from the CLI output (`session id: ...`) or
+from the rollout file under ~/.codex/sessions/ that mentions the target path,
+and the newest PNG written to that session folder since the run started is
+copied to the target. A recovered image counts as success and is never
+regenerated. A "usage limit" reply raises QuotaExhaustedError immediately
+(no retry) with the reset time Codex reported. See scripts/docs/image.md.
 """
 
 import sys
@@ -28,6 +37,7 @@ if __name__ == "__main__":
     print("Use via: python3 .claude/skills/ppt-master/scripts/image_gen.py \"prompt\" --backend codex")
     raise SystemExit(0 if any(arg in {"-h", "--help", "help"} for arg in sys.argv[1:]) else 1)
 
+import json
 import os
 import re
 import shutil
@@ -35,6 +45,7 @@ import subprocess
 import time
 
 from image_backends.backend_common import (
+    QuotaExhaustedError,
     normalize_image_size,
     report_resolution,
     resolve_output_path,
@@ -57,7 +68,20 @@ IMAGE_SIZE_TO_QUALITY = {
 }
 
 GENERATION_TIMEOUT_SECONDS = 600
+# Hard cap on `codex exec` calls per image, whatever max_retries asks for.
 MAX_ATTEMPTS = 2
+# Slack for filesystem mtime vs. time.time() when matching files to a run.
+MTIME_SLACK_SECONDS = 5
+
+_UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+_SESSION_ID_RE = re.compile(r"session[ _]id[\"']?\s*[:=]\s*[\"']?(" + _UUID + ")", re.IGNORECASE)
+_ROLLOUT_ID_RE = re.compile(r"rollout-.*-(" + _UUID + r")\.jsonl$", re.IGNORECASE)
+_USAGE_LIMIT_RE = re.compile(r"usage limit", re.IGNORECASE)
+_RESET_AT_RE = re.compile(r"try again (?:at|in) ([^.\n\"]+)", re.IGNORECASE)
+
+
+def _codex_home() -> Path:
+    return Path(os.environ.get("CODEX_HOME") or (Path.home() / ".codex"))
 
 
 def _select_size(aspect_ratio: str) -> str:
@@ -140,6 +164,76 @@ def _run_codex(codex_bin: str, task: str, out_dir: Path) -> subprocess.Completed
     )
 
 
+def _output_text(stdout, stderr) -> str:
+    parts = []
+    for chunk in (stdout, stderr):
+        if isinstance(chunk, bytes):
+            chunk = chunk.decode("utf-8", errors="replace")
+        parts.append(chunk or "")
+    return "\n".join(parts)
+
+
+def _rollouts_for_target(out_path: Path, since: float) -> list[Path]:
+    """Rollout files written since `since` whose content mentions `out_path`."""
+    sessions_dir = _codex_home() / "sessions"
+    if not sessions_dir.is_dir():
+        return []
+    # Rollouts store the task text JSON-escaped (Windows backslashes doubled).
+    needles = {str(out_path), json.dumps(str(out_path), ensure_ascii=False)[1:-1]}
+    found = []
+    for rollout in sessions_dir.rglob("rollout-*.jsonl"):
+        try:
+            if rollout.stat().st_mtime < since - MTIME_SLACK_SECONDS:
+                continue
+            text = rollout.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if any(needle in text for needle in needles):
+            found.append(rollout)
+    return found
+
+
+def _session_ids(output: str, rollouts: list[Path]) -> list[str]:
+    ids = [m.group(1).lower() for m in _SESSION_ID_RE.finditer(output)]
+    for rollout in rollouts:
+        match = _ROLLOUT_ID_RE.search(rollout.name)
+        if match:
+            ids.append(match.group(1).lower())
+    return list(dict.fromkeys(ids))
+
+
+def _recover_session_image(session_ids: list[str], since: float,
+                           out_path: Path) -> Path | None:
+    """Copy the newest PNG Codex left in generated_images/<session-id>/ to out_path."""
+    images_root = _codex_home() / "generated_images"
+    candidates = []
+    for session_id in session_ids:
+        session_dir = images_root / session_id
+        if not session_dir.is_dir():
+            continue
+        for png in session_dir.glob("*.png"):
+            try:
+                stat = png.stat()
+            except OSError:
+                continue
+            if stat.st_size > 0 and stat.st_mtime >= since - MTIME_SLACK_SECONDS:
+                candidates.append((stat.st_mtime, png))
+    if not candidates:
+        return None
+    source = max(candidates)[1]
+    shutil.copyfile(source, out_path)
+    return source
+
+
+def _usage_limit_message(text: str) -> str | None:
+    """Return a one-line usage-limit report (with reset time) or None."""
+    if not _USAGE_LIMIT_RE.search(text):
+        return None
+    reset = _RESET_AT_RE.search(text)
+    reset_note = f"resets at {reset.group(1).strip()}" if reset else "reset time not reported"
+    return f"Codex usage limit reached ({reset_note})"
+
+
 def generate(prompt: str,
              aspect_ratio: str = "1:1", image_size: str = "1K",
              output_dir: str = None, filename: str = None,
@@ -175,17 +269,18 @@ def generate(prompt: str,
     print(f"  Quality:      {quality} (from image_size={image_size})")
     print()
 
-    attempts = max(1, max_retries + 1)
+    attempts = max(1, min(max_retries + 1, MAX_ATTEMPTS))
     last_detail = ""
     for attempt in range(1, attempts + 1):
         start_time = time.time()
         print(f"  [..] Generating (attempt {attempt}/{attempts})...", flush=True)
         try:
             result = _run_codex(codex_bin, task, out_path.parent)
+            output = _output_text(result.stdout, result.stderr)
+            status = f"exit={result.returncode}"
         except subprocess.TimeoutExpired as exc:
-            last_detail = f"codex exec timed out after {GENERATION_TIMEOUT_SECONDS}s"
-            print(f"  [FAIL] {last_detail}")
-            continue
+            output = _output_text(exc.stdout, exc.stderr)
+            status = f"timed out after {GENERATION_TIMEOUT_SECONDS}s"
 
         elapsed = time.time() - start_time
         if out_path.exists() and out_path.stat().st_size > 0:
@@ -194,12 +289,38 @@ def generate(prompt: str,
             report_resolution(str(out_path))
             return str(out_path)
 
-        output_tail = ((result.stdout or "") + "\n" + (result.stderr or "")).strip()[-500:]
+        # Codex may have drawn the image but left it in its own session folder.
+        rollouts = _rollouts_for_target(out_path, start_time)
+        session_ids = _session_ids(output, rollouts)
+        source = _recover_session_image(session_ids, start_time, out_path)
+        if source is not None:
+            print(f"  [DONE] Image recovered from Codex session folder ({elapsed:.1f}s)")
+            print(f"  Source:        {source}")
+            print(f"  File saved to: {out_path}")
+            report_resolution(str(out_path))
+            return str(out_path)
+
+        rollout_text = ""
+        for rollout in rollouts:
+            try:
+                rollout_text += rollout.read_text(encoding="utf-8", errors="replace")[-4000:]
+            except OSError:
+                pass
+        limit_message = _usage_limit_message(output + "\n" + rollout_text)
+        if limit_message:
+            print(f"  [STOP] {limit_message}; not retrying")
+            raise QuotaExhaustedError(
+                f"{limit_message}. Wait for the reset or switch IMAGE_BACKEND, "
+                "then rerun the manifest."
+            )
+
+        output_tail = output.strip()[-500:]
+        sessions_note = ", ".join(session_ids) or "none found"
         last_detail = (
-            f"codex exec exit={result.returncode}, output file missing. "
-            f"Output tail: {output_tail}"
+            f"codex exec {status}, output file missing and no image in session "
+            f"folder(s) [{sessions_note}]. Output tail: {output_tail}"
         )
-        print(f"  [FAIL] attempt {attempt}: no output file after {elapsed:.1f}s")
+        print(f"  [FAIL] attempt {attempt}: no image after {elapsed:.1f}s ({status})")
 
     hint = ""
     lowered = last_detail.lower()
