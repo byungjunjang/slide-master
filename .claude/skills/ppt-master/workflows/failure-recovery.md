@@ -26,6 +26,7 @@ Central recovery rules for common PPT Master failures. Route-specific workflow f
 | Residual `Pending` or `Failed` image row before Executor | Yes | Re-run path or mark `Needs-Manual` | Only if file must be supplied manually | Step 5 terminal-state check |
 | User replaces/adds images after analysis | No | Re-run `analyze_images.py` before reading image facts | No | Step 4/5/6 image-fact read |
 | Live preview fails to start | No | Continue generation; report that preview is unavailable | Only if user requires browser preview | Step 6 or `live-preview` Step 1 |
+| Local server reports `LOCAL_SERVER_PERMISSION` | No | Retry once through the host's supported authorized-execution flow; never modify firewall or bypass host protections | Only when the host requires approval | Same launch command; if denied/unavailable, report and continue without preview |
 | Live preview closed by user | No | Continue generation | No | Restart through `live-preview` only if requested |
 | Browser annotations submitted during generation | No | Defer application until after Step 7 | User asks to apply annotations | `live-preview` Step 2 |
 | `svg_quality_checker.py` error | Yes | Fix the affected SVG, then rerun checker | No unless required asset is missing | Step 6 Visual Construction |

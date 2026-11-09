@@ -16,12 +16,91 @@ Dependencies:
 """
 
 import json
+import errno
 import logging
 import os
 import socket
 import subprocess
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Optional
+
+
+class LocalServerPermissionError(PermissionError):
+    """The host denied local sockets; retry through the host permission flow."""
+
+
+def _permission_denied(exc: BaseException) -> bool:
+    reason = getattr(exc, 'reason', exc)
+    return (isinstance(reason, PermissionError)
+            or getattr(reason, 'errno', None) in (errno.EACCES, errno.EPERM)
+            or getattr(reason, 'winerror', None) in (5, 10013))
+
+
+def _permission_error(exc: BaseException) -> LocalServerPermissionError:
+    return LocalServerPermissionError(
+        'LOCAL_SERVER_PERMISSION: local sockets are blocked. Use the host\'s '
+        'authorized execution/approval flow; do not change firewall settings. '
+        f'Original error: {exc}')
+
+
+def _health_opener():
+    # Loopback must not depend on the user's HTTP proxy configuration.
+    return urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
+def probe_server(port: int, project: Path, service: str,
+                 expected_pid: Optional[int] = None) -> bool:
+    """Verify server identity, not just a listening PID or HTTP status."""
+    try:
+        with _health_opener().open(
+                f'http://127.0.0.1:{port}/api/health', timeout=1) as response:
+            if response.status != 200:
+                return False
+            data = json.loads(response.read())
+        if (not isinstance(data, dict) or not isinstance(data.get('project'), str)
+                or not data['project']):
+            return False
+        # Existing pre-upgrade sessions may omit service and pid.
+        legacy_service = 'svg-editor' if 'svg_output' in data else 'confirm-ui'
+        return (data.get('status') == 'ok'
+                and data.get('service', legacy_service) == service
+                and Path(data.get('project', '')).resolve() == project.resolve()
+                and (expected_pid is None or data.get('pid') == expected_pid))
+    except (OSError, urllib.error.URLError) as exc:
+        if _permission_denied(exc):
+            raise _permission_error(exc) from exc
+        return False
+    except (ValueError, TypeError):
+        return False
+
+
+def wait_for_server(port: int, proc: subprocess.Popen, project: Path,
+                    service: str, timeout: float) -> bool:
+    """Wait for this child; permission failures terminate the wait immediately."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if proc.poll() is not None:
+            return False
+        if probe_server(port, project, service, expected_pid=proc.pid):
+            return True
+        time.sleep(0.2)
+    return False
+
+
+def stop_started_child(proc: subprocess.Popen, lock_file: Path) -> None:
+    """Clean up only the child owned by this failed launch, never a reused PID."""
+    if proc.poll() is None:
+        proc.terminate()
+        try:
+            proc.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait(timeout=3)
+    if lock_pid(read_lock(lock_file)) == proc.pid:
+        clear_lock(lock_file)
 
 
 def port_has_listener(host: str, port: int, timeout: float = 0.3) -> bool:
@@ -40,7 +119,9 @@ def port_has_listener(host: str, port: int, timeout: float = 0.3) -> bool:
         try:
             probe.connect((host, port))
             return True
-        except OSError:
+        except OSError as exc:
+            if _permission_denied(exc):
+                raise _permission_error(exc) from exc
             return False
 
 
@@ -63,9 +144,11 @@ def find_free_port(preferred: int, host: str = '127.0.0.1', span: int = 50) -> i
             try:
                 probe.bind((host, port))
                 return port
-            except OSError:
+            except OSError as exc:
+                if _permission_denied(exc):
+                    raise _permission_error(exc) from exc
                 continue
-    return preferred
+    raise OSError(f'No available loopback port in {preferred}..{preferred + span - 1}')
 
 
 def popen_detached(

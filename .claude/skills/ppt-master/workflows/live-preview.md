@@ -41,6 +41,20 @@ The launcher binds `127.0.0.1:5050` (or the next free port), starts the server i
 - **Annotate** (changes that need AI judgement / re-layout): select an element → write the instruction, optionally starting from a quick type such as move / resize / replace image / copy / relayout → click **Add annotation** to stage it → click **Apply changes** to write annotation markers → return to the chat and say `apply my annotations` (or quote the browser prompt)
 - to skip the editor, just describe the change in chat
 
+**Host permission recovery (Windows/macOS, Claude Code/Codex):** If launch reports
+`LOCAL_SERVER_PERMISSION` (including Windows socket error 10013), retry once
+through the host's supported permission/authorized-execution flow. Keep the same
+project and do not change firewall rules or disable host protections. A script
+cannot grant itself socket permissions. If that flow is unavailable or denied,
+report the blocked operation and use the documented preview-unavailable fallback.
+
+Report a working preview only after `/api/health` identifies the expected project
+and service. A live PID or an unrelated HTTP 200 is insufficient. Reuse failures
+leave the existing process untouched; never kill a PID just because a lock names
+it. Browser auto-open failure is separate from server failure: give the verified
+URL for manual opening. Before handing off, probe health again to detect hosts
+that terminate detached children when a tool call ends.
+
 Do not wait for confirmation before launching — the user already asked for preview, so launching is the response. If another project already holds the port, the launcher auto-advances to the next free one — report the actual URL from the launch log (`--port <other>` still forces a specific port). Remote access → see the appendix.
 
 ---

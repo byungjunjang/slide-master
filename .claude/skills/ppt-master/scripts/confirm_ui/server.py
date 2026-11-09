@@ -55,6 +55,10 @@ if str(_SCRIPTS_DIR) not in sys.path:
 
 from console_encoding import configure_utf8_stdio  # noqa: E402
 from server_common import (  # noqa: E402
+    LocalServerPermissionError,
+    probe_server as _probe_server,
+    wait_for_server as _wait_for_server,
+    stop_started_child as _stop_started_child,
     claim_lock as _claim_lock,
     clear_lock as _clear_lock,
     find_free_port as _find_free_port,
@@ -150,34 +154,13 @@ def _server_url(port: int, path: str = '') -> str:
     return f'http://{PUBLIC_HOST}:{port}{suffix}'
 
 
-def _wait_for_server_ready(
-    port: int,
-    proc: subprocess.Popen,
-    timeout: int = STARTUP_TIMEOUT,
-) -> bool:
-    """Wait until the detached child is accepting HTTP requests."""
-    deadline = time.time() + timeout
-    last_error = ''
-    health_url = _server_url(port, '/api/health')
-    while time.time() < deadline:
-        returncode = proc.poll()
-        if returncode is not None:
-            logger.error('confirm UI exited during startup (code=%s)', returncode)
-            return False
-        try:
-            with urllib.request.urlopen(health_url, timeout=1) as resp:
-                if 200 <= resp.status < 500:
-                    return True
-        except (OSError, urllib.error.URLError) as exc:
-            last_error = str(exc)
-        time.sleep(0.2)
-    logger.error(
-        'confirm UI did not become ready at %s within %ss%s',
-        health_url,
-        timeout,
-        f' (last error: {last_error})' if last_error else '',
-    )
-    return False
+def _wait_for_server_ready(port, proc, project_path, timeout=STARTUP_TIMEOUT) -> bool:
+    """Verify the newly started child and its project before opening a browser."""
+    try:
+        return _wait_for_server(port, proc, project_path, 'confirm-ui', timeout)
+    except LocalServerPermissionError as exc:
+        logger.error('%s', exc)
+        return False
 
 
 def _launch_background_server(
@@ -211,13 +194,17 @@ def _launch_background_server(
             logger=logger,
         )
     logger.info('log: %s', log_path)
-    if not _wait_for_server_ready(port, proc):
+    if not _wait_for_server_ready(port, proc, project_path):
+        _stop_started_child(proc, project_path / LOCK_FILE_NAME)
         raise RuntimeError(f'confirm UI failed to become reachable: {_server_url(port)}')
     _sync_session_state(confirm_dir, server_port=port, event='server-ready')
     url = _server_url(port)
     logger.info('started confirm UI in background: %s (pid=%s)', url, proc.pid)
     if open_browser:
-        webbrowser.open(url)
+        try:
+            webbrowser.open(url)
+        except (OSError, webbrowser.Error) as exc:
+            logger.warning('Browser did not open (%s); open %s manually', exc, url)
     return proc, port, log_path
 
 
@@ -226,7 +213,8 @@ def _live_lock(lock_file: Path) -> Optional[dict]:
     existing = _read_lock(lock_file)
     if not existing:
         return None
-    if _process_alive(_lock_pid(existing)):
+    if (_process_alive(_lock_pid(existing))
+            and _probe_server(int(existing.get('port', 0)), lock_file.parent, 'confirm-ui')):
         return existing
     return None
 
@@ -950,6 +938,8 @@ def create_app(
                 rec_ok = False
         resp = jsonify({
             'status': 'ok',
+            'service': 'confirm-ui',
+            'pid': os.getpid(),
             'project': str(project_path),
             'recommendations': rec_ok,
             'stage': stage,
@@ -1217,6 +1207,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         lock_file = project_path / LOCK_FILE_NAME
         existing = _read_lock(lock_file)
         if existing and _process_alive(_lock_pid(existing)):
+            if not _probe_server(int(existing.get('port', 0)), project_path, 'confirm-ui'):
+                logger.error('Existing PID does not serve this confirm project; leaving it untouched')
+                return 1
             existing_pid = existing.get('pid', '?')
             existing_port = existing.get('port', '?')
             logger.error(
@@ -1285,4 +1278,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except LocalServerPermissionError as exc:
+        logger.error('%s', exc)
+        raise SystemExit(3)

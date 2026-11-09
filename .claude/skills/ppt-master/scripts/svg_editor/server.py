@@ -61,6 +61,10 @@ if str(_ROOT_SCRIPTS_DIR) not in sys.path:
 
 from console_encoding import configure_utf8_stdio  # noqa: E402
 from server_common import (  # noqa: E402
+    LocalServerPermissionError,
+    probe_server as _probe_server,
+    wait_for_server as _wait_for_server,
+    stop_started_child as _stop_started_child,
     claim_lock as _claim_lock,
     clear_lock as _clear_lock,
     find_free_port as _find_free_port,
@@ -480,6 +484,8 @@ def create_app(
             slide_count = 0
         resp = jsonify({
             'status': 'ok',
+            'service': 'svg-editor',
+            'pid': os.getpid(),
             'project': str(project_path),
             'live': app.config['LIVE_MODE'],
             'svg_output': str(svg_dir),
@@ -1005,33 +1011,13 @@ def _shutdown_existing(project_path: Path) -> int:
     return 0
 
 
-def _wait_for_ready(
-    port: int,
-    proc: subprocess.Popen,
-    timeout: int = STARTUP_TIMEOUT,
-) -> bool:
-    """Wait until the server responds or the child exits."""
-    deadline = time.time() + timeout
-    health_url = _server_url(port, '/api/health')
-    last_error = ''
-    while time.time() < deadline:
-        if proc.poll() is not None:
-            logger.error('live preview exited during startup (code=%s)', proc.returncode)
-            return False
-        try:
-            with urllib.request.urlopen(health_url, timeout=1) as response:
-                if response.status == 200:
-                    return True
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            last_error = str(exc)
-        time.sleep(0.25)
-    logger.error(
-        'live preview did not become ready at %s within %ss%s',
-        health_url,
-        timeout,
-        f' (last error: {last_error})' if last_error else '',
-    )
-    return False
+def _wait_for_ready(port, proc, project_path, timeout=STARTUP_TIMEOUT) -> bool:
+    """Verify the newly started child and its project before opening a browser."""
+    try:
+        return _wait_for_server(port, proc, project_path, 'svg-editor', timeout)
+    except LocalServerPermissionError as exc:
+        logger.error('%s', exc)
+        return False
 
 
 def _open_browser(url: str) -> bool:
@@ -1048,7 +1034,7 @@ def _open_browser(url: str) -> bool:
     return False
 
 
-def _reuse_running_server(existing: dict, *, open_browser: bool) -> int:
+def _reuse_running_server(existing: dict, *, project_path: Path, open_browser: bool) -> int:
     """Idempotent relaunch: point at the already-running preview instead of failing.
 
     A relaunch while the server is alive is the normal second-preview flow
@@ -1066,6 +1052,14 @@ def _reuse_running_server(existing: dict, *, open_browser: bool) -> int:
             'lock records no usable port; run --shutdown, then start again',
             pid,
         )
+        return 1
+    try:
+        healthy = _probe_server(port, project_path, 'svg-editor')
+    except LocalServerPermissionError as exc:
+        logger.error('%s', exc)
+        return 1
+    if not healthy:
+        logger.error('Existing PID does not serve this project at %s; leaving it untouched', _server_url(port))
         return 1
     url = _server_url(port)
     logger.info(
@@ -1150,7 +1144,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     legacy_existing = _legacy_live_lock(project_path)
     if legacy_existing:
-        return _reuse_running_server(legacy_existing, open_browser=not args.no_browser)
+        return _reuse_running_server(legacy_existing, project_path=project_path, open_browser=not args.no_browser)
 
     runtime_dir = _runtime_dir(project_path)
     lock_file = _lock_file(project_path)
@@ -1158,7 +1152,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     if args.daemon:
         existing = _read_lock(lock_file)
         if existing and _process_alive(_lock_pid(existing)):
-            return _reuse_running_server(existing, open_browser=not args.no_browser)
+            return _reuse_running_server(existing, project_path=project_path, open_browser=not args.no_browser)
 
         try:
             runtime_dir.mkdir(parents=True, exist_ok=True)
@@ -1195,7 +1189,8 @@ def main(argv: Optional[list[str]] = None) -> int:
             logger.error('cannot write live preview log: %s (%s)', log_path, exc)
             return 1
         url = _server_url(port)
-        if not _wait_for_ready(port, proc):
+        if not _wait_for_ready(port, proc, project_path):
+            _stop_started_child(proc, lock_file)
             logger.error('live preview failed to become reachable: %s (log: %s)', url, log_path)
             return 1
         logger.info('started live preview in background: %s (pid=%s)', url, proc.pid)
@@ -1221,7 +1216,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1
     existing = _claim_lock(lock_file, port)
     if existing:
-        return _reuse_running_server(existing, open_browser=not args.no_browser)
+        return _reuse_running_server(existing, project_path=project_path, open_browser=not args.no_browser)
     # atexit covers normal interpreter shutdown (Ctrl+C / SystemExit);
     # /api/shutdown and idle timeout call _release_lock directly before
     # os._exit since atexit handlers do not run on os._exit.
@@ -1268,4 +1263,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except LocalServerPermissionError as exc:
+        logger.error('%s', exc)
+        raise SystemExit(3)
