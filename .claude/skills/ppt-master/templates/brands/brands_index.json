@@ -19,8 +19,36 @@
     "summary": "McKinsey consulting-style identity — 전략 보고/분석 브리핑, 네이비 구조색 + 시안 포인트, 액션 타이틀 보이스",
     "primary_color": "#0F2A4A"
   },
+  "meta": {
+    "summary": "Meta brand identity — 하드웨어 제품 발표(VR/AR), 브랜드 캠페인, 커머스/구매 퍼널 프레젠테이션",
+    "primary_color": "#0064E0"
+  },
   "naver": {
     "summary": "NAVER corporate identity — IR/실적발표, 재무 보고, 네이버 관련 기업·서비스 자료",
     "primary_color": "#03C75A"
+  },
+  "notion": {
+    "summary": "Notion brand identity — 생산성 도구 소개, 워크스페이스 온보딩, SaaS 제품 데크",
+    "primary_color": "#0075DE"
+  },
+  "playstation": {
+    "summary": "PlayStation brand identity — 게임/콘솔 제품 발표, 미디어 쇼케이스, 프리미엄 브랜드 캠페인",
+    "primary_color": "#0070D1"
+  },
+  "slack": {
+    "summary": "Slack 브랜드 아이덴티티 — 협업 툴/워크플레이스 제품 소개, 팀 문화 프레젠테이션, SaaS 온보딩",
+    "primary_color": "#4A154B"
+  },
+  "spacex": {
+    "summary": "SpaceX 브랜드 아이덴티티 — 미션/제품 발표, 엔지니어링 브리핑, 우주항공·딥테크 프레젠테이션",
+    "primary_color": "#000000"
+  },
+  "starbucks": {
+    "summary": "Starbucks 브랜드 아이덴티티 — 리테일/F&B 브랜드 캠페인, 로열티 프로그램 소개, 매장·제품 라인업 발표",
+    "primary_color": "#006241"
+  },
+  "stripe": {
+    "summary": "Stripe 브랜드 아이덴티티 — 금융/핀테크 인프라 제품 소개, 개발자 대상 브리핑, 투자·재무 데크",
+    "primary_color": "#533AFD"
   }
 }

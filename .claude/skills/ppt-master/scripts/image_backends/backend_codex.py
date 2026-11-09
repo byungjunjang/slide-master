@@ -194,6 +194,30 @@ def generate(prompt: str,
             report_resolution(str(out_path))
             return str(out_path)
 
+        # Sandbox fallback: on some installs the model generates the image fine
+        # (image_gen is an internal API call, not a shell write) but the
+        # workspace-write sandbox rejects the shell copy to `out_path` (Windows
+        # policy quirk observed even with `-s workspace-write`). Recover the
+        # already-generated file straight from Codex's own cache directory and
+        # copy it ourselves — this is a plain filesystem copy, not routed
+        # through the sandboxed subprocess.
+        full_output = (result.stdout or "") + "\n" + (result.stderr or "")
+        # The path may contain spaces (Windows user folders often do), so bound
+        # the match on backtick/newline only — never on whitespace.
+        cache_matches = re.findall(
+            r"[A-Za-z]:[\\/][^`\n]*?generated_images[^`\n]*?\.(?:png|jpg|jpeg|webp)"
+            r"|/[^`\n]*?generated_images[^`\n]*?\.(?:png|jpg|jpeg|webp)",
+            full_output,
+        )
+        for candidate in reversed(cache_matches):
+            candidate_path = Path(candidate)
+            if candidate_path.exists() and candidate_path.stat().st_size > 0:
+                shutil.copy2(candidate_path, out_path)
+                print(f"  [DONE] Image generated ({elapsed:.1f}s) — recovered from sandbox cache")
+                print(f"  File saved to: {out_path}")
+                report_resolution(str(out_path))
+                return str(out_path)
+
         output_tail = ((result.stdout or "") + "\n" + (result.stderr or "")).strip()[-500:]
         last_detail = (
             f"codex exec exit={result.returncode}, output file missing. "
