@@ -90,6 +90,7 @@
             pending_notes: "Speaker notes changed on {count} page(s)",
             err_load_notes: "Failed to load speaker notes: ",
             err_notes: "Speaker notes not staged: ",
+            err_notes_unstaged: "Apply stopped: speaker notes on these pages were not staged ({pages}). Your text is kept; fix it and apply again.",
             slide_badge_tooltip: "{annotations} annotation(s), {notes} speaker-notes change",
             modal_notes_saved: "\n\nSpeaker notes were written to notes/ (total.md and the per-slide file). Re-export the PPTX to include them."
         },
@@ -176,6 +177,7 @@
             pending_notes: "スピーカーノート変更 {count} ページ",
             err_load_notes: "スピーカーノートを読み込めませんでした: ",
             err_notes: "スピーカーノートを一時保存できませんでした: ",
+            err_notes_unstaged: "スピーカーノートを一時保存できなかったページがあるため、適用を中止しました({pages})。入力内容は残っています。修正して再度適用してください。",
             slide_badge_tooltip: "注釈 {annotations} 件、スピーカーノート変更 {notes} 件",
             modal_notes_saved: "\n\nスピーカーノートを notes/(total.md とスライド別ファイル)に保存しました。PPTXに反映するには再エクスポートしてください。"
         },
@@ -262,6 +264,7 @@
             pending_notes: "슬라이드 노트 변경 {count}페이지",
             err_load_notes: "슬라이드 노트를 불러오지 못했습니다: ",
             err_notes: "슬라이드 노트를 임시 저장하지 못했습니다: ",
+            err_notes_unstaged: "슬라이드 노트를 임시 저장하지 못한 페이지가 있어 변경 적용을 멈췄습니다({pages}). 입력한 내용은 남아 있으니 고친 뒤 다시 적용하세요.",
             slide_badge_tooltip: "주석 {annotations}건, 슬라이드 노트 수정 {notes}건",
             modal_notes_saved: "\n\n슬라이드 노트가 notes/ 폴더(total.md와 슬라이드별 파일)에 저장됐습니다. PPTX에 반영하려면 다시 내보내세요."
         },
@@ -348,6 +351,7 @@
             pending_notes: "{count} 页演讲者备注已修改",
             err_load_notes: "加载演讲者备注失败:",
             err_notes: "演讲者备注暂存失败:",
+            err_notes_unstaged: "以下页面的演讲者备注未能暂存,已停止应用({pages})。输入内容已保留,请修改后重新应用。",
             slide_badge_tooltip: "标注 {annotations} 条,演讲者备注修改 {notes} 条",
             modal_notes_saved: "\n\n演讲者备注已写入 notes/(total.md 和单页文件)。需要更新 PPTX 时请重新导出。"
         }
@@ -475,6 +479,7 @@
     var notesSource       = null;   // {source, file} reported by the server for that slide
     var notesStageTimer   = null;   // debounce for staging typed notes
     var notesStageChain   = Promise.resolve(); // serializes notes POSTs in typing order
+    var notesUnstaged     = {};     // {name: text} typed notes the server has not accepted
 
     function pendingNotesSlides() {
         return Object.keys(notesDirtySlides).filter(function (name) {
@@ -652,7 +657,11 @@
         notesTextEl.value = "";
         notesTextEl.disabled = true;
         renderNotesStatus();
-        return fetch("/api/slide/" + encodeURIComponent(name) + "/notes", { cache: "no-store" })
+        // Wait for queued stages so the GET sees the latest staged text.
+        return notesStageChain
+            .then(function () {
+                return fetch("/api/slide/" + encodeURIComponent(name) + "/notes", { cache: "no-store" });
+            })
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 if (currentSlide !== name) return;  // user moved on while loading
@@ -661,11 +670,13 @@
                     notesStatusEl.textContent = t("err_load_notes") + data.error;
                     return;
                 }
-                notesTextEl.value = data.notes || "";
+                // Text the server refused to stage wins, so it can be fixed here.
+                var unstaged = Object.prototype.hasOwnProperty.call(notesUnstaged, name);
+                notesTextEl.value = unstaged ? notesUnstaged[name] : (data.notes || "");
                 notesTextEl.disabled = false;
                 notesLoadedFor = name;
                 notesSource = { source: data.source, file: data.file };
-                notesDirtySlides[name] = !!data.staged;
+                notesDirtySlides[name] = unstaged || !!data.staged;
                 renderNotesStatus();
                 updatePendingStatus();
             })
@@ -676,6 +687,8 @@
             });
     }
 
+    // A failed stage keeps the typed text in notesUnstaged (and the slide dirty);
+    // the chain itself never rejects, so later stages still run.
     function stageNotes(name, text) {
         notesStageChain = notesStageChain.then(function () {
             return fetch("/api/slide/" + encodeURIComponent(name) + "/notes", {
@@ -683,30 +696,42 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ notes: text })
             })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    if (data.error) {
-                        showError(t("err_notes") + data.error);
-                        return;
-                    }
-                    notesDirtySlides[name] = !!data.staged;
+                .then(function (res) {
+                    return res.json().catch(function () { return {}; }).then(function (data) {
+                        if (!res.ok || data.error) throw new Error(data.error || ("HTTP " + res.status));
+                        delete notesUnstaged[name];
+                        notesDirtySlides[name] = !!data.staged;
+                    });
+                })
+                .catch(function (err) {
+                    notesUnstaged[name] = text;
+                    notesDirtySlides[name] = true;
+                    showError(t("err_notes") + err.message);
+                })
+                .then(function () {
                     if (notesLoadedFor === name) renderNotesStatus();
                     updatePendingStatus();
                 });
-        }).catch(function (err) {
-            showError(t("err_notes") + err.message);
         });
         return notesStageChain;
     }
 
-    // Push any not-yet-staged keystrokes now (slide switch, blur, Apply changes).
+    // Push not-yet-staged keystrokes now (slide switch, blur, Apply changes) and
+    // retry earlier failed stages. Rejects while any notes are still unstaged,
+    // so Apply changes stops instead of saving without them.
     function flushNotes() {
+        var restage = {};
+        Object.keys(notesUnstaged).forEach(function (name) { restage[name] = notesUnstaged[name]; });
         if (notesStageTimer) {
             clearTimeout(notesStageTimer);
             notesStageTimer = null;
-            if (notesLoadedFor) stageNotes(notesLoadedFor, notesTextEl.value);
+            if (notesLoadedFor) restage[notesLoadedFor] = notesTextEl.value;
         }
-        return notesStageChain;
+        Object.keys(restage).forEach(function (name) { stageNotes(name, restage[name]); });
+        return notesStageChain.then(function () {
+            var failed = Object.keys(notesUnstaged);
+            if (failed.length) throw new Error(t("err_notes_unstaged", { pages: failed.join(", ") }));
+        });
     }
 
     function setNotesCollapsed(collapsed) {
@@ -738,7 +763,9 @@
                 stageNotes(name, notesTextEl.value);
             }, 400);
         });
-        notesTextEl.addEventListener("blur", flushNotes);
+        notesTextEl.addEventListener("blur", function () {
+            flushNotes().catch(function () { /* error already shown; text kept */ });
+        });
     }
 
     function currentSlideIndex() {
@@ -877,7 +904,7 @@
         if (el) el.classList.add("active");
 
         // Stage the previous slide's unsent notes before the textarea is reused.
-        flushNotes();
+        flushNotes().catch(function () { /* error already shown; text kept */ });
 
         currentSlide = name;
         loadNotes(name);
@@ -1986,7 +2013,11 @@
                     if (notesSaved && (hadDirectEdits || hadAnnotationChanges)) {
                         modalMessage.textContent += t("modal_notes_saved");
                     }
+                    // Keep notes that were typed during the save or never got
+                    // staged; loadSlides() re-seeds what the server still holds.
                     notesDirtySlides = {};
+                    Object.keys(notesUnstaged).forEach(function (name) { notesDirtySlides[name] = true; });
+                    if (notesStageTimer && notesLoadedFor) notesDirtySlides[notesLoadedFor] = true;
                     editStackCount = {};
                     matrixEditSlides = {};
                     matrixHintShown = false;
@@ -2005,7 +2036,7 @@
                 }
             })
             .catch(function (err) {
-                modalMessage.textContent = t("err_save") + err;
+                modalMessage.textContent = t("err_save") + ((err && err.message) || err);
                 modalConfirm.style.display = "";
                 modalCancel.style.display = "";
             });

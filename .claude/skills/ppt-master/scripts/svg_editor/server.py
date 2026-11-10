@@ -389,23 +389,58 @@ def _newline_style(path: Path, fallback: str = '\n') -> str:
         return fallback
 
 
+def _write_bytes_atomic(path: Path, data: bytes) -> None:
+    """Write via a temp file in the same folder, then swap it in with ``os.replace``.
+
+    A failed write leaves the original file untouched instead of truncated.
+    """
+    tmp = path.with_name(f'.{path.name}.{os.getpid()}.tmp')
+    try:
+        tmp.write_bytes(data)
+        os.replace(tmp, path)
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _encode_text(text: str, newline: str) -> bytes:
+    return text.replace('\n', newline).encode('utf-8')
+
+
 def _write_slide_notes(project_path: Path, stem: str, text: str, svg_stems: list[str]) -> str:
-    """Write one slide's notes; returns ``total`` or ``file`` (where the source lives)."""
+    """Write one slide's notes; returns ``total`` or ``file`` (where the source lives).
+
+    Both files are replaced atomically. If ``notes/<stem>.md`` cannot be written
+    after ``total.md`` was updated, ``total.md`` is restored and the error is
+    re-raised, so the caller can keep the notes staged and retry.
+    """
     notes_dir = project_path / NOTES_DIR_NAME
     notes_dir.mkdir(parents=True, exist_ok=True)
     total_md = notes_dir / TOTAL_NOTES_NAME
     per_slide = notes_dir / f'{stem}.md'
     source = 'file'
     newline = '\n'
+    total_original: Optional[bytes] = None
     if total_md.is_file():
         newline = _newline_style(total_md)
+        total_original = total_md.read_bytes()
         content = total_md.read_text(encoding='utf-8')
         updated = _replace_total_md_section(content, stem, text, svg_stems)
-        with open(total_md, 'w', encoding='utf-8', newline=newline) as handle:
-            handle.write(updated)
+        _write_bytes_atomic(total_md, _encode_text(updated, newline))
         source = 'total'
-    with open(per_slide, 'w', encoding='utf-8', newline=_newline_style(per_slide, newline)) as handle:
-        handle.write(text)
+    try:
+        _write_bytes_atomic(per_slide, _encode_text(text, _newline_style(per_slide, newline)))
+    except OSError as exc:
+        if total_original is not None:
+            try:
+                _write_bytes_atomic(total_md, total_original)
+            except OSError as restore_exc:
+                raise OSError(
+                    f'{exc}; restoring {TOTAL_NOTES_NAME} also failed: {restore_exc}'
+                ) from exc
+        raise
     return source
 
 
@@ -836,16 +871,19 @@ def create_app(
                     'error': 'Speaker notes cannot contain lines starting with "#" '
                              '(they would split notes/total.md). Remove the leading "#".',
                 }), 400
-        try:
-            disk_text, _ = _read_slide_notes(project_path, svg_file.stem, _svg_stems())
-        except OSError as exc:
-            return jsonify({'error': f'Failed to read speaker notes: {exc}'}), 500
-        pending = app.config['PENDING_NOTES']
-        if text == _normalize_notes_text(disk_text):
-            pending.pop(name, None)
-        else:
-            pending[name] = text
-        return jsonify({'status': 'ok', 'staged': name in pending, 'pending_notes': len(pending)})
+        # Same lock as save-all: a stage that arrives mid-save waits, then
+        # compares against the freshly written disk text, so it is never lost.
+        with notes_lock:
+            try:
+                disk_text, _ = _read_slide_notes(project_path, svg_file.stem, _svg_stems())
+            except OSError as exc:
+                return jsonify({'error': f'Failed to read speaker notes: {exc}'}), 500
+            pending = app.config['PENDING_NOTES']
+            if text == _normalize_notes_text(disk_text):
+                pending.pop(name, None)
+            else:
+                pending[name] = text
+            return jsonify({'status': 'ok', 'staged': name in pending, 'pending_notes': len(pending)})
 
     @app.route('/api/slide/<name>/annotate', methods=['POST'])
     def post_annotate(name: str):
@@ -1032,30 +1070,32 @@ def create_app(
         modified = []
 
         # Notes first: a write failure here aborts before any SVG is touched.
+        # Each entry leaves the staging dict only after its own write succeeds;
+        # a failed slide (and every slide after it) stays staged for a retry.
         notes_modified = []
-        pending_notes = app.config['PENDING_NOTES']
-        if pending_notes:
-            stems = _svg_stems()
-            with notes_lock:
-                for filename in sorted(pending_notes):
-                    svg_file = _safe_svg_path(filename)
-                    if svg_file is None or not svg_file.exists():
-                        continue
-                    new_text = pending_notes[filename]
-                    try:
-                        old_text, _ = _read_slide_notes(project_path, svg_file.stem, stems)
-                        target = _write_slide_notes(project_path, svg_file.stem, new_text, stems)
-                    except OSError as exc:
-                        return jsonify({
-                            'error': f'Failed to write speaker notes for {filename}: {exc}',
-                        }), 500
-                    _append_edit_log(project_path, {
-                        'ts': time.time(), 'file': filename, 'element_id': None,
-                        'action': 'notes_edit', 'kind': 'notes', 'key': target,
-                        'old': old_text, 'new': new_text,
-                    })
-                    notes_modified.append(filename)
-            app.config['PENDING_NOTES'] = {}
+        with notes_lock:
+            pending_notes = app.config['PENDING_NOTES']
+            stems = _svg_stems() if pending_notes else []
+            for filename in sorted(pending_notes):
+                svg_file = _safe_svg_path(filename)
+                if svg_file is None or not svg_file.exists():
+                    pending_notes.pop(filename, None)
+                    continue
+                new_text = pending_notes[filename]
+                try:
+                    old_text, _ = _read_slide_notes(project_path, svg_file.stem, stems)
+                    target = _write_slide_notes(project_path, svg_file.stem, new_text, stems)
+                except OSError as exc:
+                    return jsonify({
+                        'error': f'Failed to write speaker notes for {filename}: {exc}',
+                    }), 500
+                del pending_notes[filename]
+                _append_edit_log(project_path, {
+                    'ts': time.time(), 'file': filename, 'element_id': None,
+                    'action': 'notes_edit', 'kind': 'notes', 'key': target,
+                    'old': old_text, 'new': new_text,
+                })
+                notes_modified.append(filename)
 
         filenames = sorted(set(annotations.keys()) | set(pending_edits.keys()))
         for filename in filenames:
