@@ -236,7 +236,113 @@ html, body {
     width: auto;
     height: auto;
     max-width: 100%;
-    max-height: calc(100vh - 72px);
+    /* 112px = slide nav (~49px) + container padding (2 x 24px) + breathing
+       room, so the slide never forces a scrollbar above the notes panel. */
+    max-height: calc(100vh - 112px - var(--notes-panel-h));
+}
+
+/* ---------- Speaker notes panel (below the slide) ---------- */
+#app {
+    --notes-panel-h: 190px;
+}
+
+#app.notes-collapsed {
+    --notes-panel-h: 40px;
+}
+
+#notes-panel {
+    flex-shrink: 0;
+    height: var(--notes-panel-h);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 16px 12px;
+    background: #16162a;
+    border-top: 1px solid #2a2a4a;
+}
+
+#notes-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 22px;
+}
+
+.notes-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #c0c0d8;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.notes-toggle:hover {
+    color: #ffffff;
+}
+
+.notes-toggle:focus-visible {
+    outline: 2px solid #4a9eff;
+    outline-offset: 2px;
+}
+
+.notes-caret {
+    display: inline-block;
+    transition: transform 0.15s;
+}
+
+#app.notes-collapsed .notes-caret {
+    transform: rotate(-90deg);
+}
+
+.notes-status {
+    font-size: 12px;
+    color: #7a7a9a;
+}
+
+.notes-status.pending {
+    color: #f8d46b;
+}
+
+.notes-status.error {
+    color: #ff7b7b;
+}
+
+#notes-text {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    resize: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: inherit;
+    color: #e0e0e0;
+    background: #1e1e36;
+    border: 1px solid #3a3a5a;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#notes-text:focus {
+    border-color: #4a9eff;
+}
+
+#notes-text::placeholder {
+    color: #5a5a7a;
+}
+
+#notes-text:disabled {
+    opacity: 0.6;
+}
+
+#app.notes-collapsed #notes-text {
+    display: none;
 }
 
 /* ---------- SVG element interaction states ---------- */
