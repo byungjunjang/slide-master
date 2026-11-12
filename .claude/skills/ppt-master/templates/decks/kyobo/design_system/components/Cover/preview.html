@@ -1,0 +1,22 @@
+<!-- @dsCard height=300 -->
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap"><style>
+body{margin:0;background:var(--surface,#fff)}
+svg{display:block;width:960px;height:300px;font-family:var(--font-sans,"NanumGothic","Nanum Gothic","Malgun Gothic",sans-serif)}
+.navy{fill:var(--navy,#003975)}.green{fill:var(--green,#4db848)}.tint{fill:var(--gray-200,#e8ebed)}.orange{fill:var(--orange,#fbae40)}
+.cut{fill:none;stroke:var(--surface,#fff);stroke-width:var(--stroke-title,3px)}
+.name{font-size:72px;font-weight:800;fill:var(--navy-cover,#002060)}.tag{font-size:14px;fill:var(--ink-muted,#444462)}
+</style></head><body>
+<!-- derivation:
+blocks: navy 440x120 (top/right bleed), green 224x150 (bottom bleed), gray-200 256x72, orange 96x68.
+arrangement: staggered slabs bleeding off top, bottom and right edges, right of x=480.
+pattern: literal motif — the deck's green-to-navy wave, drawn as one ground-coloured cut through the blocks (stroke-title).
+steps: space-8 gaps; radius-none (square system). -->
+<svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="navy" x="520" y="0" width="440" height="120"/>
+<rect class="green" x="480" y="150" width="224" height="150"/>
+<rect class="tint" x="736" y="152" width="224" height="72"/>
+<rect class="orange" x="736" y="232" width="96" height="68"/>
+<path class="cut" d="M480 196 C 600 250, 700 250, 790 170 S 900 60, 960 70"/>
+<text class="name" x="40" y="226">KYOBO PPT</text>
+<text class="tag" x="42" y="256">교보 발표 자료 디자인 시스템</text>
+</svg></body></html>

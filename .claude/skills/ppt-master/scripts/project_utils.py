@@ -36,6 +36,12 @@ except ImportError:
             'viewbox': '0 0 1024 768',
             'aspect_ratio': '4:3'
         },
+        'ppt_kyobo': {
+            'name': 'Kyobo PPT 29.016×19.05cm',
+            'dimensions': '1280×840',
+            'viewbox': '0 0 1280 840',
+            'aspect_ratio': '32:21'
+        },
         'instagram': {
             'name': 'Instagram Card News',
             'dimensions': '1080×1350',

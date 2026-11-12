@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="03_content_keymsg" data-pptx-layout-name="Content Key Message">
+  <!-- Kyobo — 03t Content · option comparison (label column + three options, recommended column highlighted) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-rule-green" x="0" y="101.5" width="317" height="7" fill="#4DB848" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-rule-navy" x="317" y="101.5" width="963" height="7" fill="#003975" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <image id="layout-logo" href="../images/kyobo-logo-body.jpeg" x="1100" y="20" width="150" height="63" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="49 18.67 800 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="60.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="start" fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+  <g id="key-message-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="131 124.83 1017 56">
+    <text id="key-message-carrier" data-pptx-placeholder-carrier="true" x="640" y="164.5" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="middle" fill="#000000" font-weight="700">{{KEY_MESSAGE}}</text>
+  </g>
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="20" data-pptx-placeholder-bounds="1152 807.33 93 28">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1232" y="830.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="12.6" text-anchor="end" fill="#003975">{{PAGE_NUM}}</text>
+  </g>
+
+  <!-- sample composition (slide-local) -->
+  <g id="head-a">
+    <rect x="285" y="270" width="290" height="80" fill="#D9D9D9"/>
+    <text x="430" y="320" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#000000">대안 A</text>
+  </g>
+  <g id="head-b">
+    <rect x="585" y="270" width="320" height="80" fill="#003975"/>
+    <rect x="585" y="270" width="320" height="8" fill="#4DB848"/>
+    <text x="745" y="322" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#FFFFFF">대안 B (권고)</text>
+  </g>
+  <g id="head-c">
+    <rect x="915" y="270" width="290" height="80" fill="#D9D9D9"/>
+    <text x="1060" y="320" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#000000">대안 C</text>
+  </g>
+  <g id="row-1">
+    <rect x="75" y="360" width="200" height="90" fill="#F2F2F2"/>
+    <text x="175" y="414" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#000000">비교 기준 1</text>
+    <text x="430" y="414" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" text-anchor="middle" fill="#000000">보통</text>
+    <rect x="585" y="360" width="320" height="90" fill="#E6EEF7"/>
+    <text x="745" y="414" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#003975">우수</text>
+    <text x="1060" y="414" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" text-anchor="middle" fill="#000000">미흡</text>
+    <line x1="75" y1="450" x2="1205" y2="450" stroke="#E8EBED" stroke-width="1"/>
+  </g>
+  <g id="row-2">
+    <rect x="75" y="450" width="200" height="90" fill="#F2F2F2"/>
+    <text x="175" y="504" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#000000">비교 기준 2</text>
+    <text x="430" y="504" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" text-anchor="middle" fill="#000000">우수</text>
+    <rect x="585" y="450" width="320" height="90" fill="#E6EEF7"/>
+    <text x="745" y="504" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#003975">우수</text>
+    <text x="1060" y="504" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" text-anchor="middle" fill="#000000">보통</text>
+    <line x1="75" y1="540" x2="1205" y2="540" stroke="#E8EBED" stroke-width="1"/>
+  </g>
+  <g id="row-3">
+    <rect x="75" y="540" width="200" height="90" fill="#F2F2F2"/>
+    <text x="175" y="594" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#000000">비교 기준 3</text>
+    <text x="430" y="594" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" text-anchor="middle" fill="#000000">미흡</text>
+    <rect x="585" y="540" width="320" height="90" fill="#E6EEF7"/>
+    <text x="745" y="594" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#003975">보통</text>
+    <text x="1060" y="594" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" text-anchor="middle" fill="#000000">우수</text>
+    <line x1="75" y1="630" x2="1205" y2="630" stroke="#E8EBED" stroke-width="1"/>
+  </g>
+  <g id="verdict">
+    <rect x="75" y="660" width="1130" height="100" fill="#FFFFFF" stroke="#003975" stroke-width="1.33" stroke-dasharray="6 3"/>
+    <text x="105" y="722" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#003975">○ 권고안: 대안 B — 선택 이유를 한 줄로 요약</text>
+  </g>
+</svg>

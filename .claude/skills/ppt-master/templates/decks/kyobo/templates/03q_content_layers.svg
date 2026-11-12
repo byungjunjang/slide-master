@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="03_content_keymsg" data-pptx-layout-name="Content Key Message">
+  <!-- Kyobo — 03q Content · stacked layers (navy tint ladder + side descriptions) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-rule-green" x="0" y="101.5" width="317" height="7" fill="#4DB848" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-rule-navy" x="317" y="101.5" width="963" height="7" fill="#003975" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <image id="layout-logo" href="../images/kyobo-logo-body.jpeg" x="1100" y="20" width="150" height="63" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="49 18.67 800 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="60.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="start" fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+  <g id="key-message-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="131 124.83 1017 56">
+    <text id="key-message-carrier" data-pptx-placeholder-carrier="true" x="640" y="164.5" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="middle" fill="#000000" font-weight="700">{{KEY_MESSAGE}}</text>
+  </g>
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="20" data-pptx-placeholder-bounds="1152 807.33 93 28">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1232" y="830.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="12.6" text-anchor="end" fill="#003975">{{PAGE_NUM}}</text>
+  </g>
+
+  <!-- sample composition (slide-local) -->
+  <g id="layer-top">
+    <rect x="175" y="236" width="360" height="120" fill="#003975"/>
+    <text x="355" y="308" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#FFFFFF">상위 목표</text>
+    <line x1="545" y1="296" x2="700" y2="296" stroke="#D9D9D9" stroke-width="2"/>
+    <text x="715" y="288" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#000000">상위 계층 설명</text>
+    <text x="715" y="324" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#444462">계층의 역할과 내용을 한 줄로 적습니다</text>
+  </g>
+  <g id="layer-2">
+    <rect x="125" y="376" width="460" height="120" fill="#4D7FB5"/>
+    <text x="355" y="448" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#FFFFFF">핵심 전략</text>
+    <line x1="595" y1="436" x2="700" y2="436" stroke="#D9D9D9" stroke-width="2"/>
+    <text x="715" y="428" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#000000">전략 계층 설명</text>
+    <text x="715" y="464" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#444462">계층의 역할과 내용을 한 줄로 적습니다</text>
+  </g>
+  <g id="layer-3">
+    <rect x="75" y="516" width="560" height="120" fill="#8FAFD4"/>
+    <text x="355" y="588" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#000000">실행 과제</text>
+    <line x1="645" y1="576" x2="700" y2="576" stroke="#D9D9D9" stroke-width="2"/>
+    <text x="715" y="568" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#000000">과제 계층 설명</text>
+    <text x="715" y="604" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#444462">계층의 역할과 내용을 한 줄로 적습니다</text>
+  </g>
+  <g id="layer-base">
+    <rect x="75" y="656" width="1130" height="100" fill="#E6EEF7"/>
+    <rect x="75" y="656" width="8" height="100" fill="#4DB848"/>
+    <text x="640" y="718" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#003975">기반 / 공통 요건</text>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="05_photo_hero" data-pptx-layout-name="Photo Hero">
+  <!-- Kyobo — 05 Photo hero (full-bleed photo + navy scrim; section opener or slogan page) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <g id="hero-photo">
+    <rect x="0" y="0" width="1280" height="840" fill="#8FAFD4"/>
+    <text x="640" y="320" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" text-anchor="middle" fill="#E6EEF7">전면 이미지 영역 1280×840 (이 사각형을 사진으로 교체)</text>
+    <rect x="0" y="0" width="1280" height="840" fill="#002060" fill-opacity="0.5"/>
+  </g>
+  <g id="hero-accent">
+    <rect x="80" y="440" width="96" height="8" fill="#4DB848"/>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="80 470 1000 100">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="80" y="540" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="64" text-anchor="start" fill="#FFFFFF">{{TITLE}}</text>
+  </g>
+  <g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="80 580 1000 50">
+    <text id="subtitle-carrier" data-pptx-placeholder-carrier="true" x="80" y="616" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="28" text-anchor="start" fill="#FFFFFF">{{SUBTITLE}}</text>
+  </g>
+  <g id="hero-logo">
+    <rect x="1018" y="722" width="150" height="70" rx="6" fill="#FFFFFF"/>
+    <image href="../images/kyobo-logo-cover.jpeg" x="1030" y="730" width="126" height="54" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+</svg>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="03_content_keymsg" data-pptx-layout-name="Content Key Message">
+  <!-- Kyobo — 03a Content · phases (key message, 3 chevron phases with task boxes) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-rule-green" x="0" y="101.5" width="317" height="7" fill="#4DB848" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-rule-navy" x="317" y="101.5" width="963" height="7" fill="#003975" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <image id="layout-logo" href="../images/kyobo-logo-body.jpeg" x="1100" y="20" width="150" height="63" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="49 18.67 800 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="60.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="start" fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="key-message-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="131 124.83 1017 56">
+    <text id="key-message-carrier" data-pptx-placeholder-carrier="true" x="640" y="164.5" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="middle" fill="#000000" font-weight="700">{{KEY_MESSAGE}}</text>
+  </g>
+
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="20" data-pptx-placeholder-bounds="1152 807.33 93 28">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1232" y="830.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="12.6" text-anchor="end" fill="#003975">{{PAGE_NUM}}</text>
+  </g>
+
+  <!-- sample composition (slide-local): phase label, chevron, task box -->
+  <text x="84" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" fill="#000000">[Phase 1] 2000~2000</text>
+  <path d="M 78 287 L 431.5 287 L 459 319.08 L 431.5 351.17 L 78 351.17Z" fill="#D9D9D9"/>
+  <text x="254.75" y="330.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <rect x="74" y="372.17" width="361" height="359.33" fill="#FFFFFF" stroke="#444462" stroke-width="1" stroke-dasharray="1 3"/>
+  <text x="90" y="427" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="90" y="464.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="90" y="499.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="90" y="536.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="90" y="571.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="90" y="609" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="481" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" fill="#000000">[Phase 2] 2000~2000</text>
+  <path d="M 475 287 L 879.5 287 L 907 319.08 L 879.5 351.17 L 475 351.17Z" fill="#003975"/>
+  <text x="677.25" y="330.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#FFFFFF">XXXX</text>
+  <rect x="475" y="372.17" width="420" height="359.33" fill="#FFFFFF" stroke="#003975" stroke-width="1.33" stroke-dasharray="6 3"/>
+  <text x="491" y="427" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="491" y="464.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="491" y="499.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="491" y="536.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="491" y="571.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="491" y="609" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="939" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" fill="#000000">[Phase 3] 2000~2000</text>
+  <path d="M 933 287 L 1206.5 287 L 1234 319.08 L 1206.5 351.17 L 933 351.17Z" fill="#D9D9D9"/>
+  <text x="1069.75" y="330.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <rect x="935" y="372.17" width="266" height="359.33" fill="#FFFFFF" stroke="#444462" stroke-width="1" stroke-dasharray="1 3"/>
+  <text x="951" y="427" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="951" y="464.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="951" y="499.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="951" y="536.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+  <text x="951" y="571.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#000000">○ 세부과제</text>
+  <text x="951" y="609" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" fill="#444462">-</text>
+</svg>

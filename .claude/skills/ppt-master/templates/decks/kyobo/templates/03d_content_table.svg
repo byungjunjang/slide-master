@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="03_content_keymsg" data-pptx-layout-name="Content Key Message">
+  <!-- Kyobo — 03d Content · data table (navy header band, label column, hairline rows) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-rule-green" x="0" y="101.5" width="317" height="7" fill="#4DB848" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-rule-navy" x="317" y="101.5" width="963" height="7" fill="#003975" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <image id="layout-logo" href="../images/kyobo-logo-body.jpeg" x="1100" y="20" width="150" height="63" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="49 18.67 800 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="60.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="start" fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="key-message-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="131 124.83 1017 56">
+    <text id="key-message-carrier" data-pptx-placeholder-carrier="true" x="640" y="164.5" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="middle" fill="#000000" font-weight="700">{{KEY_MESSAGE}}</text>
+  </g>
+
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="20" data-pptx-placeholder-bounds="1152 807.33 93 28">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1232" y="830.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="12.6" text-anchor="end" fill="#003975">{{PAGE_NUM}}</text>
+  </g>
+
+  <!-- sample composition (slide-local) -->
+  <rect x="75" y="233.33" width="1130" height="51.33" fill="#003975"/>
+  <text x="185.0" y="267.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#FFFFFF">구분</text>
+  <text x="447.5" y="267.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#FFFFFF">항목 A</text>
+  <text x="752.5" y="267.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#FFFFFF">항목 B</text>
+  <text x="1055.0" y="267.17" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#FFFFFF">증감</text>
+  <rect x="75" y="284.67" width="220" height="77" fill="#F2F2F2"/>
+  <text x="185" y="331.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <text x="447.5" y="331.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="752.5" y="331.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="1055.0" y="331.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <line x1="75" y1="361.67" x2="1205" y2="361.67" stroke="#E8EBED" stroke-width="1"/>
+  <rect x="75" y="361.67" width="220" height="77" fill="#F2F2F2"/>
+  <text x="185" y="408.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <text x="447.5" y="408.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="752.5" y="408.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="1055.0" y="408.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <line x1="75" y1="438.67" x2="1205" y2="438.67" stroke="#E8EBED" stroke-width="1"/>
+  <rect x="75" y="438.67" width="220" height="77" fill="#F2F2F2"/>
+  <text x="185" y="485.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <text x="447.5" y="485.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="752.5" y="485.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="1055.0" y="485.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <line x1="75" y1="515.67" x2="1205" y2="515.67" stroke="#E8EBED" stroke-width="1"/>
+  <rect x="75" y="515.67" width="220" height="77" fill="#F2F2F2"/>
+  <text x="185" y="562.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <text x="447.5" y="562.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="752.5" y="562.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="1055.0" y="562.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <line x1="75" y1="592.67" x2="1205" y2="592.67" stroke="#E8EBED" stroke-width="1"/>
+  <rect x="75" y="592.67" width="220" height="77" fill="#F2F2F2"/>
+  <text x="185" y="639.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#000000">XXXX</text>
+  <text x="447.5" y="639.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="752.5" y="639.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <text x="1055.0" y="639.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="middle" fill="#000000">XXX</text>
+  <line x1="75" y1="669.67" x2="1205" y2="669.67" stroke="#E8EBED" stroke-width="1"/>
+  <text x="75" y="774.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="13.33" text-anchor="start" fill="#444462">* 단위/출처: XXXX</text>
+</svg>

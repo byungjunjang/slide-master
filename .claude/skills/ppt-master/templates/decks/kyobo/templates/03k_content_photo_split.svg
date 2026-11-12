@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="03_content_keymsg" data-pptx-layout-name="Content Key Message">
+  <!-- Kyobo — 03k Content · photo split (left image panel + numbered points) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-rule-green" x="0" y="101.5" width="317" height="7" fill="#4DB848" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-rule-navy" x="317" y="101.5" width="963" height="7" fill="#003975" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <image id="layout-logo" href="../images/kyobo-logo-body.jpeg" x="1100" y="20" width="150" height="63" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="49 18.67 800 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="60.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="start" fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+  <g id="key-message-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="131 124.83 1017 56">
+    <text id="key-message-carrier" data-pptx-placeholder-carrier="true" x="640" y="164.5" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="middle" fill="#000000" font-weight="700">{{KEY_MESSAGE}}</text>
+  </g>
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="20" data-pptx-placeholder-bounds="1152 807.33 93 28">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1232" y="830.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="12.6" text-anchor="end" fill="#003975">{{PAGE_NUM}}</text>
+  </g>
+
+  <!-- sample composition (slide-local) -->
+  <g id="photo-panel">
+    <rect x="75" y="222" width="470" height="540" fill="#CBD9EA"/>
+    <text x="310" y="500" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" text-anchor="middle" fill="#444462">이미지 영역 (세로 470×540)</text>
+    <rect x="75" y="712" width="260" height="50" fill="#003975"/>
+    <text x="95" y="745" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#FFFFFF">사진 캡션</text>
+  </g>
+  <g id="point-1">
+    <circle cx="617" cy="272" r="24" fill="#003975"/>
+    <text x="617" y="281" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#FFFFFF">1</text>
+    <text x="662" y="268" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#000000">핵심 포인트 제목</text>
+    <text x="662" y="304" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#444462">보조 설명을 한두 줄로 적습니다</text>
+    <line x1="593" y1="340" x2="1205" y2="340" stroke="#E8EBED" stroke-width="1"/>
+  </g>
+  <g id="point-2">
+    <circle cx="617" cy="412" r="24" fill="#003975"/>
+    <text x="617" y="421" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#FFFFFF">2</text>
+    <text x="662" y="408" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#000000">핵심 포인트 제목</text>
+    <text x="662" y="444" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#444462">보조 설명을 한두 줄로 적습니다</text>
+    <line x1="593" y1="480" x2="1205" y2="480" stroke="#E8EBED" stroke-width="1"/>
+  </g>
+  <g id="point-3">
+    <circle cx="617" cy="552" r="24" fill="#003975"/>
+    <text x="617" y="561" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#FFFFFF">3</text>
+    <text x="662" y="548" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#000000">핵심 포인트 제목</text>
+    <text x="662" y="584" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" fill="#444462">보조 설명을 한두 줄로 적습니다</text>
+  </g>
+  <g id="point-note">
+    <rect x="593" y="656" width="612" height="106" fill="#E6EEF7"/>
+    <rect x="593" y="656" width="8" height="106" fill="#4DB848"/>
+    <text x="625" y="716" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="24" font-weight="700" fill="#003975">핵심 시사점을 한 줄로 요약</text>
+  </g>
+</svg>

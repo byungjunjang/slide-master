@@ -185,6 +185,15 @@ CANVAS_FORMATS = {
         'aspect_ratio': '4:3',
         'use_case': 'Traditional projectors'
     },
+    'ppt_kyobo': {
+        'name': 'Kyobo PPT 29.016×19.05cm',
+        'dimensions': '1280×840',
+        'viewbox': '0 0 1280 840',
+        'width': 1280,
+        'height': 840,
+        'aspect_ratio': '32:21',
+        'use_case': 'Kyobo PPT form (29.016cm x 19.05cm), fixed by the kyobo deck template'
+    },
     'instagram': {
         'name': 'Instagram Card News',
         'dimensions': '1080×1350',
