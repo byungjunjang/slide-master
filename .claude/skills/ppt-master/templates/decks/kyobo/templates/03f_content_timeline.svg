@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="03_content_keymsg" data-pptx-layout-name="Content Key Message">
+  <!-- Kyobo — 03f Content · timeline / roadmap (milestone line, node dots, dotted task boxes) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+
+  <rect id="layout-rule-green" x="0" y="101.5" width="317" height="7" fill="#4DB848" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <rect id="layout-rule-navy" x="317" y="101.5" width="963" height="7" fill="#003975" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <image id="layout-logo" href="../images/kyobo-logo-body.jpeg" x="1100" y="20" width="150" height="63" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="49 18.67 800 56">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="56" y="60.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="start" fill="#000000">{{PAGE_TITLE}}</text>
+  </g>
+
+  <g id="key-message-slot" data-pptx-placeholder="subtitle" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="131 124.83 1017 56">
+    <text id="key-message-carrier" data-pptx-placeholder-carrier="true" x="640" y="164.5" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="32" text-anchor="middle" fill="#000000" font-weight="700">{{KEY_MESSAGE}}</text>
+  </g>
+
+  <g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-placeholder-idx="20" data-pptx-placeholder-bounds="1152 807.33 93 28">
+    <text id="page-number-carrier" data-pptx-placeholder-carrier="true" x="1232" y="830.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="12.6" text-anchor="end" fill="#003975">{{PAGE_NUM}}</text>
+  </g>
+
+  <!-- sample composition (slide-local) -->
+  <line x1="75" y1="315" x2="1205" y2="315" stroke="#D9D9D9" stroke-width="4"/>
+  <circle cx="140" cy="315" r="11" fill="#FFFFFF" stroke="#003975" stroke-width="2.67"/>
+  <text x="140" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" text-anchor="middle" fill="#000000">2000.00</text>
+  <text x="140" y="364" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">마일스톤</text>
+  <rect x="30" y="396.67" width="220" height="303.33" fill="#FFFFFF" stroke="#444462" stroke-width="1" stroke-dasharray="1 3"/>
+  <text x="44" y="438.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="44" y="476" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="44" y="511" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="44" y="548.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="44" y="583.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="44" y="620.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <circle cx="390" cy="315" r="11" fill="#003975" stroke="#003975" stroke-width="2.67"/>
+  <text x="390" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" text-anchor="middle" fill="#000000">2000.00</text>
+  <text x="390" y="364" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">마일스톤</text>
+  <rect x="280" y="396.67" width="220" height="303.33" fill="#FFFFFF" stroke="#003975" stroke-width="1" stroke-dasharray="6 3"/>
+  <text x="294" y="438.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="294" y="476" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="294" y="511" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="294" y="548.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="294" y="583.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="294" y="620.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <circle cx="640" cy="315" r="11" fill="#FFFFFF" stroke="#003975" stroke-width="2.67"/>
+  <text x="640" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" text-anchor="middle" fill="#000000">2000.00</text>
+  <text x="640" y="364" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">마일스톤</text>
+  <rect x="530" y="396.67" width="220" height="303.33" fill="#FFFFFF" stroke="#444462" stroke-width="1" stroke-dasharray="1 3"/>
+  <text x="544" y="438.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="544" y="476" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="544" y="511" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="544" y="548.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="544" y="583.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="544" y="620.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <circle cx="890" cy="315" r="11" fill="#FFFFFF" stroke="#003975" stroke-width="2.67"/>
+  <text x="890" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" text-anchor="middle" fill="#000000">2000.00</text>
+  <text x="890" y="364" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">마일스톤</text>
+  <rect x="780" y="396.67" width="220" height="303.33" fill="#FFFFFF" stroke="#444462" stroke-width="1" stroke-dasharray="1 3"/>
+  <text x="794" y="438.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="794" y="476" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="794" y="511" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="794" y="548.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="794" y="583.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="794" y="620.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <circle cx="1140" cy="315" r="11" fill="#FFFFFF" stroke="#003975" stroke-width="2.67"/>
+  <text x="1140" y="275.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18.67" font-weight="700" text-anchor="middle" fill="#000000">2000.00</text>
+  <text x="1140" y="364" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="21.33" font-weight="700" text-anchor="middle" fill="#000000">마일스톤</text>
+  <rect x="1030" y="396.67" width="220" height="303.33" fill="#FFFFFF" stroke="#444462" stroke-width="1" stroke-dasharray="1 3"/>
+  <text x="1044" y="438.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="1044" y="476" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="1044" y="511" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="1044" y="548.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+  <text x="1044" y="583.33" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#000000">○ 세부과제</text>
+  <text x="1044" y="620.67" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" text-anchor="start" fill="#444462">-</text>
+</svg>

@@ -716,6 +716,7 @@ def _template_catalog_entries() -> list[dict]:
             'label': deck_id,
             'desc': info.get('summary', ''),
             'canvas_format': info.get('canvas_format', ''),
+            'canvas_locked': bool(info.get('canvas_locked', False)),
             'page_count': info.get('page_count'),
             'primary_color': info.get('primary_color', ''),
             'defaults': defaults,

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="840" viewBox="0 0 1280 840" data-pptx-master="kyobo-master" data-pptx-master-name="Kyobo" data-pptx-layout="02_chapter" data-pptx-layout-name="Chapter">
+  <!-- Kyobo — 02 Chapter (authored extension: same wave motif, number + title, no source slide) -->
+
+  <rect id="master-bg" width="1280" height="840" fill="#FFFFFF" data-pptx-layer="master" data-pptx-editable="false"/>
+  <path id="layout-chapter-wave-green" d="M 0 471.33 C 6.7 475.07 26.7 486.27 40 494.08 C 53.3 501.9 66.7 510.53 80 518.58 C 93.3 526.63 106.7 535.15 120 542.5 C 133.3 549.85 146.7 556.62 160 562.92 C 173.3 569.22 186.7 575.05 200 580.42 C 213.3 585.78 226.7 590.57 240 595 C 253.3 599.43 266.7 603.17 280 606.67 C 293.3 610.17 306.7 613.43 320 616 C 333.3 618.57 346.7 620.2 360 621.83 C 373.3 623.47 387.3 624.98 400 625.92 C 412.7 626.85 430.0 627.08 436 627.32" fill="none" stroke="#4CB848" stroke-width="18" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <path id="layout-chapter-wave-navy" d="M 436 627.32 C 443.3 626.97 466.0 626.38 480 625.33 C 494.0 624.28 506.7 623 520 621.25 C 533.3 619.5 546.7 617.4 560 614.83 C 573.3 612.27 586.7 609 600 605.5 C 613.3 602 626.7 598.27 640 593.83 C 653.3 589.4 666.7 584.5 680 579.25 C 693.3 574 706.7 568.4 720 562.33 C 733.3 556.27 746.7 549.62 760 542.5 C 773.3 535.38 786.7 527.57 800 519.75 C 813.3 511.93 826.7 504 840 495.25 C 853.3 486.5 866.7 476.35 880 467.25 C 893.3 458.15 906.7 448.7 920 440.42 C 933.3 432.13 946.7 424.67 960 417.67 C 973.3 410.67 986.7 404.48 1000 398.42 C 1013.3 392.35 1026.7 386.4 1040 381.5 C 1053.3 376.6 1066.7 372.4 1080 368.67 C 1093.3 364.93 1106.7 361.43 1120 358.75 C 1133.3 356.07 1146.7 353.85 1160 352.33 C 1173.3 350.82 1186.7 349.77 1200 349.42 C 1213.3 349.07 1226.7 349.65 1240 350.58 C 1253.3 351.52 1273.3 354.43 1280 355.25" fill="none" stroke="#1E3B71" stroke-width="18" data-pptx-layer="layout" data-pptx-editable="false"/>
+
+  <g id="chapter-num-slot" data-pptx-placeholder="body" data-pptx-placeholder-idx="2" data-pptx-placeholder-bounds="128 221.67 400 105">
+    <text id="chapter-num-carrier" data-pptx-placeholder-carrier="true" x="136" y="305.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="72" text-anchor="start" fill="#4DB848">{{CHAPTER_NUM}}</text>
+  </g>
+
+  <g id="title-slot" data-pptx-placeholder="title" data-pptx-placeholder-bounds="128 338.33 900 81.67">
+    <text id="title-carrier" data-pptx-placeholder-carrier="true" x="136" y="396.67" font-family="'Pretendard ExtraBold', Pretendard, 'Malgun Gothic', sans-serif" font-size="48" text-anchor="start" fill="#002060">{{CHAPTER_TITLE}}</text>
+  </g>
+</svg>

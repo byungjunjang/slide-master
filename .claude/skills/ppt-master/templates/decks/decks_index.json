@@ -21,6 +21,13 @@
       "delivery_purpose": "balanced"
     }
   },
+  "kyobo": {
+    "summary": "교보문고 PPT 양식(29.016×19.05cm 고정) — 사내 업무 보고, 과제 추진 현황, 전략·실행 계획, 팀 정기 보고. 네이비·그린 톤 유지, 이미지·카드·지표·프로세스·매트릭스·허브·갤러리 등 26종 레이아웃",
+    "canvas_format": "ppt_kyobo",
+    "canvas_locked": true,
+    "page_count": 26,
+    "primary_color": "#003975"
+  },
   "mckinsey": {
     "summary": "McKinsey consulting-style strategy decks — 전략 보고서, 시장/산업 분석, 경영진 브리핑, 실행 로드맵",
     "canvas_format": "ppt169",

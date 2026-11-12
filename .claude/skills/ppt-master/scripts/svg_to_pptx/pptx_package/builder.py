@@ -4830,6 +4830,11 @@ def create_pptx_with_native_svg(
             raise RuntimeError(
                 f'PPTX animation package validation failed: {exc}'
             ) from exc
+        # Fixed physical slide sizes (e.g. Kyobo 29.016 x 19.05 cm): rescale the
+        # validated package so it opens at the exact size.
+        from .physical_size import rescale_to_physical_size
+        if rescale_to_physical_size(temp_output_path, width_emu, height_emu) and verbose:
+            print("  Physical size: rescaled to the canvas's fixed slide size")
         shutil.move(str(temp_output_path), str(output_path))
         permission_warnings = _relax_output_permissions(output_path)
 

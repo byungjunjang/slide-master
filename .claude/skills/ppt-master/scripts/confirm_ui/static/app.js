@@ -1147,10 +1147,30 @@
     // ---- section renderers ----------------------------------------------
     function renderCanvas(host) {
         var sec = section(1, "sec_canvas");
+        // A deck template that fixes its canvas (e.g. kyobo = 29.016cm x 19.05cm)
+        // locks this field: show it read-only and force the value.
+        var lockEntry = (STATE.template && STATE.template !== "free") ? templateEntry(STATE.template) : null;
+        if (lockEntry && lockEntry.canvas_locked && lockEntry.canvas_format) {
+            STATE.canvas = lockEntry.canvas_format;
+            var lockOpt = null;
+            (CAT.canvas || []).forEach(function (o) { if (o.id === lockEntry.canvas_format) lockOpt = o; });
+            var lockLabel = lockOpt ? optionLabel(lockOpt) + (lockOpt.dim ? " · " + lockOpt.dim : "") : lockEntry.canvas_format;
+            var lockWrap = el("div", "chips");
+            var lockChip = el("div", "chip selected");
+            lockChip.appendChild(el("span", "chip-text", lockLabel + " — " + lockEntry.id + " 템플릿 고정 / fixed by template"));
+            lockWrap.appendChild(lockChip);
+            sec.appendChild(lockWrap);
+            host.appendChild(sec);
+            return;
+        }
         enumField(sec, CAT.canvas, recOrFirst("canvas", CAT.canvas),
             function () { return STATE.canvas; },
             function (v) {
                 STATE.canvas = v;
+                // Custom canvas (sentinel or typed text): keep the page as-is so the
+                // Custom chip stays selected and the text box keeps focus while typing.
+                var knownCanvas = (CAT.canvas || []).some(function (o) { return o.id === v; });
+                if (!knownCanvas) return;
                 if (!STATE.typography) STATE.typography = { name: "", heading: {}, body: {} };
                 // Canvas changes dimensions only — never silently rewrite font sizes
                 // the user can see / edit. The size hint re-renders with the new
@@ -1159,7 +1179,7 @@
                     STATE.typography.body_size = defaultBodySizeForCanvas(v, STATE.delivery_purpose);
                 }
                 renderAll();
-            }, { allowCustom: true });
+            }, { allowCustom: true, customSentinel: "custom", customInvalidValues: ["custom"] });
         host.appendChild(sec);
     }
 
@@ -1447,7 +1467,7 @@
         (CAT.canvas || []).forEach(function (o) { if (o.id === canvasVal) dim = o.dim; });
         var raw = String(dim || canvasVal || "");
         var id = String(canvasVal || "").toLowerCase();
-        var isPpt = id === "ppt169" || id === "ppt43" ||
+        var isPpt = id === "ppt169" || id === "ppt43" || id === "ppt_kyobo" ||
             /1280\s*[×xX*]\s*720/.test(raw) ||
             /1024\s*[×xX*]\s*768/.test(raw);
         return isPpt ? { lo: 0.031, hi: 0.047 } : { lo: 0.025, hi: 0.033 };
@@ -1460,7 +1480,7 @@
         (CAT.canvas || []).forEach(function (o) { if (o.id === canvasVal) dim = o.dim; });
         var raw = String(dim || canvasVal || "");
         var id = String(canvasVal || "").toLowerCase();
-        return id === "ppt169" || id === "ppt43" ||
+        return id === "ppt169" || id === "ppt43" || id === "ppt_kyobo" ||
             /1280\s*[×xX*]\s*720/.test(raw) ||
             /1024\s*[×xX*]\s*768/.test(raw);
     }
