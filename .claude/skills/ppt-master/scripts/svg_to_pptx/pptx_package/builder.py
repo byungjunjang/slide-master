@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import io
 import json
 import math
 import mimetypes
@@ -4173,6 +4175,10 @@ def create_pptx_with_native_svg(
             expected_animation_targets: list[tuple[int, int, str, float]] = []
             expected_animation_duration = animation_duration
             expected_animation_trigger = normalize_animation_trigger(animation_trigger)
+            # Conversion prints before this slide's "[i/N]" line exists; buffer
+            # it and print it after that line so it is not read as the
+            # previous slide's output.
+            slide_log = io.StringIO()
 
             try:
                 # ---- Native shapes mode ----
@@ -4223,31 +4229,32 @@ def create_pptx_with_native_svg(
                         if not animation_hard_disabled
                         else frozenset()
                     )
-                    (
-                        slide_xml,
-                        media_files_dict,
-                        rel_entries,
-                        anim_targets,
-                        package_files_dict,
-                        content_type_overrides,
-                    ) = (
-                        convert_svg_to_slide_shapes(
-                            svg_path, slide_num=slide_num, verbose=verbose,
-                            merge_paragraphs=merge_paragraphs,
-                            image_optimize=image_optimize,
-                            image_max_dimension=image_max_dimension,
-                            image_sizing=image_sizing,
-                            image_scale=image_scale,
-                            image_quality=image_quality,
-                            native_objects=native_objects,
-                            animation_group_overrides=explicit_animation_groups,
-                            theme_font_spec=active_theme_font_spec,
-                            theme_color_spec=active_theme_color_spec,
-                            trace_out=conversion_trace
-                            if conversion_trace is not None
-                            else structure_trace,
+                    with contextlib.redirect_stdout(slide_log):
+                        (
+                            slide_xml,
+                            media_files_dict,
+                            rel_entries,
+                            anim_targets,
+                            package_files_dict,
+                            content_type_overrides,
+                        ) = (
+                            convert_svg_to_slide_shapes(
+                                svg_path, slide_num=slide_num, verbose=verbose,
+                                merge_paragraphs=merge_paragraphs,
+                                image_optimize=image_optimize,
+                                image_max_dimension=image_max_dimension,
+                                image_sizing=image_sizing,
+                                image_scale=image_scale,
+                                image_quality=image_quality,
+                                native_objects=native_objects,
+                                animation_group_overrides=explicit_animation_groups,
+                                theme_font_spec=active_theme_font_spec,
+                                theme_color_spec=active_theme_color_spec,
+                                trace_out=conversion_trace
+                                if conversion_trace is not None
+                                else structure_trace,
+                            )
                         )
-                    )
                     # Order matters: OOXML schema requires <p:transition>
                     # to precede <p:timing> inside <p:sld>. Both use the same
                     # </p:sld> string-replace anchor, so transition must be
@@ -4581,12 +4588,14 @@ def create_pptx_with_native_svg(
                     notes_str = " +notes" if has_notes else ""
                     narration_str = " +narration" if slide_num in narration_slides_created else ""
                     print(f"  [{i}/{len(svg_files)}] {svg_path.name}{mode_str}{notes_str}{narration_str}")
+                print(slide_log.getvalue(), end='')
 
                 success_count += 1
 
             except Exception as e:
                 if verbose:
                     print(f"  [{i}/{len(svg_files)}] {svg_path.name} - Error: {e}")
+                print(slide_log.getvalue(), end='')
                 if use_native_shapes:
                     raise
 

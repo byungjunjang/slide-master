@@ -97,10 +97,21 @@ Every connector-family preset requires `--object-kind connector`, `--fill none`,
 and a visible stroke. It exports as an unconnected `p:cxnSp`; a connector
 preset can never be authored as an ordinary `shape`.
 
-**Hard rule — stdout-only exception**: the helper prints one deterministic
-`<g>` fragment. Read that output and insert it through a normal hand edit of
+For several presets on the current page, write each object's `render`
+parameters (keys = flag names) into one JSON list and run one call. The output
+equals the single calls in list order; one invalid entry stops the call before
+any fragment prints.
+
+```bash
+python3 ${SKILL_DIR}/scripts/preset_shape_svg.py --batch <page_shapes.json>
+# [{"preset": "chevron", "id": "p12-phase-1", "frame": [44, 150, 376, 52],
+#   "fill": "#0F2A4A", "adjust": ["adj=val 30000"]}, ...]
+```
+
+**Hard rule — stdout-only exception**: the helper prints deterministic `<g>`
+fragments, one per object. Read that output and insert it through a normal hand edit of
 the page file (Edit / `apply_patch`, whichever the host provides). Do not redirect it into `svg_output/`, loop over pages,
-batch shapes, or let it choose layout. The main Agent still authors every
+batch shapes from more than one page, or let it choose layout. The main Agent still authors every
 complete SVG page sequentially.
 
 ---

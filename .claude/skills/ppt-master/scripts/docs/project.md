@@ -11,11 +11,16 @@ Main entry point for project setup and validation.
 ```bash
 python3 scripts/project_manager.py init <project_name> --format ppt169
 python3 scripts/project_manager.py import-sources <project_path> <source1_or_dir> [<source2_or_dir> ...]
+python3 scripts/project_manager.py install-deck <project_path> <deck_id>
 python3 scripts/project_manager.py validate <project_path>
 python3 scripts/project_manager.py info <project_path>
 ```
 
 Notes:
+- `install-deck` installs a library deck (`templates/decks/<deck_id>/`) for the
+  SKILL.md Step 3 deferred install: it rejects destination collisions, runs
+  `svg_quality_checker.py --template-mode` on the deck, then copies
+  `templates/` plus any `images/` / `icons/`. Non-zero exit = nothing copied.
 - Files outside the repo are copied into `sources/` by default
 - With `--move`, files outside the repo are moved into `sources/`
 - Directory inputs are expanded non-recursively. After Step 1 conversion,

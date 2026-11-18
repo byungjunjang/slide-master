@@ -100,6 +100,8 @@ For each page in the Step 1 list:
 
 6. **Scale-aware comparison.** Compare calculator output against the SVG's existing coordinates. Before declaring a mismatch, verify that every calculator invocation used the same axis range, plot area, center/radius, start angle, or size scale that the SVG visually declares. For `calc bar`, the output header must show `Value scale: axis ticks (...)` when the SVG has explicit ticks; if it shows `auto (max*1.1)`, go back to step 4 and re-run with the correct `--value-range`. **Do NOT update the SVG with mismatched-scale output.** Only update SVG attributes when the scale is confirmed to match and coordinates genuinely differ. Update by hand (do NOT use regex / bulk replacement — coordinates are positional and easy to swap incorrectly).
 
+   **Category axis is layout — compare the value axis only (non-blocking).** Calculator output on a categorical axis comes from its own spacing model (`calc bar` spaces bars `0.3 × --bar-width` apart, centered in `--area`; category indexes in `calc line` become even bands), not from data. Compare only value-axis geometry: vertical bars `Y` / `Height`, horizontal bars `X` / `Width`, and the value coordinate of category-indexed points (Pareto, dumbbell). Never count a category-axis difference (category position, group offset, bar thickness) as a mismatch, and never rewrite it from calc output.
+
 After updating any page, re-run the quality checker on the project to confirm nothing broke:
 
 ```bash
@@ -112,7 +114,7 @@ python3 .claude/skills/ppt-master/scripts/svg_quality_checker.py <project_path>
 
 `stacked_bar_chart` and `stacked_area_chart` are not single-call but reduce cleanly to repeated calls on existing primitives. The operator already had to compute cumulative values to draw the SVG — verify-charts reuses them.
 
-**Stacked bar** — for N stacked series on the same x categories, run `calc bar` N times. Pass each segment's **height** as the data value, and shift `--area`'s `y_max` down by the sum of all lower segments for that category. Compare each segment's `(x, y, width, height)` against the SVG.
+**Stacked bar** — for N stacked series on the same x categories, run `calc bar` N times. Pass each segment's **height** as the data value, and shift `--area`'s `y_max` down by the sum of all lower segments for that category. Compare each segment's value-axis `(y, height)` against the SVG (category `x` / `width` are layout, Step 2 item 6).
 
 ```bash
 # Example: two-series stack at category "Q1" with bottom=30, top=20, plot area y from 100 to 500
@@ -184,8 +186,8 @@ python3 .claude/skills/ppt-master/scripts/svg_position_calculator.py calc line \
 **Grouped bar chart** — N series sharing the same x categories, side-by-side instead of stacked:
 
 1. Read the value-axis range and the plot area.
-2. Compute the inner-group spacing: if there are `N` series and the visual group spans width `W` per category, each series-bar's width is `W/N` and its x offset within the group is `(i - 1) × W/N`. Read these from the SVG (the first category's bars give you both).
-3. Run `calc bar` once per series with the **same** `--area` and `--value-range` but with each call's `--bar-width` set to the inner width. The calc's per-category center X gives the **group** center; each series-bar's actual `x = group_center - W/2 + (i-1) × W/N`. Compare against the SVG.
+2. Run `calc bar` once per series with the **same** `--area` and `--value-range`. Compare each series-bar's value-axis `(y, height)` against the SVG (`--horizontal`: `(x, width)`).
+3. Group centers, inner offsets, and bar widths are category layout — do not compare them (Step 2 item 6).
 
 **Box plot chart** — Q1/Q3 box + median line + whiskers. All five quantities are y-values on the same axis:
 
@@ -203,7 +205,7 @@ python3 .claude/skills/ppt-master/scripts/svg_position_calculator.py calc line \
 
 1. Read the y-axis tick range and the plot area; compute running totals in category order (start with `cum[0] = base_value`, then `cum[i] = cum[i-1] + delta[i]` for increase, `cum[i-1] - delta[i]` for decrease, reset to delta for totals).
 2. Build two virtual series: `top[i] = max(cum_before, cum_after)`, `bot[i] = min(cum_before, cum_after)`. Run `calc bar` twice on these with identical `--area`, `--bar-width`, `--value-range`. The `top` run's `Y` is the bar's `y`; `height = bot.Y - top.Y` for that index.
-3. Compare each waterfall rect's `(x, y, width, height)` against the calculated pair. Connector lines should run from `(x + width, top_or_bot[i].Y)` to `(x_next, top_or_bot[i+1].Y)` at the matching shared cumulative value.
+3. Compare each waterfall rect's value-axis `(y, height)` against the calculated pair (category `x` / `width` are layout, Step 2 item 6). Connector lines should run from `(x + width, top_or_bot[i].Y)` to `(x_next, top_or_bot[i+1].Y)` at the matching shared cumulative value.
 4. Total bars (full-height start/end) use `bot = 0` and the calc reduces to the standard `calc bar` recipe.
 
 **Bubble chart / quadrant bubble scatter** — partial calculator support:
