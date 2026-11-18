@@ -80,7 +80,25 @@
             nav_next: "Next slide (→)",
             nav_last: "Last slide (End)",
             nav_counter: "{current} / {total}",
-            nav_empty: "— / —"
+            nav_empty: "— / —",
+            label_page: "Page",
+            label_versions: "Saved versions of this page",
+            btn_page_up: "Move up",
+            btn_page_down: "Move down",
+            btn_page_delete: "Delete page",
+            btn_page_keep: "Keep page",
+            btn_page_reset: "Reset page changes",
+            btn_restore_version: "Restore",
+            version_current: "current",
+            status_planned: "planned",
+            status_stale: "re-adjust",
+            status_writing: "writing",
+            pending_page_plan: "Page order staged ({deleted} page(s) to delete). Apply changes renumbers the files.",
+            modal_confirm_restore: "Restore {page} to the version saved at {when}?\n\nThe current content stays in the version list.",
+            modal_success_restore: "Version restored.",
+            modal_pages_applied: "\n\nPages renumbered: {renamed}; deleted: {deleted} (kept under backup/pages/).",
+            err_pages: "Page change failed: ",
+            err_versions: "Version action failed: "
         },
         ja: {
             page_title: "PPT Master - ライブプレビュー",
@@ -230,7 +248,25 @@
             nav_next: "다음 슬라이드 (→)",
             nav_last: "마지막 슬라이드 (End)",
             nav_counter: "{current} / {total}",
-            nav_empty: "— / —"
+            nav_empty: "— / —",
+            label_page: "페이지",
+            label_versions: "이 페이지의 저장된 버전",
+            btn_page_up: "위로",
+            btn_page_down: "아래로",
+            btn_page_delete: "페이지 삭제",
+            btn_page_keep: "삭제 취소",
+            btn_page_reset: "페이지 변경 취소",
+            btn_restore_version: "복원",
+            version_current: "현재",
+            status_planned: "예정",
+            status_stale: "재조정 필요",
+            status_writing: "작성 중",
+            pending_page_plan: "페이지 순서 변경 대기 중 (삭제 {deleted}쪽). 변경 적용 때 파일 번호를 다시 매깁니다.",
+            modal_confirm_restore: "{page}를 {when}에 저장된 버전으로 되돌릴까요?\n\n지금 내용은 버전 목록에 남습니다.",
+            modal_success_restore: "버전을 복원했습니다.",
+            modal_pages_applied: "\n\n번호를 다시 매긴 페이지 {renamed}쪽, 삭제한 페이지 {deleted}쪽 (backup/pages/에 보관).",
+            err_pages: "페이지 변경 실패: ",
+            err_versions: "버전 작업 실패: "
         },
         zh: {
             page_title: "PPT Master - 实时预览",
@@ -396,6 +432,12 @@
     var modalCancel       = document.getElementById("modal-cancel");
     var elementPropsEl    = document.getElementById("element-props");
     var pendingStatusEl   = document.getElementById("pending-status");
+    var btnPageUp         = document.getElementById("btn-page-up");
+    var btnPageDown       = document.getElementById("btn-page-down");
+    var btnPageDelete     = document.getElementById("btn-page-delete");
+    var btnPageReset      = document.getElementById("btn-page-reset");
+    var versionSelect     = document.getElementById("version-select");
+    var btnVersionRestore = document.getElementById("btn-version-restore");
 
     var navFirstBtn       = document.getElementById("nav-first");
     var navPrevBtn        = document.getElementById("nav-prev");
@@ -420,6 +462,12 @@
     var matrixEditSlides  = {};     // {name: true} when a staged edit wrote transform=matrix(...)
     var annotationsDirty  = false;  // unsaved annotations added/removed this session
     var annotationEditSlides = {};  // {name: true} when annotations changed this session
+    var pageOrder         = [];     // slide files on disk, in file-name order
+    var pagePlan          = null;   // staged page order (left-out pages get deleted), or null
+    var pagesLocked       = "";     // server's reason when page delete/reorder is refused
+    var RESIZE_CORNERS    = ["nw", "ne", "sw", "se"];
+    var resizeHandles     = {};     // {corner: handle div} shown for a single selection
+    var resizeState       = null;   // active corner drag
 
     function pendingDirectEditCount() {
         return Object.keys(editStackCount).reduce(function (total, name) {
@@ -455,7 +503,7 @@
         if (!pendingStatusEl) return;
         var edits = pendingDirectEditCount();
         var annotations = pendingAnnotationChangeCount();
-        if (edits === 0 && annotations === 0) {
+        if (edits === 0 && annotations === 0 && !pagePlan) {
             pendingStatusEl.className = "pending-status empty";
             pendingStatusEl.textContent = t("pending_none");
             return;
@@ -463,12 +511,15 @@
         var pages = pendingSlideNames();
         pendingStatusEl.className = "pending-status active";
         pendingStatusEl.innerHTML =
-            '<div>' + escapeHtml(t("pending_summary", {
+            (edits || annotations ? '<div>' + escapeHtml(t("pending_summary", {
                 edits: edits,
                 annotations: annotations,
-            })) + '</div>' +
+            })) + '</div>' : '') +
             (pages.length ? '<div class="pending-pages">' + escapeHtml(t("pending_pages", {
                 pages: pages.join(", "),
+            })) + '</div>' : '') +
+            (pagePlan ? '<div>' + escapeHtml(t("pending_page_plan", {
+                deleted: pageOrder.length - pagePlan.length,
             })) + '</div>' : '');
     }
 
@@ -513,7 +564,7 @@
     // still idle-timeout or be killed and drop them. Warn before the tab leaves
     // so the user remembers to apply (browsers show their own generic prompt).
     function hasUnsavedWork() {
-        if (annotationsDirty) return true;
+        if (annotationsDirty || pagePlan) return true;
         return Object.keys(editStackCount).some(function (k) {
             return editStackCount[k] > 0;
         });
@@ -570,9 +621,31 @@
             .then(function (data) {
                 slideListEl.innerHTML = "";
                 var slides = data.slides || [];
-                slideNames = slides.map(function (s) { return s.name; });
+                pageOrder = slides.map(function (s) { return s.name; });
+                pagePlan = data.page_plan || null;
+                pagesLocked = data.pages_locked || "";
+                // List order: a staged page plan (pages it drops trail, struck
+                // through), else files and design_spec §IX stubs by page number.
+                var byName = {};
+                slides.forEach(function (s) { byName[s.name] = s; });
+                var entries;
+                if (pagePlan) {
+                    entries = pagePlan.map(function (n) { return { slide: byName[n] }; })
+                        .concat(pageOrder.filter(function (n) {
+                            return pagePlan.indexOf(n) === -1;
+                        }).map(function (n) { return { slide: byName[n], deleting: true }; }));
+                } else {
+                    entries = slides.map(function (s) {
+                        return { slide: s, num: pageNumber(s.name) };
+                    }).concat((data.stubs || []).map(function (st) {
+                        return { stub: st, num: st.number };
+                    }));
+                    entries.sort(function (a, b) { return a.num - b.num; });
+                }
+                slideNames = entries.filter(function (e) { return e.slide; })
+                    .map(function (e) { return e.slide.name; });
 
-                if (slides.length === 0) {
+                if (entries.length === 0) {
                     var empty = document.createElement("div");
                     empty.className = "slide-list-empty";
                     empty.textContent = liveMode
@@ -588,12 +661,18 @@
                     }
                     updateNavLabel();
                     updatePendingStatus();
+                    updatePageTools();
                     return;
                 }
 
                 var currentExists = false;
                 var currentMtimeChanged = false;
-                slides.forEach(function (s) {
+                entries.forEach(function (entry) {
+                    if (entry.stub) {
+                        slideListEl.appendChild(renderStub(entry.stub));
+                        return;
+                    }
+                    var s = entry.slide;
                     if (s.name === currentSlide) {
                         currentExists = true;
                         // Compare against the mtime we recorded when we last rendered this slide.
@@ -609,7 +688,8 @@
                     }
 
                     var item = document.createElement("div");
-                    item.className = "slide-item" + (s.name === currentSlide ? " active" : "");
+                    item.className = "slide-item" + (s.name === currentSlide ? " active" : "") +
+                        (entry.deleting ? " pending-delete" : "");
                     if (s.ok === false) {
                         item.className += " slide-error";
                         item.title = t("slide_error_tooltip") + (s.error || "");
@@ -620,6 +700,15 @@
                     nameSpan.className = "slide-name";
                     nameSpan.textContent = s.name;
                     item.appendChild(nameSpan);
+
+                    var status = s.ok === false && liveMode ? "writing" : (s.stale ? "stale" : "");
+                    if (status) item.appendChild(statusChip(status));
+                    if (s.versions > 1) {
+                        var versions = document.createElement("span");
+                        versions.className = "slide-versions";
+                        versions.textContent = "v" + s.versions;
+                        item.appendChild(versions);
+                    }
 
                     if (s.annotation_count > 0) {
                         var badge = document.createElement("span");
@@ -634,13 +723,20 @@
                     slideListEl.appendChild(item);
                 });
 
-                if (!currentSlide || !currentExists) {
-                    selectSlide(slides[0].name);
+                if (slideNames.length === 0) {
+                    // Only §IX stubs so far: keep the live-preview placeholder.
+                    currentSlide = null;
+                    svgPlaceholder.style.display = "block";
+                    svgPlaceholder.textContent = t("placeholder_live_ready");
+                    svgContent.style.display = "none";
+                } else if (!currentSlide || !currentExists) {
+                    selectSlide(slideNames[0]);
                 } else if (currentMtimeChanged) {
                     showReloadBanner(currentSlide);
                 }
                 updateNavLabel();
                 updatePendingStatus();
+                updatePageTools();
             })
             .catch(function (err) {
                 console.error("loadSlides:", err);
@@ -662,6 +758,8 @@
         selectedElementIds.clear();
         slideAnnotations = {};
         updateNavLabel();
+        updatePageTools();
+        loadVersions(name);
 
         // Reset right panel and rubber band
         cancelRubberBand();
@@ -865,6 +963,7 @@
     function updateSelectionPanel() {
         var propsEl = elementPropsEl;
         var count = selectedElementIds.size;
+        updateResizeHandles();
 
         if (count === 0) {
             selectedElementEl.classList.add("empty");
@@ -1733,6 +1832,27 @@
             return;
         }
 
+        if (pendingModalAction === "restore") {
+            var restoreSlide = currentSlide;
+            modalConfirm.style.display = "none";
+            modalCancel.style.display = "none";
+            fetch("/api/slide/" + encodeURIComponent(restoreSlide) + "/restore", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ version: versionSelect.value })
+            })
+                .then(jsonOrThrow)
+                .then(function () {
+                    modalMessage.textContent = t("modal_success_restore");
+                    var item = slideListEl.querySelector('.slide-item[data-name="' + cssAttr(restoreSlide) + '"]');
+                    selectSlide(restoreSlide, item || undefined);
+                })
+                .catch(function (err) {
+                    modalMessage.textContent = t("err_versions") + err.message;
+                });
+            return;
+        }
+
         // Step 2: save annotations. Service lifetime is controlled only by Exit preview.
         var hadDirectEdits = pendingDirectEditCount() > 0;
         var hadAnnotationChanges = pendingAnnotationChangeCount() > 0;
@@ -1757,15 +1877,26 @@
                     } else {
                         modalMessage.textContent = t("modal_success_submit");
                     }
+                    var renamed = data.renamed || {};
+                    var deleted = data.deleted || [];
+                    if (Object.keys(renamed).length || deleted.length) {
+                        modalMessage.textContent += t("modal_pages_applied", {
+                            renamed: Object.keys(renamed).length,
+                            deleted: deleted.length,
+                        });
+                    }
                     editStackCount = {};
                     matrixEditSlides = {};
                     matrixHintShown = false;
                     savedHintShown = false;
                     annotationsDirty = false;
                     annotationEditSlides = {};
+                    pagePlan = null;
                     updateUndoButton();
                     updatePendingStatus();
-                    var activeSlide = currentSlide;
+                    var activeSlide = renamed[currentSlide] || currentSlide;
+                    if (deleted.indexOf(activeSlide) !== -1) activeSlide = null;
+                    currentSlide = activeSlide;
                     loadSlides().then(function () {
                         if (activeSlide) {
                             var item = slideListEl.querySelector('.slide-item[data-name="' + cssAttr(activeSlide) + '"]');
@@ -2246,6 +2377,7 @@
             var inp = panel.querySelector('.prop-edit-geo[data-geo="' + k + '"]');
             if (inp && document.activeElement !== inp) inp.value = vals[k];
         });
+        updateResizeHandles();
     }
 
     function normalizeHexForPicker(val) {
@@ -2980,6 +3112,243 @@
     }
 
     // ================================================================
+    //  Page list: §IX stubs, page order/delete, versions
+    // ================================================================
+    function pageNumber(name) {
+        var m = /^(\d+)/.exec(name);
+        return m ? parseInt(m[1], 10) : 1e9;
+    }
+
+    function statusChip(status) {
+        var chip = document.createElement("span");
+        chip.className = "slide-status " + status;
+        chip.textContent = t("status_" + status);
+        return chip;
+    }
+
+    function renderStub(stub) {
+        var item = document.createElement("div");
+        item.className = "slide-stub";
+        item.title = [stub.title || stub.label, stub.core, stub.chart].filter(Boolean).join("\n");
+        var num = "P" + (stub.number < 10 ? "0" : "") + stub.number;
+        item.innerHTML =
+            '<div class="stub-head"><span class="stub-num">' + escapeHtml(num) + '</span></div>' +
+            '<div class="stub-title">' + escapeHtml(stub.title || stub.label || "") + '</div>' +
+            (stub.core ? '<div class="stub-core">' + escapeHtml(stub.core) + '</div>' : '') +
+            (stub.chart ? '<div class="stub-chart">' + escapeHtml(stub.chart) + '</div>' : '');
+        item.firstChild.appendChild(statusChip("planned"));
+        return item;
+    }
+
+    function updatePageTools() {
+        if (!btnPageUp) return;
+        var order = pagePlan || pageOrder;
+        var onDisk = currentSlide && pageOrder.indexOf(currentSlide) !== -1;
+        var idx = onDisk ? order.indexOf(currentSlide) : -1;
+        var deleting = onDisk && idx === -1;
+        var locked = !!pagesLocked;
+        [btnPageUp, btnPageDown, btnPageDelete].forEach(function (btn) {
+            btn.title = pagesLocked;
+        });
+        btnPageUp.disabled = locked || idx <= 0;
+        btnPageDown.disabled = locked || idx === -1 || idx >= order.length - 1;
+        btnPageDelete.disabled = locked || !onDisk || (!deleting && order.length <= 1);
+        btnPageDelete.textContent = t(deleting ? "btn_page_keep" : "btn_page_delete");
+        btnPageReset.hidden = !pagePlan;
+    }
+
+    function stagePageOrder(order) {
+        return fetch("/api/pages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order: order })
+        })
+            .then(jsonOrThrow)
+            .then(function () { return loadSlides(); })
+            .catch(function (err) { showError(t("err_pages") + err.message); });
+    }
+
+    function movePage(delta) {
+        var order = (pagePlan || pageOrder).slice();
+        var i = order.indexOf(currentSlide);
+        var j = i + delta;
+        if (i < 0 || j < 0 || j >= order.length) return;
+        order[i] = order[j];
+        order[j] = currentSlide;
+        stagePageOrder(order);
+    }
+
+    function toggleDeletePage() {
+        var order = (pagePlan || pageOrder).slice();
+        var i = order.indexOf(currentSlide);
+        if (i !== -1) {
+            order.splice(i, 1);
+        } else {
+            // Keep: put the page back before the first later page on disk.
+            var pos = pageOrder.indexOf(currentSlide);
+            var at = order.findIndex(function (n) { return pageOrder.indexOf(n) > pos; });
+            order.splice(at === -1 ? order.length : at, 0, currentSlide);
+        }
+        stagePageOrder(order);
+    }
+
+    function formatVersion(id) {
+        // 20261118-214012-123456 -> 11-18 21:40:12
+        return id.slice(4, 6) + "-" + id.slice(6, 8) + " " +
+            id.slice(9, 11) + ":" + id.slice(11, 13) + ":" + id.slice(13, 15);
+    }
+
+    function updateRestoreButton() {
+        var opt = versionSelect.options[versionSelect.selectedIndex];
+        btnVersionRestore.disabled = !opt || opt.getAttribute("data-current") === "1";
+    }
+
+    function loadVersions(name) {
+        if (!versionSelect) return;
+        versionSelect.innerHTML = "";
+        updateRestoreButton();
+        fetch("/api/slide/" + encodeURIComponent(name) + "/versions")
+            .then(jsonOrThrow)
+            .then(function (data) {
+                if (name !== currentSlide) return;
+                versionSelect.innerHTML = "";
+                (data.versions || []).forEach(function (v) {
+                    var opt = document.createElement("option");
+                    opt.value = v.id;
+                    opt.textContent = formatVersion(v.id) +
+                        (v.current ? " · " + t("version_current") : "");
+                    if (v.current) {
+                        opt.setAttribute("data-current", "1");
+                        opt.selected = true;
+                    }
+                    versionSelect.appendChild(opt);
+                });
+                updateRestoreButton();
+            })
+            .catch(function (err) { console.error("loadVersions:", err); });
+    }
+
+    function initPageTools() {
+        if (!btnPageUp) return;
+        btnPageUp.addEventListener("click", function () { movePage(-1); });
+        btnPageDown.addEventListener("click", function () { movePage(1); });
+        btnPageDelete.addEventListener("click", toggleDeletePage);
+        btnPageReset.addEventListener("click", function () { stagePageOrder(null); });
+        versionSelect.addEventListener("change", updateRestoreButton);
+        btnVersionRestore.addEventListener("click", function () {
+            if (!currentSlide || !versionSelect.value) return;
+            pendingModalAction = "restore";
+            modalMessage.textContent = t("modal_confirm_restore", {
+                page: currentSlide,
+                when: formatVersion(versionSelect.value),
+            });
+            modalConfirm.textContent = t("btn_restore_version");
+            modalConfirm.style.display = "";
+            modalCancel.style.display = "";
+            modalOverlay.style.display = "flex";
+        });
+    }
+
+    // ================================================================
+    //  Resize handles (single selection; staged like the size inputs)
+    // ================================================================
+    function resizeTarget() {
+        if (selectedElementIds.size !== 1) return null;
+        var el = svgContent.querySelector("#" + CSS.escape(selectedElementIds.values().next().value));
+        return el && localName(el) !== "tspan" ? el : null;
+    }
+
+    function updateResizeHandles() {
+        var el = resizeTarget();
+        var r = el ? el.getBoundingClientRect() : null;
+        var show = !!r && (r.width > 0 || r.height > 0);
+        RESIZE_CORNERS.forEach(function (corner) {
+            var handle = resizeHandles[corner];
+            if (!handle) return;
+            handle.style.display = show ? "block" : "none";
+            if (!show) return;
+            handle.style.left = (corner[1] === "w" ? r.left : r.right) + "px";
+            handle.style.top = (corner[0] === "n" ? r.top : r.bottom) + "px";
+        });
+    }
+
+    function restoreResizeStart(st) {
+        if (st.transform === null) st.el.removeAttribute("transform");
+        else st.el.setAttribute("transform", st.transform);
+    }
+
+    function resizeAttrs(st, e) {
+        // Pointer delta -> new render box with the opposite corner fixed, then
+        // the same transform-matrix write the size inputs stage.
+        restoreResizeStart(st);
+        var rb = st.rb;
+        var d = screenDeltaToLocal(st.el, e.clientX - st.x, e.clientY - st.y);
+        var west = st.corner[1] === "w";
+        var north = st.corner[0] === "n";
+        var w = Math.max(1, rb.w + (west ? -d.x : d.x));
+        var h = Math.max(1, rb.h + (north ? -d.y : d.y));
+        var shift = parentDelta((west ? rb.w - w : 0), (north ? rb.h - h : 0), st.el);
+        if (!shift) return null;
+        var m = new DOMMatrix().translate(shift.x, shift.y)
+            .multiply(matrixAfterResize(st.el, rb, w, h));
+        var tstr = matrixToString(m);
+        return tstr ? { transform: tstr } : null;
+    }
+
+    function beginResize(e, corner) {
+        if (e.button !== 0) return;
+        var el = resizeTarget();
+        var rb;
+        try { rb = el && computeRenderBox(el); } catch (err) { rb = null; }
+        if (!rb || rb.w <= 0 || rb.h <= 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        resizeState = {
+            el: el, corner: corner, x: e.clientX, y: e.clientY, rb: rb,
+            transform: el.getAttribute("transform"), attrs: null
+        };
+    }
+
+    function moveResize(e) {
+        var attrs = resizeAttrs(resizeState, e);
+        if (!attrs) return;
+        resizeState.attrs = attrs;
+        applyElementAttrs(resizeState.el, attrs);
+        refreshGeoInputs(resizeState.el, elementPropsEl);
+    }
+
+    function endResize() {
+        var st = resizeState;
+        resizeState = null;
+        if (!st.attrs) return;
+        stageEditRequest(st.el.id, { attrs: st.attrs })
+            .then(function () {
+                markCommittedAttrs(st.el, st.attrs);
+                refreshGeoInputs(st.el, elementPropsEl);
+            })
+            .catch(function (err) {
+                restoreResizeStart(st);
+                refreshGeoInputs(st.el, elementPropsEl);
+                showError(t("err_edit") + err.message);
+            });
+    }
+
+    function initResizeHandles() {
+        RESIZE_CORNERS.forEach(function (corner) {
+            var handle = document.createElement("div");
+            handle.className = "resize-handle resize-" + corner;
+            handle.style.display = "none";
+            handle.addEventListener("mousedown", function (e) { beginResize(e, corner); });
+            document.body.appendChild(handle);
+            resizeHandles[corner] = handle;
+        });
+        document.addEventListener("mousemove", function (e) { if (resizeState) moveResize(e); });
+        document.addEventListener("mouseup", function () { if (resizeState) endResize(); });
+        window.addEventListener("resize", updateResizeHandles);
+        document.getElementById("svg-container").addEventListener("scroll", updateResizeHandles);
+    }
+
+    // ================================================================
     //  Boot
     // ================================================================
     applyI18n();
@@ -3063,5 +3432,7 @@
     initRubberBand();
     initKeyboardShortcuts();
     initSlideNav();
+    initPageTools();
+    initResizeHandles();
     if (btnUndo) btnUndo.addEventListener("click", runUndo);
 })();

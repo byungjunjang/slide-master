@@ -41,6 +41,19 @@
             </div>
             <div class="panel-header" data-i18n="panel_edit_annotate">Edit / Annotate</div>
             <div id="pending-status" class="pending-status"></div>
+            <div id="page-tools">
+                <div class="section-label" data-i18n="label_page">Page</div>
+                <div class="page-tools-row">
+                    <button id="btn-page-up" class="btn-page" type="button" data-i18n="btn_page_up">Move up</button>
+                    <button id="btn-page-down" class="btn-page" type="button" data-i18n="btn_page_down">Move down</button>
+                    <button id="btn-page-delete" class="btn-page" type="button" data-i18n="btn_page_delete">Delete page</button>
+                </div>
+                <button id="btn-page-reset" class="btn-page" type="button" data-i18n="btn_page_reset" hidden>Reset page changes</button>
+                <div class="page-tools-row">
+                    <select id="version-select" class="prop-edit" data-i18n-title="label_versions"></select>
+                    <button id="btn-version-restore" class="btn-page" type="button" data-i18n="btn_restore_version" disabled>Restore</button>
+                </div>
+            </div>
             <div id="selection-info">
                 <div class="section-label" data-i18n="label_selected_element">Selected element</div>
                 <div id="selected-element" class="empty" data-i18n="empty_selected_element">Click an element on the slide to select it</div>

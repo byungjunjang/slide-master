@@ -121,7 +121,7 @@ enhancement do not load or inherit this file.
 | `${SKILL_DIR}/scripts/benchmark_pipeline_ab.py` | Clean-worktree paired A/B harness with fixture/source integrity, quality guards, and pre-registered CI/MCID decisions |
 | `${SKILL_DIR}/scripts/native_enhance_pptx.py` | Existing PPTX enhancement project init / validation / direct OOXML patch export |
 | `${SKILL_DIR}/scripts/native_narration_pptx.py` | Backward-compatible entrypoint for existing PPTX notes / narration enhancement |
-| `${SKILL_DIR}/scripts/update_spec.py` | Propagate a `spec_lock.md` color / font_family change across all generated SVGs |
+| `${SKILL_DIR}/scripts/update_spec.py` | Propagate a `spec_lock.md` color / font_family change across all generated SVGs; a typography size change raises `design_revision`, and `--stale` lists the pages to re-adjust |
 
 For complete tool documentation, see `${SKILL_DIR}/scripts/README.md`.
 
@@ -573,6 +573,8 @@ The confirmed image path still wins **before any launch** (`codex` / `api` / `au
 python3 ${SKILL_DIR}/scripts/validate_spec.py <project_path>
 ```
 
+**Live preview with page stubs**: once `validate_spec.py` passes, start `python3 ${SKILL_DIR}/scripts/svg_editor/server.py <project_path> --live --daemon` and report the URL. Its list shows one stub per §IX page (title, core message, chart) until that page's SVG lands; Step 6 keeps using the same server.
+
 **✅ Checkpoint — Phase deliverables complete, auto-proceed to next step**:
 ```markdown
 ## ✅ Strategist Phase Complete
@@ -585,6 +587,7 @@ python3 ${SKILL_DIR}/scripts/validate_spec.py <project_path>
 - [x] Source gaps diagnosed (`number_ledger.py gaps`); each web-filled value is a §XI `웹` row with its URL
 - [x] Execution lock (spec_lock.md) generated
 - [x] validate_spec.py passed (0 errors) on design_spec.md + spec_lock.md
+- [x] Live preview started with §IX page stubs (URL reported)
 - [ ] **Next**: Auto-proceed to [Image_Generator / Executor] phase
 ```
 
@@ -690,7 +693,7 @@ Read .claude/skills/diagram-design/SKILL.md       # CONDITIONAL: deck has struct
 ```bash
 python3 ${SKILL_DIR}/scripts/svg_editor/server.py <project_path> --live --daemon
 ```
-- Start it immediately when Executor begins; `svg_output/` may be empty. Editor opens at the launch-log URL such as `http://127.0.0.1:5050`; if another project already holds it, the launcher **auto-advances to the next free port** — read the actual URL from the launch log and report that.
+- It normally runs since the end of Step 4; otherwise start it now, before the first SVG (`svg_output/` may be empty). Editor opens at the launch-log URL such as `http://127.0.0.1:5050`; if another project already holds it, the launcher **auto-advances to the next free port** — read the actual URL from the launch log and report that.
 - Treat the launch URL as a checkpoint value: before writing the first SVG, either report the actual URL from the launcher or state the launch failure explicitly. Do not silently continue while claiming preview is available.
 - Run it as a long-running side process/session; do not wait for it to exit before generating SVG pages. Do not wait for user confirmation after startup.
 - **Service must keep running** until one of: (a) the user clicks **Exit preview** in the browser, or (b) the user explicitly asks in chat to stop it. Generation continues even if the user closes the editor.

@@ -81,6 +81,11 @@
 >
 > **Stack length discipline.** 3-4 fonts per stack is the sweet spot. Converter only writes the **first** Latin and **first** CJK font into PPTX — everything after is silently dropped. macOS-only families (`Songti SC`, `Menlo`, `Monaco`, `Helvetica`) are auto-mapped to Windows equivalents via `FONT_FALLBACK_WIN` (see `scripts/svg_to_pptx/drawingml/utils.py`); stacking both is redundant. Lead with Windows-preinstalled fonts (`Microsoft YaHei` / `SimSun` / `Arial` / `Georgia` / `Consolas`); keep at most **one** macOS-exclusive family (typically `"PingFang SC"`) as a browser-preview nicety.
 
+## design_revision
+- design_revision: 1
+
+> Strategist: write `1`. This is the version of the deck-wide tokens that pages are laid out against. `scripts/update_spec.py <project_path> typography.<size>=<px>` rewrites the size and raises this number without touching `svg_output/` (a size change needs per-page re-layout); color and `font_family` changes propagate into every SVG and leave it unchanged. Executor stamps each page's root `<svg>` with `data-design-revision="<this value>"` when it writes or re-adjusts the page. `python3 scripts/update_spec.py <project_path> --stale` lists the pages whose stamp is lower — re-adjust only those, then re-stamp them. A lock without this section reads as `0`; an unstamped page reads as `0`.
+
 ## icons
 - library: chunk-filled
 - brand_library: simple-icons
