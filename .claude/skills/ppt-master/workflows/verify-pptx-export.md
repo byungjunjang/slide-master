@@ -32,6 +32,8 @@ npm install -g @officecli/officecli@1.0.135
 officecli --version
 ```
 
+> Note: the npm pin fixes the installer, not the binary. While `autoUpdate` is `true` in `~/.officecli/config.json`, OfficeCLI replaces its native binary itself, so `officecli --version` can report a newer version, and the call that triggers the swap can crash once. `preflight.py` and `verify_deck.py` retry once and report a repeated crash as a tool error, not a deck defect.
+
 **Missing OfficeCLI** → state the install command and stop this workflow. Do not substitute a different checker.
 
 **Render path contract** (`view screenshot`):

@@ -207,6 +207,27 @@ def _run_officecli(args: list[str], timeout: int) -> Optional[subprocess.Complet
         return None
 
 
+def _parse_verdict(rc: Optional[subprocess.CompletedProcess]) -> Optional[dict]:
+    if rc is None:
+        return None
+    try:
+        verdict = json.loads(rc.stdout)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    return verdict if isinstance(verdict, dict) else None
+
+
+def _validate_tool_error(rc: Optional[subprocess.CompletedProcess]) -> str:
+    if rc is None:
+        cause = "timed out or could not start"
+    else:
+        text = (rc.stderr or rc.stdout or "").strip()
+        first = text.splitlines()[0][:200] if text else "no output"
+        cause = f"exit {rc.returncode}: {first}"
+    return (f"officecli validate failed twice ({cause}) — tool error, not a deck "
+            f"defect; non-blocking")
+
+
 def officecli_checks(project: Path, render: bool = True) -> tuple[list[str], list[str]]:
     """OpenXML validation + converted-PPTX contact sheet. Measurement-only:
     skipped entirely when officecli is absent. render=False keeps the
@@ -221,16 +242,15 @@ def officecli_checks(project: Path, render: bool = True) -> tuple[list[str], lis
     failures: list[str] = []
     warnings: list[str] = []
 
-    rc = _run_officecli([binary, "validate", str(pptx), "--json"], timeout=120)
-    verdict = None
-    if rc is not None:
-        try:
-            verdict = json.loads(rc.stdout)
-        except (json.JSONDecodeError, TypeError):
-            verdict = None
+    # Retry once: OfficeCLI auto-updates its native binary (autoUpdate in
+    # ~/.officecli/config.json) and the call that triggers the swap can crash.
+    for _attempt in range(2):
+        rc = _run_officecli([binary, "validate", str(pptx), "--json"], timeout=120)
+        verdict = _parse_verdict(rc)
+        if verdict is not None:
+            break
     if verdict is None:
-        warnings.append("officecli validate produced no parseable verdict "
-                        "(timeout or bad output) — non-blocking")
+        warnings.append(_validate_tool_error(rc))
     elif verdict.get("error"):
         failures.append(f"officecli validate: {pptx.name} unopenable — "
                         f"{verdict['error']}")
