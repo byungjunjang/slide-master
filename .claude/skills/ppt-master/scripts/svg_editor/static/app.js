@@ -960,6 +960,17 @@
         updateSelectionPanel();
     }
 
+    // Re-mark the selection after a DOM swap (tspan promotion or its rollback)
+    // replaced a selected node, so the highlight, resize handles and property
+    // editors follow the new node instead of the detached one.
+    function markSelection() {
+        selectedElementIds.forEach(function (id) {
+            var el = svgContent.querySelector("#" + CSS.escape(id));
+            if (el) el.classList.add("svg-selected");
+        });
+        updateSelectionPanel();
+    }
+
     function updateSelectionPanel() {
         var propsEl = elementPropsEl;
         var count = selectedElementIds.size;
