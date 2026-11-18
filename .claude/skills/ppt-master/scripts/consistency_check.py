@@ -13,13 +13,20 @@ Known limitation: the left-margin check uses one global anchor margin, so
 pages with an intentionally different archetype margin (dividers, full-bleed
 covers) may raise a warning rather than an error — inspect, do not auto-fix.
 
+`--terms` needs no seed: it checks the deck's wording for one spelling per
+term — spacing variants ('DS부문' / 'DS 부문', '4.6%' / '4.6 %'), source-label
+forms ('출처:' / '자료:'), and unit notation ('%p' / 'pp', '배' / 'x'). It only
+warns: two forms can be intended.
+
 Usage:
     python3 scripts/consistency_check.py <project_path> [--seed FILE]
     python3 scripts/consistency_check.py <project_path> --emit-seed --anchors 01,03,12
+    python3 scripts/consistency_check.py <project_path> --terms
 
 Examples:
     python3 scripts/consistency_check.py projects/demo --emit-seed --anchors 01,05,12
     python3 scripts/consistency_check.py projects/demo
+    python3 scripts/consistency_check.py projects/demo --terms
 
 Dependencies:
     None (only uses standard library)
@@ -48,6 +55,17 @@ MARGIN_TOL = 8.0            # px tolerance vs seed left margin
 THIN_RECT_MAX_H = 3.0       # rect this thin is a hairline
 _HEX_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 _NUM_RE = re.compile(r"-?\d+(?:\.\d+)?")
+TERM_MAX_TOKENS = 3         # phrases up to this many words form spacing-variant keys
+TERM_MIN_KEY = 2            # shorter keys (spaces removed, numbers as '#') are noise
+_TERM_NUM_RE = re.compile(r"\d+(?:[.,]\d+)*")
+_TERM_YEAR_RE = re.compile(r"(?:19|20)\d\d")  # a year is not an amount: '2025 분기' ≠ '2분기'
+_TERM_EDGE = "()[]{}<>\"'“”‘’.,:;!?…「」『』《》"
+_SOURCE_LABEL_RE = re.compile(r"^\s*(출처|자료|Sources?|Data)\s*([:：]?)", re.IGNORECASE)
+_SOURCE_BARE_OK = {"출처", "source", "sources"}  # label words that need no colon
+_UNIT_FAMILIES = {  # one unit, several notations
+    "percentage point": re.compile(r"\d\s*(%\s*[pP]|pp|%pt|%포인트)(?![A-Za-z])"),
+    "multiple": re.compile(r"\d\s*(배|x|×)(?![A-Za-z0-9])"),
+}
 
 
 def _local(tag: str) -> str:
@@ -236,6 +254,85 @@ def check(project: Path, seed_path: Path) -> int:
     return 1 if errors else 0
 
 
+def _text_lines(svg_path: Path) -> list[str]:
+    """Visible text lines: a <tspan> with its own x / y / non-zero dy starts a
+    new line; inline runs join the current one (never join across lines)."""
+    lines: list[str] = []
+    for text in ET.parse(str(svg_path)).getroot().iter():
+        if _local(text.tag) != "text":
+            continue
+        current = [text.text or ""]
+        for child in text:
+            if _local(child.tag) == "tspan" and (
+                child.get("x") is not None or child.get("y") is not None
+                or (child.get("dy") or "0").strip() not in ("", "0")
+            ):
+                lines.append("".join(current))
+                current = []
+            current.append("".join(child.itertext()))
+            current.append(child.tail or "")
+        lines.append("".join(current))
+    return [line.strip() for line in lines if line.strip()]
+
+
+def _listing(forms: dict[str, set[str]], examples: dict[str, str] | None = None) -> str:
+    return ", ".join(
+        f"'{(examples or {}).get(form, form)}' ({', '.join(sorted(pages))})"
+        for form, pages in sorted(forms.items())
+    )
+
+
+def check_terms(project: Path) -> int:
+    """One spelling per term deck-wide: spacing variants, source labels, units."""
+    spellings: dict[str, dict[str, set[str]]] = {}
+    examples: dict[str, str] = {}
+    labels: dict[str, set[str]] = {}
+    units: dict[str, dict[str, set[str]]] = {name: {} for name in _UNIT_FAMILIES}
+    files = page_files(project)
+    for f in files:
+        page = _page_no(f)
+        for line in _text_lines(f):
+            label = _SOURCE_LABEL_RE.match(line)
+            if label and (label.group(2) or label.group(1).lower() in _SOURCE_BARE_OK):
+                labels.setdefault(label.group(1) + label.group(2), set()).add(page)
+            for name, pattern in _UNIT_FAMILIES.items():
+                for unit in pattern.findall(line):
+                    units[name].setdefault(unit.replace(" ", ""), set()).add(page)
+            tokens = [t for t in (raw.strip(_TERM_EDGE) for raw in line.split()) if t]
+            for n in range(1, TERM_MAX_TOKENS + 1):
+                for i in range(len(tokens) - n + 1):
+                    phrase = " ".join(tokens[i:i + n])
+                    spelling = _TERM_NUM_RE.sub(
+                        lambda m: "§" if _TERM_YEAR_RE.fullmatch(m.group()) else "#", phrase)
+                    key = spelling.replace(" ", "")
+                    if len(key) < TERM_MIN_KEY or not any(
+                            ch.isalnum() or ch == "%" for ch in key.replace("#", "")):
+                        continue  # numbers / separators only ('#·#') are not terms
+                    spellings.setdefault(key, {}).setdefault(spelling, set()).add(page)
+                    examples.setdefault(spelling, phrase)
+
+    warnings = 0
+    reported: list[str] = []
+    for key in sorted((k for k, v in spellings.items() if len(v) > 1), key=len):
+        if any(shorter in key for shorter in reported):
+            continue  # the shorter variant already explains this phrase
+        reported.append(key)
+        print(f"[WARNING] terms: spacing variants {_listing(spellings[key], examples)}"
+              " — pick one spelling deck-wide")
+        warnings += 1
+    if len(labels) > 1:
+        print(f"[WARNING] terms: source labels differ {_listing(labels)}"
+              " — use one label deck-wide")
+        warnings += 1
+    for name, forms in units.items():
+        if len(forms) > 1:
+            print(f"[WARNING] terms: {name} unit written {_listing(forms)}"
+                  " — use one notation deck-wide")
+            warnings += 1
+    print(f"\nTerms: {len(files)} pages, {warnings} warnings")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Cross-page consistency check against an anchor vocabulary seed.",
@@ -245,6 +342,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--emit-seed", action="store_true", help="derive anchor_vocab.json from anchor pages")
     parser.add_argument("--anchors", default="", help="comma-separated page numbers (e.g. 01,03,12); required with --emit-seed")
     parser.add_argument("--seed", default="", help="seed file path (default <project>/anchor_vocab.json)")
+    parser.add_argument("--terms", action="store_true",
+                        help="check one spelling per term deck-wide (spacing variants, "
+                             "source labels, units); needs no seed, warns only")
     return parser
 
 
@@ -255,6 +355,8 @@ def main(argv: list[str] | None = None) -> int:
     if not (project / "svg_output").is_dir():
         print(f"[ERROR] no svg_output/ under {project}", file=sys.stderr)
         return 1
+    if args.terms:
+        return check_terms(project)
     if args.emit_seed:
         nos = [n.strip().zfill(2) for n in args.anchors.split(",") if n.strip()]
         if not nos:
