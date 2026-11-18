@@ -71,6 +71,7 @@ from .dimensions import (
     get_slide_dimensions, get_pixel_dimensions,
     get_viewbox_dimensions, detect_format_from_svg,
 )
+from .fonts import FONT_CONTENT_TYPE, FONT_REL_TYPE, select_faces, ttf_to_eot
 from .media import (
     PNG_RENDERER,
     get_png_renderer_info, convert_svg_to_png, convert_svg_to_png_cached,
@@ -3200,6 +3201,71 @@ def _create_writable_work_dir(output_path: Path) -> Path:
     )
 
 
+def _embed_fonts(extract_dir: Path) -> tuple[list[str], list[str]]:
+    """Embed the installed TrueType faces of the deck font as EOT parts.
+
+    Returns (embedded faces, warnings). Best effort: a face that cannot be
+    embedded is reported and skipped; the export never fails on it.
+    """
+    ppt_dir = extract_dir / 'ppt'
+    presentation_path = ppt_dir / 'presentation.xml'
+    presentation_xml = presentation_path.read_text(encoding='utf-8')
+    if '<p:embeddedFontLst' in presentation_xml:
+        return [], ['fonts not embedded: the base package already lists embedded fonts']
+    # CT_Presentation order: ... notesSz, smartTags?, embeddedFontLst, ...
+    anchor = re.search(
+        r'<p:notesSz\b[^>]*/>(?:\s*<p:smartTags\b[^>]*/>)?', presentation_xml)
+    if anchor is None:
+        return [], ['fonts not embedded: presentation.xml has no p:notesSz']
+
+    picks, warnings = select_faces(ppt_dir)
+    rels_path = ppt_dir / '_rels' / 'presentation.xml.rels'
+    embedded: list[str] = []
+    entries: list[str] = []
+    for typeface, styles in picks:
+        refs = ''
+        for style, ttf_path in styles.items():  # regular before bold (schema order)
+            try:
+                eot = ttf_to_eot(ttf_path.read_bytes())
+            except (OSError, ValueError) as exc:
+                warnings.append(f"font '{typeface}' {style} not embedded: {exc}")
+                continue
+            target = f'fonts/font{len(embedded) + 1}.fntdata'
+            (ppt_dir / 'fonts').mkdir(exist_ok=True)
+            (ppt_dir / target).write_bytes(eot)
+            rel_id = _append_relationship(rels_path, FONT_REL_TYPE, target)
+            refs += f'<p:{style} r:id="{rel_id}"/>'
+            embedded.append(f'{typeface} {style}')
+        if refs:
+            face = escape(typeface, {'"': '&quot;'})
+            entries.append(
+                f'<p:embeddedFont><p:font typeface="{face}"/>{refs}</p:embeddedFont>')
+    if not entries:
+        return embedded, warnings
+
+    presentation_xml = (
+        presentation_xml[:anchor.end()]
+        + '<p:embeddedFontLst>' + ''.join(entries) + '</p:embeddedFontLst>'
+        + presentation_xml[anchor.end():]
+    )
+    # Full fonts: drop the base template's saveSubsetFonts so a later
+    # PowerPoint save keeps every glyph instead of subsetting.
+    presentation_xml = re.sub(
+        r'\s(?:embedTrueTypeFonts|saveSubsetFonts)="[^"]*"', '', presentation_xml)
+    presentation_xml = re.sub(
+        r'<p:presentation\b', '<p:presentation embedTrueTypeFonts="1"',
+        presentation_xml, count=1)
+    presentation_path.write_text(presentation_xml, encoding='utf-8')
+    content_types_path = extract_dir / '[Content_Types].xml'
+    content_types_path.write_text(
+        _add_default_content_type(
+            content_types_path.read_text(encoding='utf-8'),
+            'fntdata', FONT_CONTENT_TYPE),
+        encoding='utf-8',
+    )
+    return embedded, warnings
+
+
 def _relax_output_permissions(output_path: Path) -> list[str]:
     """Make exported files readable outside the sandbox owner where possible."""
     warnings: list[str] = []
@@ -3883,6 +3949,7 @@ def create_pptx_with_native_svg(
     theme_color_spec: ThemeColorSpec | None = None,
     structured_baseline: bool = False,
     baseline_layout_specs: list[TemplateSlideSpec] | None = None,
+    embed_fonts: bool = True,
 ) -> bool:
     """Create a PPTX file with native DrawingML shapes.
 
@@ -3939,6 +4006,9 @@ def create_pptx_with_native_svg(
             ignore this value.
         structured_baseline: Obsolete compatibility argument; must remain false.
         baseline_layout_specs: Obsolete compatibility argument; must remain None.
+        embed_fonts: Embed the installed TrueType faces of the deck font
+            (Pretendard) the slides use; a face without a TTF is skipped
+            with a warning.
 
     Returns:
         Whether all slides were successfully created.
@@ -4779,6 +4849,10 @@ def create_pptx_with_native_svg(
         if package_uses_timings:
             set_directory_use_timings(extract_dir)
 
+        font_embedded, font_warnings = (
+            _embed_fonts(extract_dir) if embed_fonts else ([], [])
+        )
+
         rels_problems = _verify_internal_rels_targets(extract_dir)
         if rels_problems:
             details = '\n'.join(f'  - {p}' for p in rels_problems)
@@ -4857,7 +4931,9 @@ def create_pptx_with_native_svg(
         if verbose:
             print()
             print(f"[Done] Saved: {output_path}")
-            for warning in permission_warnings:
+            if font_embedded:
+                print(f"  Fonts embedded: {', '.join(font_embedded)}")
+            for warning in permission_warnings + font_warnings:
                 print(f"  [warn] {warning}")
             if conversion_trace_path and conversion_trace is not None:
                 print(f"  Trace: {conversion_trace_path}")

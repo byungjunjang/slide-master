@@ -65,7 +65,7 @@ projects/<프로젝트>/svg_final/                        ← 브라우저로 �
 
 모든 덱은 **Pretendard**(SIL OFL) 한 가족으로 통일됩니다. 위계는 폰트를 바꾸는 게 아니라 굵기(Medium/SemiBold/Bold)와 크기로 만듭니다. 폰트 파일은 [`.claude/skills/ppt-master/assets/fonts/Pretendard/`](.claude/skills/ppt-master/assets/fonts/Pretendard/)에 번들되어 있습니다.
 
-> PPTX는 폰트를 내장하지 않으므로, 만든 덱을 **다른 컴퓨터에서 열 때는 그쪽에도 Pretendard 설치**가 필요합니다.
+> PPTX 로 내보낼 때 덱에 쓴 Pretendard 굵기를 파일에 넣습니다(이 PC 에 설치된 TTF 사용, 굵기 하나에 약 1.2MB, 끄려면 `--no-embed-fonts`). Pretendard 가 없는 컴퓨터에서도 글자 모양은 Pretendard 로 보입니다. 다만 PowerPoint 는 내장 글꼴의 한글 폭을 더 넓게 잡아서 줄바꿈이 달라질 수 있습니다. 덱을 고치거나 발표할 컴퓨터에는 **Pretendard 를 설치**하세요.
 
 ---
 
