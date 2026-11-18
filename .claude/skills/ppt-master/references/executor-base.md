@@ -258,7 +258,7 @@ host provides); never redirect, loop, or batch it into `svg_output/`.
 
 **Hard rule**: every SVG page that contains a data visualization chart includes a plot-area marker inside `<g id="chartArea">`, placed **after axis lines** and **before the first data element** (bar, line, area, point).
 
-**Rectangular plot area** (bar / horizontal_bar / grouped_bar / stacked_bar / line / area / stacked_area / scatter / waterfall / pareto / butterfly):
+**Rectangular plot area** (bar / horizontal_bar / grouped_bar / stacked_bar / line / area / stacked_area / scatter / waterfall / pareto / butterfly / football_field / tornado):
 
 ```xml
 <!-- chart-plot-area: x_min,y_min,x_max,y_max -->
@@ -417,7 +417,7 @@ Chart SVGs referenced in **VII. Visualization Reference List** are loaded once v
 - **Freely adjust**: composition, axis ranges, grid, legend, spacing, decoration — as long as the chart stays accurate and readable
 - **Forbidden**: changing visualization type without spec justification; omitting data points or structural elements from the outline
 
-> Templates: `templates/charts/` (76 types). Index: `templates/charts/charts_index.json`
+> Templates: `templates/charts/` (78 types). Index: `templates/charts/charts_index.json`
 
 ### 5.1 Chart Coordinate Calibration
 

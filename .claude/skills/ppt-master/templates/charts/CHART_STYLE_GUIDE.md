@@ -377,7 +377,7 @@ After adding or modifying a chart, check each item:
 - [ ] `meta.total` incremented
 
 ### Plot-area calibration markers (required for calculator-supported charts)
-- [ ] Rectangular-coordinate charts (bar / horizontal_bar / grouped_bar / stacked_bar / line / area / stacked_area / scatter / waterfall / pareto / butterfly) contain the `<!-- chart-plot-area: x_min,y_min,x_max,y_max -->` marker
+- [ ] Rectangular-coordinate charts (bar / horizontal_bar / grouped_bar / stacked_bar / line / area / stacked_area / scatter / waterfall / pareto / butterfly / football_field / tornado) contain the `<!-- chart-plot-area: x_min,y_min,x_max,y_max -->` marker
 - [ ] Pie / donut / radar charts contain the `<!-- chart-plot-area: <type> | center: cx,cy | radius: r -->` marker
 - [ ] The marker sits inside `<g id="chartArea">`, after the axes, before the data elements
 - [ ] Marker coordinates match the axes' actual SVG coordinates

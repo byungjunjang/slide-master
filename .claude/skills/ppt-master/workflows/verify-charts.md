@@ -28,7 +28,7 @@ Read `<project_path>/design_spec.md` §VII Visualization Reference List (authori
 | `direct-calc` | `line_chart`, `area_chart`, `scatter_chart` | Use `calc line`; area uses line output as the top boundary, then closes to `y_max`. |
 | `direct-calc` | `pie_chart`, `donut_chart` | Use `calc pie`; donut passes `--inner-radius`. |
 | `direct-calc` | `radar_chart` | Use `calc radar`; separate subcommand, not under `calc pie`. |
-| `decomposable-calc` | `stacked_bar_chart`, `stacked_area_chart`, `grouped_bar_chart`, `dumbbell_chart`, `pareto_chart`, `dual_axis_line_chart`, `bullet_chart`, `butterfly_chart`, `waterfall_chart`, `box_plot_chart`, `gantt_chart` | Verify by repeated direct calculations; see recipes below. |
+| `decomposable-calc` | `stacked_bar_chart`, `stacked_area_chart`, `grouped_bar_chart`, `dumbbell_chart`, `pareto_chart`, `dual_axis_line_chart`, `bullet_chart`, `butterfly_chart`, `waterfall_chart`, `box_plot_chart`, `gantt_chart`, `football_field`, `tornado` | Verify by repeated direct calculations; see recipes below. |
 | `partial-calc` | `bubble_chart` | Use `calc line` for `cx/cy`; verify radius only when a size scale is explicit. |
 | `formula-verify` | `progress_bar_chart`, `gauge_chart`, `funnel_chart` | One-line math; record the formula and resulting length/angle/width in the receipt, no calculator call needed. |
 | `manual-verify` | `sankey_chart`, `heatmap_chart`, `treemap_chart` | Data-driven geometry exists, but the current calculator has no complete layout model. Inspect and report; do not silently skip. |
@@ -201,6 +201,12 @@ python3 .claude/skills/ppt-master/scripts/svg_position_calculator.py calc line \
 2. Run `calc line` once over `start_index:row_y` per task — output `SVG_X` gives the bar's `x`. Run it again over `end_index:row_y` — output `SVG_X` gives `x + width`. Subtract for width.
 3. Compare each task rect's `(x, width)` against the calculated start and end. Row y can be read directly (categories are not value-driven).
 
+**Football field / tornado** — floating horizontal bars whose two ends are points on one value axis. Use the dumbbell `calc line` setup: `--area` from the plot-area marker, `--x-range` from the ticks, `--y-range "0,N"` with the row index as y; compare `SVG_X` only.
+
+1. Football field: run `calc line` on the low values, then on the high values. Low `SVG_X` = rect `x`; high `SVG_X` = rect `x + width`. Run it once more on the reference values and compare each reference line's `x1`.
+2. Tornado: run `calc line` on the downside, upside and base values. A downside rect spans downside → base `SVG_X`; an upside rect spans base → upside `SVG_X`; the base line's `x1` = base `SVG_X`.
+3. A delta axis below zero uses the same calls; pass negatives with `=` (`--data=-8.5:0.5,...`, `--x-range=-10,10`) so argparse does not read them as flags.
+
 **Waterfall chart** — floating bars connected by running totals. Each bar's top and bottom edge correspond to two points on the same value axis (`cum_before`, `cum_after`):
 
 1. Read the y-axis tick range and the plot area; compute running totals in category order (start with `cum[0] = base_value`, then `cum[i] = cum[i-1] + delta[i]` for increase, `cum[i-1] - delta[i]` for decrease, reset to delta for totals).
@@ -243,6 +249,8 @@ verify-charts: 16_before_after.svg | type=dumbbell | mode=decomposable-calc | sc
 verify-charts: 17_drivers_pareto.svg | type=pareto | mode=decomposable-calc | scale=left 0-80 / right 0-100 | calc=ran×2 | svg=updated
 verify-charts: 18_market_bubbles.svg | type=bubble | mode=partial-calc | xy=ran | radius=manual (scale missing) | svg=unchanged
 verify-charts: 20_quota_attainment.svg | type=bullet | mode=decomposable-calc | scale=0-120 (from ticks) | calc=ran×3 (bands+actual+target) | svg=updated
+verify-charts: 29_valuation_range.svg | type=football-field | mode=decomposable-calc | scale=500-1300 (from ticks) | calc=ran×3 (low/high/ref) | svg=unchanged
+verify-charts: 30_irr_sensitivity.svg | type=tornado | mode=decomposable-calc | scale=10-35 (from ticks) | calc=ran×3 (down/base/up) | svg=unchanged
 verify-charts: 21_inflow_outflow.svg | type=butterfly | mode=decomposable-calc | scale=0-500 (from ticks) | calc=ran×2 + mirror | svg=unchanged
 verify-charts: 22_profit_bridge.svg | type=waterfall | mode=decomposable-calc | scale=0-500 (from ticks) | calc=ran×2 (top/bot) | svg=updated
 verify-charts: 23_quarterly_progress.svg | type=progress | mode=formula-verify | formula=68/100×800=544px | svg=unchanged

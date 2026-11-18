@@ -1,12 +1,12 @@
 {
   "meta": {
-    "total": 76,
+    "total": 78,
     "defaultViewBox": "0 0 1280 720",
     "formats": ["ppt169"],
     "filePattern": "{key}.svg",
     "libraryPositioning": "Visualization template library covering charts, infographics, diagrams, and strategic frameworks. The `charts/` path is retained for backward compatibility. Templates are named by visual structure, not by business-model name — model-specific frameworks (SWOT, BCG, PEST, OKR, Porter's Five Forces, Value Chain, etc.) are matched via keywords in `summary`.",
-    "summaryGrammar": "Each chart's `summary` is a selection rule, not a description. Format: 'Pick for <content shape + scale>. Skip if <reason → alternative>'. Strategist matches every page's content shape against all 76 summaries; no category/keyword index — full-read is intentional.",
-    "updated": "2026-07-03"
+    "summaryGrammar": "Each chart's `summary` is a selection rule, not a description. Format: 'Pick for <content shape + scale>. Skip if <reason → alternative>'. Strategist matches every page's content shape against all 78 summaries; no category/keyword index — full-read is intentional.",
+    "updated": "2026-11-18"
   },
   "charts": {
     "area_chart": {
@@ -38,6 +38,9 @@
     },
     "dumbbell_chart": {
       "summary": "Pick for before-vs-after or two-state difference across 5-10 items. Skip for single snapshot (use column_chart) or 3+ states (use grouped_bar_chart)."
+    },
+    "football_field": {
+      "summary": "Pick for valuation ranges per method as floating low–high bars on one value axis plus reference lines (current price, offer) — M&A or investment memo football field: trading comps, precedents, DCF, LBO, 4-8 methods. Skip for one value per item (use horizontal_bar_chart) or swings around one base case (use tornado)."
     },
     "funnel_chart": {
       "summary": "Pick for 3-5 sequential conversion stages with monotonic drop-off. Skip if flow branches/merges (use sankey_chart) or steps don't entail loss (use process_flow)."
@@ -116,6 +119,9 @@
     },
     "timeline": {
       "summary": "Pick for 3-8 milestone events on a horizontal time axis (no duration). Skip for tasks with start/end ranges (use gantt_chart) or vertical layout (use roadmap_vertical)."
+    },
+    "tornado": {
+      "summary": "Pick for one-at-a-time sensitivity of one output (IRR, NPV, EBIT) to 4-10 drivers — downside/upside bars around a base-case line, sorted by swing (stress-test driver ranking). Skip for two mirrored datasets without a base case (use butterfly_chart) or value ranges per valuation method (use football_field)."
     },
     "treemap_chart": {
       "summary": "Pick for hierarchical/grouped area proportion with many parts of varying size. Skip for flat 3-6 parts (use pie_chart or donut_chart)."

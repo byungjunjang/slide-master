@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+    <!--
+    Football Field Chart Template
+    Usage: Valuation ranges per method as floating low–high bars on one value axis, with reference lines
+    Scenarios: Investment memo / M&A valuation summary (52-week range, analyst targets, trading comps, precedents, DCF, LBO)
+    Supports: 6 methods (adjustable to 4-8), 1-2 reference lines (current value, offer, base case)
+    Geometry: x(v) = 380 + (v - 500) × 1.0 (axis $500M–$1,300M over x 380–1180); bar x = x(low), width = x(high) - x(low)
+    Rows: pitch 76px, bar 36px, bar y = 166 + 76 × (row - 1)
+    Labels: method name + basis on two lines; the label column (x 60–360) fits ~18 Hangul characters at 16px
+    Native marker: none. A native bar chart starts every bar at the axis origin, so floating ranges stay SVG geometry
+    -->
+    <defs>
+        <!-- Method-family fills (lighter to darker, left to right) -->
+        <linearGradient id="marketGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#CBD5E1"/>
+            <stop offset="100%" stop-color="#94A3B8"/>
+        </linearGradient>
+        <linearGradient id="relativeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#60A5FA"/>
+            <stop offset="100%" stop-color="#2563EB"/>
+        </linearGradient>
+        <linearGradient id="intrinsicGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#34D399"/>
+            <stop offset="100%" stop-color="#059669"/>
+        </linearGradient>
+    </defs>
+    <!-- Background -->
+    <rect width="1280" height="720" fill="#FFFFFF"/>
+    <!-- Header -->
+    <g id="header">
+        <text x="60" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="34" font-weight="bold" fill="#0F172A">Implied Enterprise Value by Method</text>
+        <text x="60" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="18" fill="#64748B">Target Co. · LTM EBITDA $120M · USD millions</text>
+    </g>
+    <!-- Legend: one swatch per method family -->
+    <g id="legend">
+        <rect x="706" y="80" width="14" height="14" rx="3" fill="url(#marketGrad)"/>
+        <text x="728" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#475569">Market Reference</text>
+        <rect x="871" y="80" width="14" height="14" rx="3" fill="url(#relativeGrad)"/>
+        <text x="893" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#475569">Relative Valuation</text>
+        <rect x="1051" y="80" width="14" height="14" rx="3" fill="url(#intrinsicGrad)"/>
+        <text x="1073" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#475569">Intrinsic Valuation</text>
+    </g>
+    <!-- Chart Area -->
+    <g id="chartArea">
+        <!-- Value-axis grid ($200M per 200px) -->
+        <line x1="380" y1="146" x2="380" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="580" y1="146" x2="580" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="780" y1="146" x2="780" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="980" y1="146" x2="980" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="1180" y1="146" x2="1180" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- Value axis -->
+        <line x1="380" y1="602" x2="1180" y2="602" stroke="#94A3B8" stroke-width="2"/>
+        <text x="380" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">$500M</text>
+        <text x="580" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">$700M</text>
+        <text x="780" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">$900M</text>
+        <text x="980" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">$1,100M</text>
+        <text x="1180" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">$1,300M</text>
+        <!-- chart-plot-area: 380,146,1180,602 -->
+        <!-- Row 1: 52-Week Trading Range $700M–$930M (market) -->
+        <g id="row-52-week-range">
+            <text x="60" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">52-Week Trading Range</text>
+            <text x="60" y="200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">Market EV, last 12 months</text>
+            <rect x="580" y="166" width="230" height="36" rx="4" fill="url(#marketGrad)"/>
+            <text x="570" y="189" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A" text-anchor="end">$700M</text>
+            <text x="820" y="189" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A">$930M</text>
+        </g>
+        <!-- Row 2: Analyst Price Targets $780M–$1,060M (market) -->
+        <g id="row-analyst-targets">
+            <text x="60" y="257" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Analyst Price Targets</text>
+            <text x="60" y="276" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">Implied EV, 9 broker reports</text>
+            <rect x="660" y="242" width="280" height="36" rx="4" fill="url(#marketGrad)"/>
+            <text x="650" y="265" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A" text-anchor="end">$780M</text>
+            <text x="950" y="265" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A">$1,060M</text>
+        </g>
+        <!-- Row 3: Trading Comparables 6.5x–8.5x × $120M = $780M–$1,020M (relative) -->
+        <g id="row-trading-comps">
+            <text x="60" y="333" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Trading Comparables</text>
+            <text x="60" y="352" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">EV/EBITDA 6.5x–8.5x</text>
+            <rect x="660" y="318" width="240" height="36" rx="4" fill="url(#relativeGrad)"/>
+            <text x="650" y="341" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A" text-anchor="end">$780M</text>
+            <text x="910" y="341" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A">$1,020M</text>
+        </g>
+        <!-- Row 4: Precedent Transactions 8.0x–10.0x × $120M = $960M–$1,200M (relative) -->
+        <g id="row-precedents">
+            <text x="60" y="409" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Precedent Transactions</text>
+            <text x="60" y="428" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">EV/EBITDA 8.0x–10.0x</text>
+            <rect x="840" y="394" width="240" height="36" rx="4" fill="url(#relativeGrad)"/>
+            <text x="830" y="417" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A" text-anchor="end">$960M</text>
+            <text x="1090" y="417" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A">$1,200M</text>
+        </g>
+        <!-- Row 5: DCF Analysis $820M–$1,110M (intrinsic) -->
+        <g id="row-dcf">
+            <text x="60" y="485" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">DCF Analysis</text>
+            <text x="60" y="504" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">WACC 9–11%, TGR 1.5–2.5%</text>
+            <rect x="700" y="470" width="290" height="36" rx="4" fill="url(#intrinsicGrad)"/>
+            <text x="690" y="493" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A" text-anchor="end">$820M</text>
+            <text x="1000" y="493" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A">$1,110M</text>
+        </g>
+        <!-- Row 6: LBO Analysis $740M–$910M (intrinsic) -->
+        <g id="row-lbo">
+            <text x="60" y="561" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">LBO Analysis</text>
+            <text x="60" y="580" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">Sponsor IRR 20–25%, 5-year hold</text>
+            <rect x="620" y="546" width="170" height="36" rx="4" fill="url(#intrinsicGrad)"/>
+            <text x="610" y="569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A" text-anchor="end">$740M</text>
+            <text x="800" y="569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#0F172A">$910M</text>
+        </g>
+        <!-- Reference lines, drawn over the bars: Current EV $840M (x=720), Offer $1,000M (x=880) -->
+        <g id="ref-lines">
+            <line x1="720" y1="138" x2="720" y2="602" stroke="#475569" stroke-width="2" stroke-dasharray="6,4"/>
+            <rect x="664" y="114" width="112" height="24" rx="12" fill="#FFFFFF" stroke="#475569" stroke-width="1.5"/>
+            <text x="720" y="131" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="13" font-weight="bold" fill="#475569" text-anchor="middle">Current $840M</text>
+            <line x1="880" y1="138" x2="880" y2="602" stroke="#E11D48" stroke-width="2"/>
+            <rect x="824" y="114" width="112" height="24" rx="12" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.5"/>
+            <text x="880" y="131" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="13" font-weight="bold" fill="#E11D48" text-anchor="middle">Offer $1,000M</text>
+        </g>
+    </g>
+    <!-- Data Source -->
+    <g id="footer">
+        <text x="60" y="695" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#94A3B8">Source: Company filings, broker reports, transaction database; deal team analysis</text>
+    </g>
+</svg>

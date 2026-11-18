@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+    <!--
+    Tornado Chart Template
+    Usage: One-at-a-time sensitivity of one output metric around a base-case line, drivers sorted by swing (widest on top)
+    Scenarios: IRR / NPV / EBIT sensitivity, investment memo risk page, stress-test driver ranking
+    Supports: 6 drivers (adjustable to 4-10)
+    Geometry: x(v) = 380 + (v - 10) × 32 (axis 10%–35% over x 380–1180); base line x = x(22.5) = 780
+    Downside bar x = x(low), width = 780 - x(low); upside bar x = 780, width = x(high) - 780
+    Rows: pitch 76px, bar 36px, bar y = 166 + 76 × (row - 1)
+    Labels: driver name + input range (downside / upside) on two lines; the label column (x 60–360) fits ~18 Hangul characters at 16px
+    Native marker: none. A native bar chart starts every bar at zero, so bars around a base value stay SVG geometry
+    -->
+    <defs>
+        <!-- Downside: light at the base line, darker toward the left end -->
+        <linearGradient id="downGrad" x1="100%" y1="0%" x2="0%" y2="0%">
+            <stop offset="0%" stop-color="#FB7185"/>
+            <stop offset="100%" stop-color="#E11D48"/>
+        </linearGradient>
+        <!-- Upside: light at the base line, darker toward the right end -->
+        <linearGradient id="upGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#60A5FA"/>
+            <stop offset="100%" stop-color="#2563EB"/>
+        </linearGradient>
+    </defs>
+    <!-- Background -->
+    <rect width="1280" height="720" fill="#FFFFFF"/>
+    <!-- Header -->
+    <g id="header">
+        <text x="60" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="34" font-weight="bold" fill="#0F172A">Equity IRR Sensitivity to Key Assumptions</text>
+        <text x="60" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="18" fill="#64748B">One input flexed at a time · all others held at base case</text>
+    </g>
+    <!-- Legend -->
+    <g id="legend">
+        <rect x="975" y="80" width="14" height="14" rx="3" fill="url(#downGrad)"/>
+        <text x="997" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#475569">Downside case</text>
+        <rect x="1117" y="80" width="14" height="14" rx="3" fill="url(#upGrad)"/>
+        <text x="1139" y="92" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#475569">Upside case</text>
+    </g>
+    <!-- Chart Area -->
+    <g id="chartArea">
+        <!-- Value-axis grid (5%p per 160px) -->
+        <line x1="380" y1="146" x2="380" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="540" y1="146" x2="540" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="700" y1="146" x2="700" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="860" y1="146" x2="860" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="1020" y1="146" x2="1020" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="1180" y1="146" x2="1180" y2="602" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- Value axis -->
+        <line x1="380" y1="602" x2="1180" y2="602" stroke="#94A3B8" stroke-width="2"/>
+        <text x="380" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">10%</text>
+        <text x="540" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">15%</text>
+        <text x="700" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">20%</text>
+        <text x="860" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">25%</text>
+        <text x="1020" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">30%</text>
+        <text x="1180" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+              font-size="13" fill="#64748B" text-anchor="middle">35%</text>
+        <!-- chart-plot-area: 380,146,1180,602 -->
+        <!-- Row 1: Exit Multiple 14.0% / 29.5% (swing 15.5%p) -->
+        <g id="row-exit-multiple">
+            <text x="60" y="181" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Exit Multiple</text>
+            <text x="60" y="200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">EV/EBITDA 6.0x / 10.0x (base 8.0x)</text>
+            <rect x="508" y="166" width="272" height="36" rx="4" fill="url(#downGrad)"/>
+            <rect x="780" y="166" width="224" height="36" rx="4" fill="url(#upGrad)"/>
+            <text x="498" y="189" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#BE123C" text-anchor="end">14.0%</text>
+            <text x="1014" y="189" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#1D4ED8">29.5%</text>
+        </g>
+        <!-- Row 2: EBITDA Margin 16.5% / 27.0% (swing 10.5%p) -->
+        <g id="row-ebitda-margin">
+            <text x="60" y="257" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">EBITDA Margin</text>
+            <text x="60" y="276" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">−2.0pp / +2.0pp vs. plan</text>
+            <rect x="588" y="242" width="192" height="36" rx="4" fill="url(#downGrad)"/>
+            <rect x="780" y="242" width="144" height="36" rx="4" fill="url(#upGrad)"/>
+            <text x="578" y="265" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#BE123C" text-anchor="end">16.5%</text>
+            <text x="934" y="265" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#1D4ED8">27.0%</text>
+        </g>
+        <!-- Row 3: Revenue Growth 18.0% / 26.5% (swing 8.5%p) -->
+        <g id="row-revenue-growth">
+            <text x="60" y="333" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Revenue Growth</text>
+            <text x="60" y="352" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">CAGR 3% / 9% (base 6%)</text>
+            <rect x="636" y="318" width="144" height="36" rx="4" fill="url(#downGrad)"/>
+            <rect x="780" y="318" width="128" height="36" rx="4" fill="url(#upGrad)"/>
+            <text x="626" y="341" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#BE123C" text-anchor="end">18.0%</text>
+            <text x="918" y="341" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#1D4ED8">26.5%</text>
+        </g>
+        <!-- Row 4: Entry Multiple 19.0% / 25.5% (swing 6.5%p) -->
+        <g id="row-entry-multiple">
+            <text x="60" y="409" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Entry Multiple</text>
+            <text x="60" y="428" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">EV/EBITDA 9.0x / 7.0x (base 8.0x)</text>
+            <rect x="668" y="394" width="112" height="36" rx="4" fill="url(#downGrad)"/>
+            <rect x="780" y="394" width="96" height="36" rx="4" fill="url(#upGrad)"/>
+            <text x="658" y="417" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#BE123C" text-anchor="end">19.0%</text>
+            <text x="886" y="417" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#1D4ED8">25.5%</text>
+        </g>
+        <!-- Row 5: Leverage at Entry 20.0% / 25.0% (swing 5.0%p) -->
+        <g id="row-leverage">
+            <text x="60" y="485" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Leverage at Entry</text>
+            <text x="60" y="504" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">Debt/EBITDA 3.0x / 5.0x (base 4.0x)</text>
+            <rect x="700" y="470" width="80" height="36" rx="4" fill="url(#downGrad)"/>
+            <rect x="780" y="470" width="80" height="36" rx="4" fill="url(#upGrad)"/>
+            <text x="690" y="493" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#BE123C" text-anchor="end">20.0%</text>
+            <text x="870" y="493" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#1D4ED8">25.0%</text>
+        </g>
+        <!-- Row 6: Capex Intensity 21.0% / 24.0% (swing 3.0%p) -->
+        <g id="row-capex">
+            <text x="60" y="561" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="16" font-weight="600" fill="#0F172A">Capex Intensity</text>
+            <text x="60" y="580" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+                  font-size="13" fill="#64748B">6% / 4% of sales (base 5%)</text>
+            <rect x="732" y="546" width="48" height="36" rx="4" fill="url(#downGrad)"/>
+            <rect x="780" y="546" width="48" height="36" rx="4" fill="url(#upGrad)"/>
+            <text x="722" y="569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#BE123C" text-anchor="end">21.0%</text>
+            <text x="838" y="569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="15" font-weight="600" fill="#1D4ED8">24.0%</text>
+        </g>
+        <!-- Base-case line, drawn over the bars at x(22.5) = 780 -->
+        <g id="base-line">
+            <line x1="780" y1="138" x2="780" y2="602" stroke="#0F172A" stroke-width="2"/>
+            <rect x="716" y="114" width="128" height="24" rx="12" fill="#0F172A"/>
+            <text x="780" y="131" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Base case 22.5%</text>
+        </g>
+    </g>
+    <!-- Data Source -->
+    <g id="footer">
+        <text x="60" y="695" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+              font-size="14" fill="#94A3B8">Source: Investment committee model (base case); deal team analysis</text>
+    </g>
+</svg>
