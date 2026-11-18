@@ -20,7 +20,7 @@ As a top-tier AI presentation strategist, receive source documents, perform cont
 
 ## 1. Strategist Confirmation Stage
 
-🚧 **GATE — Mandatory read first**: `read_file templates/design_spec_reference.md` before any analysis or writing. The design_spec.md output MUST follow that template's 10-section structure exactly. After writing, self-check each section is present: I Project Info → II Canvas → III Visual Theme → IV Typography → V Layout → VI Icon → VII Visualization → VIII Image → IX Outline → X Speaker Notes.
+🚧 **GATE — Mandatory read first**: `read_file templates/design_spec_reference.md` before any analysis or writing. The design_spec.md output MUST follow that template's 11-section structure exactly. After writing, self-check each section is present: I Project Info → II Canvas → III Visual Theme → IV Typography → V Layout → VI Icon → VII Visualization → VIII Image → IX Outline → X Speaker Notes → XI Number Ledger.
 
 ⛔ **BLOCKING**: After the read, present professional recommendations for the confirmation fields below and wait for explicit user confirmation.
 
@@ -34,9 +34,9 @@ As a top-tier AI presentation strategist, receive source documents, perform cont
 |---|---|---|
 | **direction anchors** | template card *(decks-only; free-design default; leads the page — a deck pick re-defaults the anchors below it)* · template adherence *(only when Step 3 loaded a deck/layout template, or a deck card is selected)* · `a` canvas · `c` key info — audience + `content_divergence` + **delivery purpose** *(PPT only)* (promoted out of `g`) · `d` mode + visual_style | the source + user intent |
 | **design system** | `b` page count · `e` color · `f` icon · `g` typography (font + size, formula policy) | the direction anchors |
-| **images / execution** | `h` image source + generated-image style · generation mode · refine-spec toggle | direction + design system |
+| **images / execution** | `h` image source + generated-image style · generation mode · refine-spec toggle · `i` web gap-fill toggle *(only when the source has gaps)* | direction + design system |
 
-The design-system items are anchored by the direction layer — `visual_style` governs `e` / `f` / `g` (§d Layer 2), and delivery purpose sets the §g body size (one fixed value per purpose), page density, **and** the `b` page-count recommendation. Image strategy follows both layers: h.5 rendering follows the recommended visual direction, while h.5 palette is color behavior only and must follow the §e colors. **Page count is derived, not an anchor** — it follows content volume × delivery purpose. Author the whole bundle against your recommended anchors; when the user confirms different anchors, reconcile per [SKILL.md Step 4](../SKILL.md) (re-derive only the downstream fields the user did not edit — user-set values stay verbatim). The launch / wait mechanics live in [SKILL.md Step 4](../SKILL.md); the item specs below keep their `a`–`h` letters. A staged three-pass confirmation remains available only on explicit user request ([`confirm_ui.md`](../scripts/docs/confirm_ui.md)).
+The design-system items are anchored by the direction layer — `visual_style` governs `e` / `f` / `g` (§d Layer 2), and delivery purpose sets the §g body size (one fixed value per purpose), page density, **and** the `b` page-count recommendation. Image strategy follows both layers: h.5 rendering follows the recommended visual direction, while h.5 palette is color behavior only and must follow the §e colors. **Page count is derived, not an anchor** — it follows content volume × delivery purpose. Author the whole bundle against your recommended anchors; when the user confirms different anchors, reconcile per [SKILL.md Step 4](../SKILL.md) (re-derive only the downstream fields the user did not edit — user-set values stay verbatim). The launch / wait mechanics live in [SKILL.md Step 4](../SKILL.md); the item specs below keep their `a`–`i` letters. A staged three-pass confirmation remains available only on explicit user request ([`confirm_ui.md`](../scripts/docs/confirm_ui.md)).
 
 > **Execution discipline**: This is the last BLOCKING checkpoint in the pipeline. After confirmation, complete the Design Spec and proceed to image generation / SVG / post-processing without further pauses.
 >
@@ -64,7 +64,9 @@ Confirm target audience, usage occasion, and core message; provide initial asses
 
 Read the user's prose as a point on a spectrum and apply judgment — from *stay close* (track the source's structure and wording, tune only for clarity, no substantive add / drop) through the default *balanced* (re-architect and distill into a narrative under the locked `mode`, keeping all substance) to *free* (regroup, reframe, expand terse points, draw out connections latent in the source, invent section structure and transitions).
 
-**Hard rule — facts stay sourced however free the user asks.** Divergence is freedom to *develop* what is in the source (reorganize / reframe / expand / connect), never licence to invent. Even the freest request must not introduce facts, figures, or claims from outside the source material — that is the `topic-research` job, not divergence. `mode` and divergence are orthogonal (e.g. a pyramid that hews to the source's own points vs. a pyramid built from freely synthesized themes).
+**Hard rule — facts stay sourced however free the user asks.** Divergence is freedom to *develop* what is in the source (reorganize / reframe / expand / connect), never licence to invent. Even the freest request must not introduce facts, figures, or claims from outside the source material. External facts enter only as `웹` rows with their URL in the §XI Number Ledger, through the web gap-fill (§i) — or through `topic-research` when there is no source — never through divergence. `mode` and divergence are orthogonal (e.g. a pyramid that hews to the source's own points vs. a pyramid built from freely synthesized themes).
+
+**Hard rule — finance numbers come from the model.** Plan, valuation, return and stress numbers come from `analysis/fin_model.json` (`scripts/docs/fin_model.md`), never hand or scratch-script arithmetic. Inputs and outputs are `가정` ledger rows — a fact-derived input is `계산` (fin_model.md §7) — each shown value rounded once, half-up. If the deck needs debt, taxes, dividends or different company sizes, tell the user.
 
 **Consumption — outline-authoring only.** Apply the user's stated intent when authoring the `§IX` outline. Record the prose (or "balanced default") in `design_spec.md §I` (Content Strategy). Do **NOT** write it to `spec_lock.md` — it is baked into `§IX` at authoring time and the Executor never reads it. It carries no page-count coupling — the §b page count stays the user's separate call. The beautify / template-fill workflows keep content verbatim, so they do not surface this field.
 
@@ -388,6 +390,28 @@ The script renders PNGs into `images/`, trying `codecogs`, `quicklatex`, `mathpa
 > **Confirmed value wins.** The `image_usage` in `result.json` (or the chat reply) **overrides the recommendation here**. It may be a legacy single string or a Confirm UI multi-select array. Map every selected value to §VIII `Acquire Via` (`ai`→`ai`, `web`→`web`, `provided`→**`user`**, `placeholder`→`placeholder`, `none`→option A, no image rows). When it does not include `ai` (and no legacy prose plan includes AI), skip h.5 entirely and write no `ai` rows. If `image_notes` is present, honor it as the user's image intent while assigning per-page rows. See SKILL.md Step 4 for the full mapping.
 
 > **Full image system — conditional read.** Illustration roles, the deck motif through-line, sheet→slice planning, the AI path ladder, and **h.5 (rendering × palette lock + three-candidate presentation)** live in [`strategist-images.md`](./strategist-images.md). Read that file before authoring an image recommendation other than `none` / `placeholder`, when supplied assets exist in `images/`, or whenever the confirmed `image_usage` includes `ai` / `web`. A data-only deck recommending `none` skips it entirely.
+
+### i. Source Gap Web Fill (Confirm UI toggle — default on)
+
+**Trigger**: run `python3 scripts/number_ledger.py gaps <project_path>/sources/*.md` before writing `recommendations.json`. It lists table cells and lines marked `—` / `-` / `N/A` / `미수집` / `미확인` / `비공개` / `확인 필요`, an empty cell in a numeric column (one side of a comparison has the metric, the other does not), and a quarter missing from a table's quarter run.
+
+**Per-candidate judgment**: keep a candidate only when the outline will show that value; drop the rest (a gap the deck never shows, a legend line that explains the markers). Then:
+
+| Kept gaps | `recommendations.json` |
+|---|---|
+| 0 | omit `web_gapfill` — the page hides the toggle |
+| N ≥ 1 | `"web_gapfill": { "value": true, "gaps": N, "note": "<one line naming the gaps, page language>" }` |
+
+**Default — on (user decision 2026-11-18; the user turns it off on the page or in chat)**: the page shows the toggle as `공백 N건 웹 보강(출처 표기)`; the chat fallback bundle carries the same line. When `result.json.web_gapfill` is `true`, fill each kept gap before writing §IX:
+
+1. Search with the tools, fallback, and source tiers of [`topic-research`](../workflows/topic-research.md) Step 2. For a figure, prefer the issuer's own release or filing, then a tier-3 report that quotes it. Run one targeted search per gap; stop at the first source that states the value for the same metric, period, and basis (consolidated / separate, unit).
+2. Record each value as a `웹` row in §XI with the page URL (§6.3).
+3. A gap no source fills stays a gap — show it as `미수집` or leave the cell out. **Forbidden — estimating a gap value.**
+
+`web_gapfill: false`, or no field → no web search; the gaps stay as the source has them.
+
+> Note: the search queries leave this machine — the one exception to local-only processing (README).
+
 ### Template Match — Visualization + Structural Patterns (Non-blocking — Strategist recommends, no user confirmation needed)
 
 The catalog covers **both data charts and structural information designs**. A "match" is not limited to numeric pages — any page whose content shape matches a `Pick for ...` clause is a candidate:
@@ -400,11 +424,11 @@ The most common Strategist failure mode is missing the structural half — treat
 **Flag native-preset candidates on §VII pages.** For any page row already listed in §VII (including `no-template-match` rows), when its content also calls for a literal stock PowerPoint shape — a chevron, block arrow, standard flowchart node, callout, banner, or star (judged from the page plan, not from a template's name or drawing) — append a candidate note to that page's `Usage`, e.g. `…existing usage…; native-preset candidate: chevron; Executor applies executor-base §3.0`. This primes the Executor at plan-read time without deciding for it: the Executor still selects the exact preset, frame, and paint at draw time via [`executor-base.md`](./executor-base.md) §3.0, or keeps ordinary SVG when that section's exceptions apply. Pages with no §VII row rely on the Executor's §3.0 judgment at draw time.
 
 > **Reading is mandatory; the catalog is a starting point, not a copy target.**
-> - Fully read `templates/charts/charts_index.json` **before drafting the Strategist confirmation stage** — the read happens up front, not when you sit down to write Section VII. The file contains `meta` + `charts.<key>.summary` only; each `summary` is a selection rule (`"Pick for … Skip if …"`), not a description. There is **no category, quickLookup, or keyword index** — selection is done by semantically matching each page's content shape against all 76 summaries in one pass.
+> - Fully read `templates/charts/charts_index.json` **before drafting the Strategist confirmation stage** — the read happens up front, not when you sit down to write Section VII. The file contains `meta` + `charts.<key>.summary` only; each `summary` is a selection rule (`"Pick for … Skip if …"`), not a description. There is **no category, quickLookup, or keyword index** — selection is done by semantically matching each page's content shape against all 78 summaries in one pass.
 > - Not every page needs a chart. When a page's information structure matches a catalog entry, **use that template as a structural starting point** — keep the visualization type and core layout logic, then adapt composition, density, color, decoration, and accompanying elements to fit this deck's content and visual tone. Free adjustment is encouraged; what is forbidden is (a) generating without reading the catalog, and (b) blind verbatim mimicry that ignores the page's actual content weight.
 >
 > **Workflow**:
-> 1. Read all 76 summaries; for each page, identify the Pick clause that matches the page's content shape AND does not match any Skip clause.
+> 1. Read all 78 summaries; for each page, identify the Pick clause that matches the page's content shape AND does not match any Skip clause.
 > 2. Prefer specificity (`vertical_list` over generic `numbered_steps`).
 > 3. One primary visualization per page; a supporting layout may accompany it.
 > 4. List selections in Design Spec section VII; section IX only notes the visualization type name per page.
@@ -413,7 +437,7 @@ The most common Strategist failure mode is missing the structural half — treat
 >
 > **Read-audit (mandatory, section VII format)** — single combined table; `summary-quote` column is the anti-fabrication audit, `path` + `usage` serve Executor lookup. Format defined in [`templates/design_spec_reference.md`](../templates/design_spec_reference.md) §VII:
 > ```
-> Catalog read: 76 templates
+> Catalog read: 78 templates
 >
 > | Page | Template      | Path                              | Summary-quote (verbatim) | Usage |
 > | ---- | ------------- | --------------------------------- | ------------------------ | ----- |
@@ -540,7 +564,7 @@ This is what makes the axis meaningful: a `presentation` deck and a `text` deck 
 
 > Note: §IX is the only content copy the Executor re-reads after context compression — what you write there is what survives.
 
-### 6.2 Outline Output Specification (Must include 10 sections)
+### 6.2 Outline Output Specification (Must include 11 sections)
 
 | Chapter | Content Requirements |
 |---------|---------------------|
@@ -554,6 +578,7 @@ This is what makes the axis meaningful: a `presentation` deck and a `text` deck 
 | VIII. Image Resource List | Filename, dimensions, ratio, purpose, status, generation description |
 | IX. Content Outline | Grouped by chapter; each page includes layout, title, core message (the page's one idea), content blocks (in the selected phrasing mode), visualization type (if applicable) |
 | X. Speaker Notes Requirements | Opt-in — `None requested` when the user did not ask (default); file naming rules + content structure description when requested |
+| XI. Number Ledger | One row per number the deck shows: id, shown as, type (`원문` / `계산` / `전망` / `가정` / `웹`), formula or source/URL, pages — see §6.3 |
 
 **Generation steps**:
 
@@ -578,6 +603,32 @@ This is what makes the axis meaningful: a `presentation` deck and a `text` deck 
    - **page_layouts (deck/layout templates only)**: Add one `P<NN>: <svg_basename>` row for every page. This is the complete input-prototype mapping. Strict preserves that SVG's structural contract; adaptive keeps its Master and may explicitly assign a new output Layout identity during page authoring. Omit the whole section for free-design and brand-only routes.
    - **page_charts (write only for chart pages that match a catalog template)**: For each page in `design_spec.md §VII` whose `reference template path` points to `templates/charts/<name>.svg`, add `P<NN>: <chart_name>`. Pages with `no-template-match` in §VII MUST NOT appear here (Executor would look for a non-existent reference). If the deck has no data-visualization pages, omit the section.
    - **Hard rule**: Use both `page_layouts` and `page_charts` only with a compatible template shell. For a chart page without an exact roster match, adaptive mode selects the closest neutral input prototype and assigns an explicit output Layout key in the planning map; strict mode must select an existing compatible Layout or revise the outline. Never omit `page_layouts` inside a new deck/layout template route.
+
+### 6.3 Number Ledger (§XI)
+
+Write §XI in the same pass as §IX: one row per number the deck will show — every figure in §IX copy and every value a chart or table will draw. Numbers with the same type and source may share one row (`6.7 · 4.7 · 12.2 · 20.1`). Pick the type per value:
+
+| Type | Use for | `formula or source/URL` cell |
+|---|---|---|
+| `원문` | a value the source states (rounded as the deck shows it) | source location (`sources/report.md §2 table`) |
+| `계산` | a value derived from other values — ratio, growth, difference, sum, margin | the formula over row ids or values (`N01 − N02`) |
+| `전망` | a forecast or estimate, stated in the source or derived from one | source location or formula |
+| `가정` | a deck assumption — plan target, scenario input, or a model output built on assumptions | the assumption basis |
+| `웹` | a value the web gap-fill (§i) found | the page URL — **mandatory** |
+
+**Hard rule — `shown as`**: write the value as the page shows it, with its unit (`47.2조 원`), and list every display form the pages use (`47.2조 원 / 47조 2,063억`). The check matches by number, so `47.2조 원` also covers a `47.2` chart label.
+
+**Hard rule — tags**: a page that shows a `계산` / `전망` / `가정` / `웹` value also shows that type's tag word — `계산` / `전망` / `가정` / `웹` (English decks: `calc` / `forecast` / `assumption` / `web`). The Executor places it by this convention:
+
+| Where the value sits | Tag |
+|---|---|
+| running text, KPI, callout | suffix in the same run: `3.6조 원(계산)`, `28%(전망)`, `MOIC 3.0배(가정)`, `1,234억 원(웹)` |
+| chart, table, or a run of same-type values | once per page — series name, column header, or category label (`2026(전망)`), or the footnote / source line (`증감률은 원자료로 계산`) |
+| `웹` value | the tag, plus the publisher in the page's source line |
+
+**Exempt — no row needed**: years, dates, page numbers and page references (`14쪽`), axis ticks, list markers, period / ordinal / structure counters (`2분기`, `1위`, `3단계`, `4종`), identifiers (`HBM4`, `4Q25`, `Phase 1`), and a per-unit base (`1조 원당`).
+
+**Validation**: `validate_spec.py` fails on a malformed row, an unknown type, an empty formula / source cell, or a `웹` row without a URL. After the Executor phase, `python3 scripts/number_ledger.py check <project_path>` warns on every number missing from §XI and every page missing a tag — add the row (for a number the Executor introduced) or fix the page. A deck with no numbers writes `No numbers` under the §XI heading.
 
 ---
 

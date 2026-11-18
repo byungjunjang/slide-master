@@ -156,16 +156,16 @@ Sheet `Base` holds the base case and one exit block per `valuation_multiples` va
 |---|---|---|
 | An input, e.g. growth 4%, entry 5.0x | `가정` | `fin_assumptions: revenue_growth_pct` |
 | An input derived from facts, e.g. EBITDA ÷ EBIT 1.64 | `계산` | the fact formula, e.g. `케이카 2025 EBITDA 1,248 ÷ 영업이익 760` |
-| An output, e.g. 2031 EBIT 519, MOIC 1.6배 | `계산` | `fin_model: <section>[<key>].<field>` |
-| A difference of two outputs, e.g. +3.0%p | `계산` | both paths, e.g. `fin_model: margin_by_age_pct[3] − margin_by_age_pct[0]` |
+| An output, e.g. 2031 EBIT 519, MOIC 1.6배 | `가정` (it inherits the assumptions — strategist.md §6.3) | `fin_model: <section>[<key>].<field>` |
+| A difference of two outputs, e.g. +3.0%p | `가정` | both paths, e.g. `fin_model: margin_by_age_pct[3] − margin_by_age_pct[0]` |
 
 Path keys: `pnl[2031].ebit`, `valuation.stake_value`, `returns.irr_pct`, `valuation_cases[4.2].returns.moic`, `stress[AX 효과 절반].returns.moic`, `ebit_bridge.drivers[AX 온보딩].value`.
 
 ```markdown
 | id | shown as | type | formula or source/URL | pages |
 |---|---|---|---|---|
-| fin-ebit-2031 | 519억 원 | 계산 | fin_model: pnl[2031].ebit | P14, P16 |
-| fin-moic-base | 3.1배 | 계산 | fin_model: returns.moic | P02, P15, P17 |
+| fin-ebit-2031 | 519억 원 | 가정 | fin_model: pnl[2031].ebit | P14, P16 |
+| fin-moic-base | 3.1배 | 가정 | fin_model: returns.moic | P02, P15, P17 |
 | fin-growth | 연 4% | 가정 | fin_assumptions: revenue_growth_pct | P14 |
 ```
 

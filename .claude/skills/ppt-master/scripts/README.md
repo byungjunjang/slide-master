@@ -221,6 +221,7 @@ python3 scripts/update_repo.py
 | Spec maintenance | `update_spec.py` | [docs/update_spec.md](./docs/update_spec.md) |
 | Financial model | `fin_model.py` | [docs/fin_model.md](./docs/fin_model.md) |
 | Deck copy | `deck_copy.py` (message outline review, guarded copy polish) | script docstring |
+| Number ledger | `number_ledger.py` (gap list before Step 4; §XI number + tag check after Step 6) | script docstring |
 | Pipeline gates | `preflight.py` (environment, after project init), `validate_spec.py` (planning artifacts, after Step 4 spec output), `verify_deck.py` (final deck verification after Step 7, including the one-pass contact-sheet render; add `--no-render` only to skip that render while re-exporting during iteration) | script docstrings |
 | Run measurement | `run_telemetry.py`, `measure_run.py`, `benchmark_pipeline_ab.py` | section above; script docstrings |
 | Image tools | `image_gen.py`, `latex_render.py`, `analyze_images.py`, `gemini_watermark_remover.py` | [docs/image.md](./docs/image.md) |

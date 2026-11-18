@@ -236,7 +236,7 @@ Two views on the same font decisions — fill both, keep them consistent:
 
 > When pages map to a chart-library template (data charts OR structural patterns — team rosters, agendas, frameworks, etc.), Strategist lists them here for Executor reference. Single combined table — `summary-quote` column is the anti-fabrication audit, `path` + `usage` columns serve Executor lookup.
 
-Catalog read: 76 templates
+Catalog read: 78 templates
 
 | Page | Template | Path | Summary-quote (verbatim from `charts_index.json`) | Usage |
 | ---- | -------- | ---- | ------------------------------------------------- | ----- |
@@ -313,3 +313,20 @@ When requested — one speaker note file per page, saved to `notes/`:
 
 - **Filename**: match SVG name (e.g., `01_cover.md`)
 - **Content**: script key points, timing cues, transition phrases
+
+---
+
+## XI. Number Ledger
+
+> One row per number the deck shows — every figure in §IX copy and every value a chart or table draws; numbers with the same type and source may share a row. Contract, tag words, and exemptions (years, dates, page numbers, axis ticks, ordinals): [strategist.md §6.3](../references/strategist.md). `validate_spec.py` checks the rows; `number_ledger.py check` matches the numbers in `svg_output/` against them. A deck with no numbers writes `No numbers` here.
+
+| id | shown as | type | formula or source/URL | pages |
+| -- | -------- | ---- | --------------------- | ----- |
+| N01 | 1,250억 원 / 1,250 | 원문 | `sources/report.md` §2 table | P02, P05 |
+| N02 | 410 · 380 · 455 · 512 | 원문 | `sources/report.md` §3 quarterly table | P06 |
+| C01 | 32.8% | 계산 | N01 ÷ 3,810억 (revenue) | P05 |
+| F01 | 28% | 전망 | `sources/report.md` §4 2026 forecast | P09 |
+| A01 | MOIC 3.0배 | 가정 | exit at 8.0x EV/EBITDA in 2031 | P15 |
+| W01 | 1,234억 원 | 웹 | https://example.com/ir/2025-results | P03 |
+
+> **Type legend**: `원문` value stated in the source · `계산` derived value (formula over row ids or values) · `전망` forecast or estimate · `가정` deck assumption · `웹` value the web gap-fill found (URL mandatory). `shown as` lists every display form the pages use; `pages` takes `P05`, `P02–P04`, or a comma list. A page that shows a `계산` / `전망` / `가정` / `웹` value also shows that type's tag word.

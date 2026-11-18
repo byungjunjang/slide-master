@@ -20,6 +20,8 @@ Checks:
       pptx_masters/pptx_layouts/page_layouts; structured requires all three
       with exactly one row per page
     - spec_lock.md page_charts ⊆ charts_index and consistent with §VII
+    - design_spec.md §XI Number Ledger rows: five cells, a known type, a
+      formula / source, and a URL on every 웹 row (a missing §XI only warns)
 
 Usage:
     python3 scripts/validate_spec.py <project_path> [--strict]
@@ -48,6 +50,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from console_encoding import configure_utf8_stdio  # noqa: E402
+from number_ledger import ledger_problems, parse_ledger  # noqa: E402
 
 CHARTS_INDEX = _SCRIPTS_DIR.parent / "templates" / "charts" / "charts_index.json"
 RHYTHM_VALUES = {"anchor", "dense", "breathing"}
@@ -287,6 +290,14 @@ def check_spec_lock(sections: dict[str, dict[str, str]], page_count: int,
     return errors, warnings
 
 
+def check_ledger(design_spec: str) -> tuple[list[str], list[str]]:
+    rows = parse_ledger(design_spec)
+    if rows is None:
+        return [], ["design_spec.md has no §XI Number Ledger — add one row per "
+                    "number the deck shows (strategist.md §6.3)"]
+    return [f"§XI {problem}" for problem in ledger_problems(rows)], []
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Validate design_spec.md + spec_lock.md before generation.",
@@ -321,8 +332,9 @@ def main(argv: Optional[list[str]] = None) -> int:
     errors, warnings = check_slides(slides)
     e2, w2 = check_vii(vii_rows, charts)
     e3, w3 = check_spec_lock(sections, len(slides), charts, vii_rows)
-    errors += e2 + e3
-    warnings += w2 + w3
+    e4, w4 = check_ledger(design_spec)
+    errors += e2 + e3 + e4
+    warnings += w2 + w3 + w4
 
     for w in warnings:
         print(f"  ! WARN {w}", file=sys.stderr)

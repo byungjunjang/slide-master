@@ -40,6 +40,7 @@
             sec_images: "Image usage",
             sec_mode: "Generation mode",
             sec_refine: "Refine spec first",
+            sec_gapfill: "Fill {n} source gaps from the web (sources cited)",
             sub_mode: "Narrative mode",
             sub_visual: "Visual style",
             sub_template_adherence: "Template adherence",
@@ -122,6 +123,8 @@
             mode_split_desc: "Stop after the spec; resume SVG generation in a fresh window.",
             refine_off_desc: "Spec is written in one go; the pipeline auto-proceeds.",
             refine_on_desc: "Stop after the spec for review/revision before any generation.",
+            gapfill_on_desc: "Search the web for these values and cite each source. The search queries leave this machine.",
+            gapfill_off_desc: "No web search; the gaps stay as the source has them.",
             off_default: "Off",
             on: "On",
             option_prefix: "Option",
@@ -157,6 +160,7 @@
             sec_images: "画像の使用",
             sec_mode: "生成モード",
             sec_refine: "先に設計仕様を精査",
+            sec_gapfill: "元資料の空白 {n} 件をウェブで補完（出典表記）",
             sub_mode: "ナラティブモード",
             sub_visual: "ビジュアルスタイル",
             sub_template_adherence: "テンプレートの適用方法",
@@ -239,6 +243,8 @@
             mode_split_desc: "設計仕様の作成後に停止し、別ウィンドウでSVG生成を再開します。",
             refine_off_desc: "設計仕様を一度で書き上げ、パイプラインは自動で進みます。",
             refine_on_desc: "設計仕様の作成後に停止し、生成前にレビュー・修正できます。",
+            gapfill_on_desc: "ウェブで値を探し、出典を付けて入れます。検索語は外部に送信されます。",
+            gapfill_off_desc: "ウェブ検索をせず、元資料の空白をそのまま残します。",
             off_default: "オフ",
             on: "オン",
             option_prefix: "案",
@@ -274,6 +280,7 @@
             sec_images: "이미지 사용",
             sec_mode: "생성 모드",
             sec_refine: "설계 스펙 먼저 다듬기",
+            sec_gapfill: "공백 {n}건 웹 보강(출처 표기)",
             sub_mode: "내러티브 모드",
             sub_visual: "비주얼 스타일",
             sub_template_adherence: "템플릿 준수 방식",
@@ -356,6 +363,8 @@
             mode_split_desc: "설계 스펙 작성 후 멈추고, 새 창에서 SVG 생성을 이어갑니다.",
             refine_off_desc: "설계 스펙을 한 번에 작성하고 파이프라인이 자동으로 진행됩니다.",
             refine_on_desc: "설계 스펙 작성 후 멈춰서 생성 전에 검토·수정할 수 있습니다.",
+            gapfill_on_desc: "웹에서 값을 찾아 출처와 함께 넣습니다. 검색어가 외부로 나갑니다.",
+            gapfill_off_desc: "웹 검색 없이 원자료의 공백을 그대로 둡니다.",
             off_default: "끔",
             on: "켬",
             option_prefix: "옵션",
@@ -391,6 +400,7 @@
             sec_images: "图片使用",
             sec_mode: "生成模式",
             sec_refine: "先精修设计规范",
+            sec_gapfill: "{n} 处资料空缺网络补全（标注出处）",
             sub_mode: "叙事模式",
             sub_visual: "视觉风格",
             sub_template_adherence: "模板遵循方式",
@@ -473,6 +483,8 @@
             mode_split_desc: "写完设计规范后停止，另开窗口继续生成页面。",
             refine_off_desc: "设计规范一次写完，流程自动继续。",
             refine_on_desc: "写完设计规范后停下供你审阅或修改，再开始生成。",
+            gapfill_on_desc: "在网上查找这些数值并标注出处；检索词会发送到外部。",
+            gapfill_off_desc: "不做网络检索，资料空缺保持原样。",
             off_default: "关",
             on: "开",
             option_prefix: "方案",
@@ -2339,6 +2351,25 @@
         host.appendChild(sec);
     }
 
+    // Web gap-fill: shown only when the Strategist counted source gaps
+    // (recommendations.json web_gapfill.gaps >= 1); default on.
+    function renderGapfill(host) {
+        var spec = REC && REC.web_gapfill;
+        if (!spec || !(spec.gaps >= 1)) return;
+        var sec = section("G", "sec_gapfill");
+        sec.querySelector(".section-title").textContent = t("sec_gapfill").replace("{n}", spec.gaps);
+        if (spec.note) sec.appendChild(el("div", "toggle-desc", spec.note));
+        var opts = [{ id: "on", label: t("on") }, { id: "off", label: t("off_default") }];
+        function refresh() {
+            setSectionNote(sec, STATE.web_gapfill ? t("gapfill_on_desc") : t("gapfill_off_desc"));
+        }
+        enumField(sec, opts, spec.value === false ? "off" : "on",
+            function () { return STATE.web_gapfill ? "on" : "off"; },
+            function (v) { STATE.web_gapfill = (v === "on"); refresh(); });
+        refresh();
+        host.appendChild(sec);
+    }
+
     // Stage of the staged confirm flow:
     // 1 = direction anchors, 2 = design system, 3 = images/execution,
     // "all" = legacy single-pass (recommendations.json carried no stage).
@@ -2399,6 +2430,7 @@
             renderImages(host);
             renderMode(host);
             renderRefine(host);
+            renderGapfill(host);
         } else {
             // Legacy single-pass: show every section on one page.
             if (previewHost) renderStylePreview(previewHost);
@@ -2415,6 +2447,7 @@
             renderImages(host);
             renderMode(host);
             renderRefine(host);
+            renderGapfill(host);
         }
         updateActionBar(stage);
     }
@@ -2516,6 +2549,9 @@
 
         STATE.generation_mode = pick("generation_mode", CAT.generation_mode);
         STATE.refine_spec = !!((REC.refine_spec && REC.refine_spec.value) || (REC.recommend && REC.recommend.refine_spec));
+        // Absent (no gaps) → the field is hidden and result.json omits it.
+        if (REC.web_gapfill && REC.web_gapfill.gaps >= 1) STATE.web_gapfill = REC.web_gapfill.value !== false;
+        else delete STATE.web_gapfill;
     }
 
     function initState() {
