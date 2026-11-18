@@ -23,6 +23,8 @@
             deriving: "Generating the downstream options from your choices…",
             connection_lost: "Connection to the confirm server was interrupted; retrying. If this keeps failing, return to the chat for confirmation.",
             already_confirmed: "Already confirmed once. Re-submitting overwrites the previous choices.",
+            auto_confirm_countdown: "Confirming the recommended values in {n}s — click, press a key or scroll to stop.",
+            auto_confirm_stopped: "Auto-confirm stopped. Review, then click Confirm.",
             confirmed_title: "✓ Confirmed",
             confirmed_hint: "Your choices are saved. You can close this page and return to the chat.",
             lang_toggle_title: "Switch language",
@@ -138,6 +140,8 @@
             deriving: "選択内容をもとに後続の選択肢を生成しています…",
             connection_lost: "確認ページのサーバー接続が中断されました。再試行しています。失敗が続く場合はチャットで確認してください。",
             already_confirmed: "すでに一度確定済みです。再送信すると前回の選択を上書きします。",
+            auto_confirm_countdown: "{n}秒後に推奨値で確定します。クリック・キー入力・スクロールで止まります。",
+            auto_confirm_stopped: "自動確定を止めました。確認してから「確定」を押してください。",
             confirmed_title: "✓ 確定しました",
             confirmed_hint: "選択内容を保存しました。このページを閉じてチャットに戻ってください。",
             lang_toggle_title: "言語を切り替え",
@@ -253,6 +257,8 @@
             deriving: "선택 내용을 바탕으로 다음 단계 옵션을 생성하는 중…",
             connection_lost: "확인 페이지 서버 연결이 끊겨 다시 시도하는 중입니다. 계속 실패하면 채팅으로 돌아가 확인을 진행하세요.",
             already_confirmed: "이미 한 번 확정했습니다. 다시 제출하면 이전 선택을 덮어씁니다.",
+            auto_confirm_countdown: "{n}초 뒤 추천값으로 확정합니다. 클릭·키 입력·스크롤하면 멈춥니다.",
+            auto_confirm_stopped: "자동 확정을 멈췄습니다. 확인한 뒤 확인 버튼을 누르세요.",
             confirmed_title: "✓ 확정됨",
             confirmed_hint: "선택이 저장됐습니다. 이 페이지를 닫고 채팅으로 돌아가세요.",
             lang_toggle_title: "언어 전환",
@@ -368,6 +374,8 @@
             deriving: "正在根据你的选择生成下游选项…",
             connection_lost: "确认页服务连接中断，正在重试；如果持续失败，请回到聊天窗口走聊天确认。",
             already_confirmed: "已确认过一次，重新提交会覆盖之前的选择。",
+            auto_confirm_countdown: "{n} 秒后按推荐值确认 — 点击、按键或滚动即可停止。",
+            auto_confirm_stopped: "已停止自动确认。请检查后点「确认」。",
             confirmed_title: "✓ 已确认",
             confirmed_hint: "选择已保存，可关闭此页并回到聊天窗口。",
             lang_toggle_title: "切换语言",
@@ -2629,11 +2637,37 @@
         renderForStage(stage);
     }
 
+    // ---- opt-in auto-confirm (--auto-confirm SECONDS) -----------------------
+    var AUTO_CONFIRMED = false;
+    function startAutoConfirm(seconds) {
+        var status = document.getElementById("confirm-status");
+        var left = seconds;
+        var events = ["pointerdown", "keydown", "wheel", "touchstart"];
+        var show = function () { status.textContent = t("auto_confirm_countdown").replace("{n}", left); };
+        var stop = function () {
+            clearInterval(timer);
+            events.forEach(function (ev) { document.removeEventListener(ev, stop, true); });
+            status.textContent = t("auto_confirm_stopped");
+        };
+        var timer = setInterval(function () {
+            left -= 1;
+            if (left > 0) { show(); return; }
+            clearInterval(timer);
+            events.forEach(function (ev) { document.removeEventListener(ev, stop, true); });
+            AUTO_CONFIRMED = true;   // confirm() builds its payload synchronously
+            confirm();
+            AUTO_CONFIRMED = false;
+        }, 1000);
+        events.forEach(function (ev) { document.addEventListener(ev, stop, true); });
+        show();
+    }
+
     function confirm() {
         var btn = document.getElementById("btn-confirm");
         var payload = JSON.parse(JSON.stringify(STATE));
         normalizeTypographyForSubmit(payload);
         payload.stage = "final";
+        if (AUTO_CONFIRMED) payload.auto_confirmed = true;
         payload.image_usage = selectedImageUsageIds(payload.image_usage);
         if (!payload.image_usage.length) {
             document.getElementById("confirm-status").textContent = t("image_usage_required");
@@ -2816,6 +2850,8 @@
             renderAll();
             if (REC._already_confirmed) {
                 document.getElementById("confirm-status").textContent = t("already_confirmed");
+            } else if (REC._auto_confirm_seconds > 0 && STAGE !== 1 && STAGE !== 2) {
+                startAutoConfirm(REC._auto_confirm_seconds);
             }
         }).catch(function (err) {
             showError(t("load_error") + " " + (err && err.message ? err.message : ""));

@@ -28,6 +28,7 @@ python3 scripts/confirm_ui/server.py <project_path> --daemon
 python3 scripts/confirm_ui/server.py <project_path> --daemon --port 5051
 python3 scripts/confirm_ui/server.py <project_path> --no-browser
 python3 scripts/confirm_ui/server.py <project_path> --timeout 0   # disable idle auto-shutdown
+python3 scripts/confirm_ui/server.py <project_path> --daemon --wait --auto-confirm 60   # opt-in: confirm the recommendations after 60 s
 python3 scripts/confirm_ui/server.py <project_path> --shutdown    # Step 4 cleanup (idempotent)
 ```
 
@@ -37,6 +38,7 @@ python3 scripts/confirm_ui/server.py <project_path> --shutdown    # Step 4 clean
 - `--daemon` starts the Flask process in the background; add `--wait` in the main pipeline so the parent command returns only after the page writes a fresh `result.json`. The `--wait` budget defaults to **590 s** (`--wait-timeout`), kept under the typical 600 s tool ceiling — run the launch with a long tool timeout (≈600000 ms). On timeout the parent returns non-zero but the detached server keeps running, so the caller must re-check `result.json` once before the chat fallback (a slow user may confirm just after the wait returns).
 - `--wait-only` attaches to the page already running from the first `--daemon --wait` and blocks until the page writes the requested stage. If the recorded server died (common on Windows hosts that clean up background children), it automatically restarts the confirm server on the recorded/default port so the browser's polling reconnects without user action. Use `--wait-stage stage2` for the middle design-system handoff, then the default `--wait-stage final` for the final Stage-3 confirmation. It keys on the **stage alone** (no mtime gate), because a user may submit before this wait command is issued. Same `--wait-timeout` budget; on timeout / recovery failure it returns non-zero and the caller re-checks `result.json` once before the chat fallback.
 - `--shutdown` stops a confirm server left running for this project and exits — **idempotent** (a no-op when nothing is running). Tries a graceful `/api/shutdown`, falls back to killing the recorded pid, then clears the lock. SKILL.md Step 4 runs this on every path (page-confirm or chat-fallback) so the page never lingers on the shared port before live preview starts.
+- `--auto-confirm SECONDS` (opt-in, default off) makes a fresh single-pass / final page count down in the action bar and then submit the current values — the recommendations unless the user changed something — exactly like **Confirm**, adding `"auto_confirmed": true` to `result.json`. Any click, key press, scroll, or touch on the page stops the countdown; the user then confirms by hand. Staged Stage-1 / Stage-2 pages and an already-confirmed page never count down. The countdown runs in the page, so with no open browser nothing is confirmed and the `--wait` budget applies as usual.
 - Refuses to start unless `<project_path>/confirm_ui/recommendations.json` exists (except `--shutdown`, which needs no recommendations).
 - Per-project lock at `<project_path>/.confirm_ui.lock` — duplicate launches are refused; stale locks (dead pid) are overwritten.
 - Idle auto-shutdown after 900 s by default; `/api/shutdown` exits gracefully and releases the lock.
@@ -206,6 +208,8 @@ Single-pass (default) files omit `stage`; a staged file adds `"stage": "stage1"`
   "confirmed_at": "2026-06-15T11:44:44"
 }
 ```
+
+An `--auto-confirm` countdown adds `"auto_confirmed": true`; a manual Confirm never carries the key.
 
 The shape above is the **final** result, carrying every field. A single-pass write (the pipeline default) has no `stage` (or `stage: "final"`) and `status: "confirmed"`. In the staged flow, the intermediate **Stage 1** write carries only the anchor fields plus `"stage": "stage1"`, `"status": "stage1-confirmed"`; the AI reads it to re-derive Stage 2 and never treats it as the final confirmation. The intermediate **Stage 2** write carries anchors + design-system fields plus `"stage": "stage2"`, `"status": "stage2-confirmed"`; the AI reads it to re-derive Stage 3 and never treats it as final. Legacy `tier1` / `tier2` results are accepted for old sessions but are no longer written.
 
