@@ -108,6 +108,7 @@ enhancement do not load or inherit this file.
 | `${SKILL_DIR}/scripts/consistency_check.py` | Cross-page consistency — anchor-seed chrome / palette / type sizes, and `--terms` one spelling per term |
 | `${SKILL_DIR}/scripts/deck_copy.py` | Deck message outline (title + lead per page) for the final review; guarded copy polish that rejects edits changing numbers, units or Latin names |
 | `${SKILL_DIR}/scripts/text_fit.py` | Pre-draw line-fit oracle — checker-identical width verdict + balanced-break suggestion before authoring text (free-design speed path; see `references/executor-cheatcard.md` §4) |
+| `${SKILL_DIR}/scripts/fin_model.py` | Roll-up investment model — assumptions JSON → P&L, EBIT bridge, valuation, MOIC/IRR, stress scenarios as JSON + a formula xlsx (investment / valuation / budget decks) |
 | `${SKILL_DIR}/scripts/validate_spec.py` | Planning artifact gate — `design_spec.md` §IX/§VII + `spec_lock.md` coherence, run right after the Step 4 spec output |
 | `${SKILL_DIR}/scripts/preset_shape_svg.py` | Print one registry-backed native PowerPoint preset fragment to stdout for hand-authored SVG insertion |
 | `${SKILL_DIR}/scripts/total_md_split.py` | Speaker notes splitting |
@@ -556,6 +557,8 @@ python3 ${SKILL_DIR}/scripts/analyze_images.py <project_path>/images
 3. Continue immediately with the design spec output below. §VIII rows carry `Status: Pending` until Step 5 reconciles the background results.
 
 The confirmed image path still wins **before any launch** (`codex` / `api` / `auto` per image-generator.md §7; `manual` skips generation entirely — launch nothing). The Path A recovery ladder and the web-switch offer move to Step 5's collection point — a failed background run is diagnosed there, never mid-spec. A single web row may use the positional `image_search.py` form. `slice` rows stay in Step 5 (sheets must finish before slicing). **FALLBACK**: if the host cannot run background processes, skip this block — Step 5 acquires in the foreground exactly as before.
+
+**Financial model (investment, valuation, budget decks)**: when the deck shows a multi-year plan, a valuation, MOIC/IRR or stress scenarios that fit [`scripts/docs/fin_model.md`](scripts/docs/fin_model.md) §2, write `<project_path>/analysis/fin_assumptions.json` and run `python3 ${SKILL_DIR}/scripts/fin_model.py <project_path>/analysis/fin_assumptions.json --json <project_path>/analysis/fin_model.json --xlsx <project_path>/analysis/fin_model.xlsx` before writing §IX numbers. Take every plan, valuation, return and stress number from `fin_model.json`, rounded once (half-up) — never from hand or scratch-script arithmetic — and re-run after any assumption change.
 
 **Output**:
 - `<project_path>/design_spec.md` — human-readable design narrative
