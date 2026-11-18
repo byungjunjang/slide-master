@@ -14,8 +14,11 @@ references/strategist.md §6.3 for the ledger contract and the tag words.
   writes the real count to recommendations.json `web_gapfill`.
 - `check <project_path>` reads the ledger and the visible text of
   `svg_output/*.svg` and warns on (a) numbers not in the ledger, (b) 계산 /
-  전망 / 가정 / 웹 values on a page that shows no tag word for that type, and
-  (c) malformed ledger rows (unknown type, no source, 웹 row without a URL).
+  전망 / 가정 / 웹 values on a page that shows no tag word for that type,
+  (c) malformed ledger rows (unknown type, no source, 웹 row without a URL)
+  and rows that hold only exempt values, and (d) internal file references on
+  a page ('analysis/fin_model.json', 'fin_model: pnl[2031].ebit') — a source
+  line names a source a reader can look up.
   Exempt: years, dates, page numbers and page references ('14쪽'), axis ticks
   and list markers (3+ bare numbers in one column or row stepping evenly),
   period / ordinal / structure counters ('2분기', '1위', '3단계'),
@@ -73,6 +76,10 @@ TAGGED_TYPES = ("계산", "전망", "가정", "웹")
 
 _NUM_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 _URL_RE = re.compile(r"https?://\S+|www\.\S+")
+_ARTIFACT_RE = re.compile(  # analysis/fin_model.json, sources/report.md, fin_model: pnl[…]
+    r"(?<![\w.])(?:analysis|sources|svg_output|notes|images|exports)[/\\]"
+    r"|(?<=\w)\.(?:json|md|csv|xlsx|py)(?![A-Za-z0-9])"
+    r"|(?<![\w.])fin_(?:model|assumptions)(?![A-Za-z0-9])")
 _DATE_RE = re.compile(  # 2026-07-15 / 2025.09 / 2025/5 / 2월 15일
     r"(?<![\d.,])(?:19|20)\d\d[.\-/](?:0?[1-9]|1[0-2])"
     r"(?:[.\-/](?:0?[1-9]|[12]\d|3[01]))?(?!\d)"
@@ -232,10 +239,14 @@ def ledger_problems(rows: list[LedgerRow]) -> list[str]:
             problems.append(f"{row.id}: no formula or source")
         elif row.type == "웹" and not _URL_RE.search(row.source):
             problems.append(f"{row.id}: a 웹 row needs the URL it came from")
-        if not row.values:
-            problems.append(f"{row.id}: 'shown as' holds no ledger number "
-                            f"('{_clip(row.shown, 30)}')")
     return problems
+
+
+def ledger_notes(rows: list[LedgerRow]) -> list[str]:
+    """Rows that hold only exempt values: harmless, but no page number needs them."""
+    return [f"{row.id}: 'shown as' holds no number that needs a row ('{_clip(row.shown, 30)}') "
+            f"— years, counters and identifiers are exempt; drop the row or write the shown value"
+            for row in rows if not row.values]
 
 
 # ---- page text --------------------------------------------------------------
@@ -309,7 +320,7 @@ def check(project: Path) -> int:
               "every number below counts as unledgered")
         warnings += 1
         rows = []
-    problems = ledger_problems(rows)
+    problems = ledger_problems(rows) + ledger_notes(rows)
     for problem in problems:
         print(f"[WARNING] ledger {problem}")
     by_value: dict[float, list[LedgerRow]] = {}
@@ -322,13 +333,18 @@ def check(project: Path) -> int:
         print("[WARNING] no svg_output/*.svg — checked the ledger rows only")
     texts: dict[int, tuple[str, str]] = {}      # page → (file name, joined text)
     shown_on: dict[str, set[int]] = {}          # tagged row id → pages showing it
-    checked = unledgered = 0
+    checked = unledgered = internal = 0
     for f in files:
         page = int(_page_no(f)) if _page_no(f).isdigit() else 0
         lines = page_lines(f, page)
         texts[page] = (f.name, "\n".join(lines).lower())
         reported: set[float] = set()
         for line in lines:
+            ref = _ARTIFACT_RE.search(_URL_RE.sub(" ", line))
+            if ref:
+                print(f"[WARNING] {f.name}: internal file reference '{ref.group()}' — name the "
+                      f"source in words (strategist.md §6.3) — \"{_clip(line)}\"")
+                internal += 1
             for num in numbers(line):
                 if num.exempt:
                     continue
@@ -352,9 +368,10 @@ def check(project: Path) -> int:
                 print(f"[WARNING] {name}: {row.id} '{_clip(row.shown, 30)}' is {row.type} "
                       f"but the page shows no '{row.type}' tag")
                 untagged += 1
-    warnings += len(problems) + unledgered + untagged
+    warnings += len(problems) + unledgered + untagged + internal
     print(f"\nLedger: {len(files)} pages, {len(rows)} rows, {checked} numbers checked — "
           f"{unledgered} not in the ledger, {untagged} missing tags, "
+          f"{internal} internal file references, "
           f"{len(problems)} row problems ({warnings} warnings)")
     return 0
 

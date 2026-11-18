@@ -50,7 +50,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from console_encoding import configure_utf8_stdio  # noqa: E402
-from number_ledger import ledger_problems, parse_ledger  # noqa: E402
+from number_ledger import ledger_notes, ledger_problems, parse_ledger  # noqa: E402
 
 CHARTS_INDEX = _SCRIPTS_DIR.parent / "templates" / "charts" / "charts_index.json"
 RHYTHM_VALUES = {"anchor", "dense", "breathing"}
@@ -295,7 +295,8 @@ def check_ledger(design_spec: str) -> tuple[list[str], list[str]]:
     if rows is None:
         return [], ["design_spec.md has no §XI Number Ledger — add one row per "
                     "number the deck shows (strategist.md §6.3)"]
-    return [f"§XI {problem}" for problem in ledger_problems(rows)], []
+    return ([f"§XI {problem}" for problem in ledger_problems(rows)],
+            [f"§XI {note}" for note in ledger_notes(rows)])
 
 
 def build_parser() -> argparse.ArgumentParser:

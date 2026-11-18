@@ -74,7 +74,7 @@ def _first_y(el: ET.Element) -> float | None:
 
 
 def page_outline(svg_path: Path) -> list[str]:
-    """Largest distinct lines in the top part of the page, biggest first."""
+    """Largest distinct lines with 4+ letters in the top part of the page, biggest first."""
     root = ET.parse(str(svg_path)).getroot()
     height = float((root.get("viewBox") or "0 0 1280 720").split()[3])
     picks: list[tuple[float, float, str]] = []
@@ -83,8 +83,8 @@ def page_outline(svg_path: Path) -> list[str]:
             continue
         y = _first_y(el)
         text = " ".join(" ".join(el.itertext()).split())  # runs and lines joined by a space
-        if y is None or y > OUTLINE_TOP * height or len(text) < 4:
-            continue
+        if y is None or y > OUTLINE_TOP * height or sum(ch.isalpha() for ch in text) < 4:
+            continue  # hero numbers ('47.2 vs 43.6', '+33%') are not page messages
         picks.append((-_font_size(el), y, text))
     lines: list[str] = []
     for _neg_size, _y, text in sorted(picks):

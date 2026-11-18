@@ -171,4 +171,4 @@ Path keys: `pnl[2031].ebit`, `valuation.stake_value`, `returns.irr_pct`, `valuat
 
 **Display rounding**: round the full JSON value half-up to the shown precision, once. Never round an already rounded value — deck B printed MOIC 3.0509 as `3.05`, then showed `3.0배`; the correct one-decimal value is `3.1배`.
 
-**Tags**: model outputs and inputs carry the page tag of their ledger type (`계산` / `가정`), per the ledger rules in `templates/design_spec_reference.md`.
+**Tags**: model outputs and inputs carry the page tag of their ledger type (`계산` / `가정`), per the ledger rules in `templates/design_spec_reference.md`. The page's source line names the model in words (`재무 모델 가정`) — never `analysis/fin_model.json`, a path key such as `pnl[2031].ebit`, or the `fin_model:` source cell.

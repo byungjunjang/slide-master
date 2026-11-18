@@ -622,13 +622,16 @@ Write §XI in the same pass as §IX: one row per number the deck will show — e
 
 | Where the value sits | Tag |
 |---|---|
-| running text, KPI, callout | suffix in the same run: `3.6조 원(계산)`, `28%(전망)`, `MOIC 3.0배(가정)`, `1,234억 원(웹)` |
+| title, subtitle / lead, hero or KPI number | no suffix — the KPI label or the footnote / source line names the type once, in words (`MOIC·IRR은 재무 모델 가정 기준`, `격차는 원자료로 계산`) |
+| other running text, callout | suffix in the same run: `3.6조 원(계산)`, `28%(전망)`, `MOIC 3.0배(가정)`, `1,234억 원(웹)` |
 | chart, table, or a run of same-type values | once per page — series name, column header, or category label (`2026(전망)`), or the footnote / source line (`증감률은 원자료로 계산`) |
 | `웹` value | the tag, plus the publisher in the page's source line |
 
+**Hard rule — source lines**: a page's source / footnote line names what a reader can look up — publisher and date, the source document's title, or `재무 모델 가정` in words — never a file path (`analysis/fin_model.json`), a ledger id or a model key (`pnl[2031].ebit`). The §XI `formula or source/URL` cell serves traceability; it is not page copy.
+
 **Exempt — no row needed**: years, dates, page numbers and page references (`14쪽`), axis ticks, list markers, period / ordinal / structure counters (`2분기`, `1위`, `3단계`, `4종`), identifiers (`HBM4`, `4Q25`, `Phase 1`), and a per-unit base (`1조 원당`).
 
-**Validation**: `validate_spec.py` fails on a malformed row, an unknown type, an empty formula / source cell, or a `웹` row without a URL. After the Executor phase, `python3 scripts/number_ledger.py check <project_path>` warns on every number missing from §XI and every page missing a tag — add the row (for a number the Executor introduced) or fix the page. A deck with no numbers writes `No numbers` under the §XI heading.
+**Validation**: `validate_spec.py` fails on a malformed row, an unknown type, an empty formula / source cell, or a `웹` row without a URL, and warns on a row that holds only exempt values. After the Executor phase, `python3 scripts/number_ledger.py check <project_path>` warns on every number missing from §XI, every page missing a tag, and every internal file reference on a page — add the row (for a number the Executor introduced) or fix the page. A deck with no numbers writes `No numbers` under the §XI heading.
 
 ---
 
