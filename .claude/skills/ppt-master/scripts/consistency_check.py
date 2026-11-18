@@ -196,7 +196,10 @@ def emit_seed(project: Path, anchor_nos: list[str]) -> int:
     fsizes: set[float] = set()
     for f in files:
         page = parse_page(f)
-        chrome_per_page.append(page["chrome_ys"])
+        # The cover (page 01) frames itself differently: it stays a skipped
+        # anchor, but chrome comes from the content anchors when there are any.
+        if _page_no(f) != "01" or len(files) == 1:
+            chrome_per_page.append(page["chrome_ys"])
         if page["left_margin"] is not None:
             margins.append(page["left_margin"])
         fsizes.update(page["font_sizes"])
