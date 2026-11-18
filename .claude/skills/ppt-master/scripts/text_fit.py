@@ -7,8 +7,11 @@ write -> svg_quality_checker warning -> edit loop.
 
 The width model is copied VERBATIM from svg_quality_checker.py
 (`_geom_char_width` / `_geom_text_width`): CJK/full-width glyph = 1.0 x fs,
-Latin letter/digit/ASCII punct = 0.55 x fs, ASCII space = 0.25 x fs, plus
-letter-spacing x (chars-1). The wrap verdict mirrors the checker's
+Latin letter/digit/ASCII punct = 0.55 x fs, ASCII space = 0.25 x fs,
+'%' = 0.86 x fs, plus letter-spacing x (chars-1). Heavy text (SemiBold / 600
+or heavier: font-weight >= 600 or a SemiBold/Bold/ExtraBold/Black family)
+measures digits at 0.63 x fs and '%' at 1.0 x fs — pass --heavy or
+"heavy": true for it. The wrap verdict mirrors the checker's
 `_check_text_geometry`:  est_width <= available  =>  ONE LINE ; otherwise WRAP.
 Keep this file in sync if the checker constants ever change.
 
@@ -41,11 +44,13 @@ Usage:
       --num-lines 3 --bottom-bound 668
 
   # batch (legacy list form): JSON array of {text|lines, font_size, x?|zone?,
-  #         right_bound?, vb_width?, letter_spacing?, label?}
+  #         right_bound?, vb_width?, letter_spacing?, heavy?, label?}
   text_fit.py --batch blocks.json
 
   # batch (page form) — ONE call pre-checks the whole page: width + vertical
-  # + cross-block collision. JSON object:
+  # + cross-block collision. Each line also gets the list-form width verdict
+  # (ONE_LINE / WRAP_N) when the block is start-anchored or gives "zone".
+  # JSON object:
   #   {"vb_width": 1280, "vb_height": 720,
   #    "blocks": [{"label": "title", "x": 72, "y": 96, "dy": 0,
   #                "font_size": 40, "lines": ["페이지 제목"]},
@@ -70,6 +75,9 @@ import sys
 # --- width model (verbatim from svg_quality_checker.py) ---------------------
 GEOM_CJK_WIDTH = 1.0
 GEOM_LATIN_WIDTH = 0.55
+GEOM_DIGIT_HEAVY_WIDTH = 0.63   # digits 0-9 at SemiBold (600) or heavier
+GEOM_PERCENT_WIDTH = 0.86       # '%' below SemiBold
+GEOM_PERCENT_HEAVY_WIDTH = 1.0  # '%' at SemiBold (600) or heavier
 GEOM_SPACE_WIDTH = 0.25
 GEOM_MARGIN_RATIO = 0.05
 GEOM_CONSERVATIVE = 0.95    # shrink width estimates before firing errors
@@ -79,9 +87,13 @@ GEOM_MIN_OVERLAP = 4.0      # px; ignore hairline intersections
 _GEOM_CJK_EXTRA = set('—…「」『』《》〈〉【】〔〕')
 
 
-def _char_width(ch: str, font_size: float) -> float:
+def _char_width(ch: str, font_size: float, heavy: bool = False) -> float:
     if ch in (' ', ' '):
         return GEOM_SPACE_WIDTH * font_size
+    if ch == '%':
+        return (GEOM_PERCENT_HEAVY_WIDTH if heavy else GEOM_PERCENT_WIDTH) * font_size
+    if heavy and '0' <= ch <= '9':
+        return GEOM_DIGIT_HEAVY_WIDTH * font_size
     cp = ord(ch)
     if (
         0x1100 <= cp <= 0x11FF       # Hangul jamo
@@ -96,10 +108,11 @@ def _char_width(ch: str, font_size: float) -> float:
     return GEOM_LATIN_WIDTH * font_size
 
 
-def text_width(s: str, font_size: float, letter_spacing: float = 0.0) -> float:
+def text_width(s: str, font_size: float, letter_spacing: float = 0.0,
+               heavy: bool = False) -> float:
     if not s:
         return 0.0
-    width = sum(_char_width(ch, font_size) for ch in s)
+    width = sum(_char_width(ch, font_size, heavy) for ch in s)
     if letter_spacing and len(s) > 1:
         width += letter_spacing * (len(s) - 1)
     return width
@@ -107,7 +120,7 @@ def text_width(s: str, font_size: float, letter_spacing: float = 0.0) -> float:
 
 # --- fit / break planning ---------------------------------------------------
 def _balanced_break(text: str, font_size: float, letter_spacing: float,
-                    available: float):
+                    available: float, heavy: bool = False):
     """Suggest a 2-line split at a space boundary minimizing the longer line,
     keeping line 1 within `available` when possible. Returns (l1, l2) or None
     when the text has no interior space to break on."""
@@ -119,8 +132,8 @@ def _balanced_break(text: str, font_size: float, letter_spacing: float,
         l1, l2 = text[:i].rstrip(), text[i + 1:].lstrip()
         if not l1 or not l2:
             continue
-        w1 = text_width(l1, font_size, letter_spacing)
-        w2 = text_width(l2, font_size, letter_spacing)
+        w1 = text_width(l1, font_size, letter_spacing, heavy)
+        w2 = text_width(l2, font_size, letter_spacing, heavy)
         longer = max(w1, w2)
         fits = w1 <= available and w2 <= available
         # prefer splits where both fit; then minimize the longer line
@@ -132,7 +145,8 @@ def _balanced_break(text: str, font_size: float, letter_spacing: float,
 
 def evaluate_wrap(lines, font_size: float, *, x: float | None = None,
                   right_bound: float | None = None, vb_width: float = 1280.0,
-                  letter_spacing: float = 0.0, label: str | None = None) -> dict:
+                  letter_spacing: float = 0.0, label: str | None = None,
+                  heavy: bool = False) -> dict:
     """Checker-parity oracle for an *intended multi-line block*.
 
     Mirrors svg_quality_checker `_geom_b_checks`: a wrapped <text> block whose
@@ -159,7 +173,7 @@ def evaluate_wrap(lines, font_size: float, *, x: float | None = None,
         vb_width - vb_width * GEOM_MARGIN_RATIO)
     available = float(rb) - xs
     joined = ' '.join(lines)
-    full_w = text_width(joined, font_size, letter_spacing)
+    full_w = text_width(joined, font_size, letter_spacing, heavy)
     flags = full_w <= available if available > 0 else False
     return {
         'label': label,
@@ -180,7 +194,7 @@ def evaluate_wrap(lines, font_size: float, *, x: float | None = None,
 def evaluate(text: str, font_size: float, *, zone: float | None = None,
              x: float | None = None, right_bound: float | None = None,
              vb_width: float = 1280.0, letter_spacing: float = 0.0,
-             label: str | None = None) -> dict:
+             label: str | None = None, heavy: bool = False) -> dict:
     if zone is not None:
         available = float(zone)
     else:
@@ -188,7 +202,7 @@ def evaluate(text: str, font_size: float, *, zone: float | None = None,
         rb = right_bound if right_bound is not None else (
             vb_width - vb_width * GEOM_MARGIN_RATIO)
         available = float(rb) - xs
-    est = text_width(text, font_size, letter_spacing)
+    est = text_width(text, font_size, letter_spacing, heavy)
     fits = est <= available
     import math
     lines_needed = 1 if fits else max(2, math.ceil(est / available)) if available > 0 else 0
@@ -204,7 +218,8 @@ def evaluate(text: str, font_size: float, *, zone: float | None = None,
         'verdict': 'ONE_LINE' if fits else f'WRAP_{lines_needed}',
     }
     if not fits and lines_needed == 2:
-        brk = _balanced_break(text, font_size, letter_spacing, available)
+        brk = _balanced_break(text, font_size, letter_spacing, available,
+                              heavy)
         if brk:
             l1, l2, w1, w2 = brk
             out['suggested_break'] = {
@@ -242,7 +257,7 @@ def evaluate_stack(font_size: float, *, x: float, y: float, dy: float = 0.0,
                    anchor: str = 'start', letter_spacing: float = 0.0,
                    vb_width: float = 1280.0, vb_height: float = 720.0,
                    bottom_bound: float | None = None,
-                   label: str | None = None) -> dict:
+                   label: str | None = None, heavy: bool = False) -> dict:
     """Checker-parity vertical oracle for a planned dy-stacked block.
 
     Line i baseline = ``y + i*dy``; line box = baseline - GEOM_ASCENT*fs ..
@@ -269,7 +284,7 @@ def evaluate_stack(font_size: float, *, x: float, y: float, dy: float = 0.0,
         bottom = baseline + GEOM_DESCENT * fs
         box = {'index': i, 'baseline': baseline, 'top': top, 'bottom': bottom}
         if texts:
-            w = text_width(texts[i], fs, letter_spacing)
+            w = text_width(texts[i], fs, letter_spacing, heavy)
             x0, x1, ex0, ex1 = _line_extent(x, w, anchor)
             box.update({'text': texts[i], 'width': w, 'x0': x0, 'x1': x1,
                         'ex0': ex0, 'ex1': ex1})
@@ -341,10 +356,11 @@ def _collide(ex0, ex1, top, bottom, box):
 
 
 def evaluate_page(spec: dict) -> list[dict]:
-    """Whole-page pre-draw check from one JSON object: per-block width +
+    """Whole-page pre-draw check from one JSON object: per-block canvas +
     vertical (`evaluate_stack`), wrap parity (`evaluate_wrap`, blocks with
-    >= 2 lines), and cross-block / obstacle collision — all mirroring the
-    checker's conditions so a clean page here draws through the gate."""
+    >= 2 lines), per-line width fit (`evaluate`, start anchor or `zone`),
+    and cross-block / obstacle collision — all mirroring the checker's
+    conditions so a clean page here draws through the gate."""
     vb_w = float(spec.get('vb_width', 1280.0))
     vb_h = float(spec.get('vb_height', 720.0))
     results = []
@@ -352,19 +368,30 @@ def evaluate_page(spec: dict) -> list[dict]:
     for b in spec.get('blocks', []):
         fs = float(b.get('font_size', 24))
         ls = float(b.get('letter_spacing', 0.0))
+        hv = bool(b.get('heavy'))
         lines = b.get('lines') or ([b['text']] if b.get('text') else None)
         r = evaluate_stack(
             fs, x=float(b.get('x', 0.0)), y=float(b.get('y', 0.0)),
             dy=float(b.get('dy', 0.0)), lines=lines,
             num_lines=b.get('num_lines'), anchor=b.get('anchor', 'start'),
             letter_spacing=ls, vb_width=vb_w, vb_height=vb_h,
-            bottom_bound=b.get('bottom_bound'), label=b.get('label'))
+            bottom_bound=b.get('bottom_bound'), label=b.get('label'),
+            heavy=hv)
         results.append(r)
         stacks.append(r)
         if lines and len(lines) >= 2:
             results.append(evaluate_wrap(
                 lines, fs, x=b.get('x'), right_bound=b.get('right_bound'),
-                vb_width=vb_w, letter_spacing=ls, label=b.get('label')))
+                vb_width=vb_w, letter_spacing=ls, label=b.get('label'),
+                heavy=hv))
+        # Per-line width verdict (list-mode `evaluate`). x is the left edge
+        # only for start-anchored text, so other anchors need a `zone`.
+        if lines and (b.get('zone') is not None or r['anchor'] == 'start'):
+            results.extend(
+                evaluate(str(t), fs, zone=b.get('zone'), x=b.get('x'),
+                         right_bound=b.get('right_bound'), vb_width=vb_w,
+                         letter_spacing=ls, label=b.get('label'), heavy=hv)
+                for t in lines if str(t))
     obstacle_boxes = [
         (o.get('label') or f'obstacle{i + 1}', tuple(map(float, o['box'])))
         for i, o in enumerate(spec.get('obstacles', []))
@@ -453,6 +480,9 @@ def main(argv=None) -> int:
     ap.add_argument('--right-bound', type=float, help='right boundary x (default: vb_width - 5%%)')
     ap.add_argument('--vb-width', type=float, default=1280.0, help='canvas viewBox width (default 1280)')
     ap.add_argument('--letter-spacing', '-l', type=float, default=0.0)
+    ap.add_argument('--heavy', action='store_true',
+                    help='text renders at SemiBold (600) or heavier '
+                         '(wider digits and %%)')
     ap.add_argument('--y', type=float,
                     help='first-line baseline y (enables the vertical check)')
     ap.add_argument('--dy', type=float, default=0.0,
@@ -480,6 +510,7 @@ def main(argv=None) -> int:
             for b in blocks:
                 fs = float(b.get('font_size', args.font_size or 24))
                 ls = float(b.get('letter_spacing', 0.0))
+                hv = bool(b.get('heavy'))
                 vbw = float(b.get('vb_width', 1280.0))
                 if 'y' in b:  # planned stack -> vertical view
                     results.append(evaluate_stack(
@@ -490,21 +521,23 @@ def main(argv=None) -> int:
                         vb_width=vbw,
                         vb_height=float(b.get('vb_height', 720.0)),
                         bottom_bound=b.get('bottom_bound'),
-                        label=b.get('label')))
+                        label=b.get('label'), heavy=hv))
                     if b.get('lines') and len(b['lines']) >= 2:
                         results.append(evaluate_wrap(
                             b['lines'], fs, x=b.get('x'),
                             right_bound=b.get('right_bound'), vb_width=vbw,
-                            letter_spacing=ls, label=b.get('label')))
+                            letter_spacing=ls, label=b.get('label'),
+                            heavy=hv))
                 elif 'lines' in b:  # intended multi-line -> checker-parity view
                     results.append(evaluate_wrap(
                         b['lines'], fs, x=b.get('x'), right_bound=b.get('right_bound'),
-                        vb_width=vbw, letter_spacing=ls, label=b.get('label')))
+                        vb_width=vbw, letter_spacing=ls, label=b.get('label'),
+                        heavy=hv))
                 else:
                     results.append(evaluate(
                         b['text'], fs, zone=b.get('zone'), x=b.get('x'),
                         right_bound=b.get('right_bound'), vb_width=vbw,
-                        letter_spacing=ls, label=b.get('label')))
+                        letter_spacing=ls, label=b.get('label'), heavy=hv))
     else:
         if args.font_size is None:
             ap.error('provide --font-size (or use --batch)')
@@ -517,7 +550,7 @@ def main(argv=None) -> int:
             results.append(evaluate(
                 args.text, args.font_size, zone=args.zone, x=args.x,
                 right_bound=args.right_bound, vb_width=args.vb_width,
-                letter_spacing=args.letter_spacing))
+                letter_spacing=args.letter_spacing, heavy=args.heavy))
         if args.y is not None:
             results.append(evaluate_stack(
                 args.font_size, x=args.x if args.x is not None else 0.0,
@@ -525,7 +558,7 @@ def main(argv=None) -> int:
                 lines=[args.text] if args.text and not args.num_lines else None,
                 num_lines=args.num_lines, letter_spacing=args.letter_spacing,
                 vb_width=args.vb_width, vb_height=args.vb_height,
-                bottom_bound=args.bottom_bound))
+                bottom_bound=args.bottom_bound, heavy=args.heavy))
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))

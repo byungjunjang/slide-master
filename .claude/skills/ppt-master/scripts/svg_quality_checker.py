@@ -18,7 +18,7 @@ import html
 import math
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 from collections import Counter, defaultdict
 from xml.etree import ElementTree as ET
 
@@ -590,8 +590,14 @@ POSTER_SIZE_STYLES = {'zine'}
 # (docs/handoff/2026-07-17-visual-overflow-review-handoff.md §1.1): all 8
 # user-reported defects reproduce with these constants. Deliberately coarse —
 # do not "improve" with real font metrics; tune the constants instead.
+# 2026-11-18 tuning: two benchmark decks hid real overlaps behind heavy hero
+# digits and '%', so those got their own constants (Pretendard advances:
+# digits 0.61-0.63 em at SemiBold-ExtraBold, '%' 0.86-0.99 em).
 GEOM_CJK_WIDTH = 1.0        # CJK / full-width glyph advance, x font-size
 GEOM_LATIN_WIDTH = 0.55     # Latin letters, digits, ASCII punctuation
+GEOM_DIGIT_HEAVY_WIDTH = 0.63  # digits 0-9 at SemiBold (600) or heavier
+GEOM_PERCENT_WIDTH = 0.86   # '%' below SemiBold
+GEOM_PERCENT_HEAVY_WIDTH = 1.0  # '%' at SemiBold (600) or heavier
 GEOM_SPACE_WIDTH = 0.25     # ASCII space
 GEOM_CONSERVATIVE = 0.95    # shrink width estimates before firing errors
 GEOM_ASCENT = 0.8           # line-box rise above baseline, x font-size
@@ -600,8 +606,17 @@ GEOM_OPACITY_EXEMPT = 0.15  # <= this (fill-)opacity => watermark, not an obstac
 GEOM_BG_COVERAGE = 0.85     # rect/image covering >= this of the canvas = background/hero
 GEOM_MARGIN_RATIO = 0.05    # assumed content margin for wrap-budget checks
 GEOM_MIN_OVERLAP = 4.0      # px; ignore hairline intersections
+GEOM_GLYPH_CAP = 0.7        # glyph ink top above baseline, x font-size
+GEOM_TOUCH = 1.0            # px; a stroke this close to a glyph edge touches it
+GEOM_MIN_CROSS = 2.0        # px of stroke inside the glyph core before warning
+GEOM_FAINT_DIFF = 0.2       # mean |RGB - page background|; closer = faint gridline
+GEOM_FAINT_WIDTH = 1.5      # px; only hairlines this thin count as faint
 
 _GEOM_CJK_EXTRA = set('—…「」『』《》〈〉【】〔〕')
+_GEOM_HEAVY_FAMILY_RE = re.compile(r'bold|black|heavy', re.IGNORECASE)
+_GEOM_PATH_TOKEN_RE = re.compile(
+    r'[A-Za-z]|-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?'
+)
 _GEOM_TRANSLATE_RE = re.compile(
     r'^\s*translate\(\s*(-?[\d.]+)(?:[\s,]+(-?[\d.]+))?\s*\)\s*$'
 )
@@ -612,9 +627,13 @@ _GEOM_SKIP_TAGS = frozenset({
 })
 
 
-def _geom_char_width(ch: str, font_size: float) -> float:
+def _geom_char_width(ch: str, font_size: float, heavy: bool = False) -> float:
     if ch in (' ', '\u00a0'):
         return GEOM_SPACE_WIDTH * font_size
+    if ch == '%':
+        return (GEOM_PERCENT_HEAVY_WIDTH if heavy else GEOM_PERCENT_WIDTH) * font_size
+    if heavy and '0' <= ch <= '9':
+        return GEOM_DIGIT_HEAVY_WIDTH * font_size
     cp = ord(ch)
     if (
         0x1100 <= cp <= 0x11FF       # Hangul jamo
@@ -629,13 +648,117 @@ def _geom_char_width(ch: str, font_size: float) -> float:
     return GEOM_LATIN_WIDTH * font_size
 
 
-def _geom_text_width(s: str, font_size: float, letter_spacing: float = 0.0) -> float:
+def _geom_text_width(s: str, font_size: float, letter_spacing: float = 0.0,
+                     heavy: bool = False) -> float:
     if not s:
         return 0.0
-    width = sum(_geom_char_width(ch, font_size) for ch in s)
+    width = sum(_geom_char_width(ch, font_size, heavy) for ch in s)
     if letter_spacing and len(s) > 1:
         width += letter_spacing * (len(s) - 1)
     return width
+
+
+def _geom_is_heavy(elem: ET.Element, inherited: bool = False) -> bool:
+    """True when the element renders at SemiBold (600) or heavier."""
+    weight = (elem.get('font-weight') or '').strip().lower()
+    if weight:
+        if weight.isdigit():
+            return int(weight) >= 600
+        return weight in ('bold', 'bolder')
+    family = (elem.get('font-family') or '').split(',')[0]
+    if family.strip():
+        return bool(_GEOM_HEAVY_FAMILY_RE.search(family))
+    return inherited
+
+
+def _geom_path_polylines(d: str) -> Optional[List[List[Tuple[float, float]]]]:
+    """Straight-segment path data (M/L/H/V/Z) -> polylines; None for curves."""
+    polys: List[List[Tuple[float, float]]] = []
+    cur: List[Tuple[float, float]] = []
+    x = y = sx = sy = 0.0
+    cmd = None
+    tokens = _GEOM_PATH_TOKEN_RE.findall(d)
+    i = 0
+    try:
+        while i < len(tokens):
+            tok = tokens[i]
+            if tok.isalpha():
+                cmd = tok
+                i += 1
+                if cmd in 'Zz':
+                    if cur:
+                        cur.append((sx, sy))
+                        polys.append(cur)
+                        cur = []
+                    x, y = sx, sy
+                elif cmd not in 'MmLlHhVv':
+                    return None
+                continue
+            if cmd in ('M', 'm'):
+                nx, ny = float(tokens[i]), float(tokens[i + 1])
+                i += 2
+                if cmd == 'm':
+                    nx, ny = x + nx, y + ny
+                if cur:
+                    polys.append(cur)
+                cur = [(nx, ny)]
+                x, y = sx, sy = nx, ny
+                cmd = 'L' if cmd == 'M' else 'l'  # implicit lineto
+            elif cmd in ('L', 'l'):
+                nx, ny = float(tokens[i]), float(tokens[i + 1])
+                i += 2
+                if cmd == 'l':
+                    nx, ny = x + nx, y + ny
+                cur.append((nx, ny))
+                x, y = nx, ny
+            elif cmd in ('H', 'h'):
+                nx = float(tokens[i])
+                i += 1
+                x = x + nx if cmd == 'h' else nx
+                cur.append((x, y))
+            elif cmd in ('V', 'v'):
+                ny = float(tokens[i])
+                i += 1
+                y = y + ny if cmd == 'v' else ny
+                cur.append((x, y))
+            else:
+                return None
+    except (IndexError, ValueError):
+        return None
+    if cur:
+        polys.append(cur)
+    return polys
+
+
+def _geom_hex_rgb(value: str) -> Optional[Tuple[int, int, int]]:
+    """'#RGB' / '#RRGGBB' -> (r, g, b); None for any other paint."""
+    m = re.fullmatch(r'#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})', (value or '').strip())
+    if not m:
+        return None
+    rgb = m.group(1)
+    if len(rgb) == 3:
+        rgb = ''.join(ch * 2 for ch in rgb)
+    return (int(rgb[0:2], 16), int(rgb[2:4], 16), int(rgb[4:6], 16))
+
+
+def _geom_clip(x1: float, y1: float, x2: float, y2: float, rx0: float, ry0: float,
+               rx1: float, ry1: float) -> Optional[Tuple[float, float, float, float]]:
+    """The segment's part inside the rectangle (Liang-Barsky), or None."""
+    dx, dy = x2 - x1, y2 - y1
+    t0, t1 = 0.0, 1.0
+    for p, q in ((-dx, x1 - rx0), (dx, rx1 - x1), (-dy, y1 - ry0), (dy, ry1 - y1)):
+        if p == 0:
+            if q < 0:
+                return None
+            continue
+        t = q / p
+        if p < 0:
+            t0 = max(t0, t)
+        else:
+            t1 = min(t1, t)
+        if t0 > t1:
+            return None
+    return (x1 + t0 * dx, y1 + t0 * dy, x1 + t1 * dx, y1 + t1 * dy)
 
 
 def _geom_sentence_count(text: str) -> int:
@@ -852,8 +975,11 @@ class SVGQualityChecker:
         "04_ending": (),  # ending pages legitimately use varied vocabularies
     }
 
-    def __init__(self, *, template_mode: bool = False):
+    def __init__(self, *, template_mode: bool = False, show_all_warnings: bool = False,
+                 authoring: bool = False):
         self.template_mode = template_mode
+        self.show_all_warnings = show_all_warnings
+        self.authoring = authoring
         self.results = []
         self.summary = {
             'total': 0,
@@ -2098,9 +2224,7 @@ class SVGQualityChecker:
                     )
                     continue
                 for warning in warnings:
-                    result['warnings'].append(
-                        f"data-pptx-native marker {marker_id}: {warning}"
-                    )
+                    self._add_native_marker_warning(result, marker_id, warning)
                 continue
 
             try:
@@ -2117,9 +2241,18 @@ class SVGQualityChecker:
                 ancestors=ancestors_tuple,
                 document_root=root,
             ):
-                result['warnings'].append(
-                    f"data-pptx-native marker {marker_id}: {warning}"
-                )
+                self._add_native_marker_warning(result, marker_id, warning)
+
+    @staticmethod
+    def _add_native_marker_warning(result: Dict, marker_id: str, warning: str) -> None:
+        # Only pptx_to_svg.py imports stamp a fallback baseline; a marker
+        # authored in the SVG pipeline never has one, so its absence is
+        # counted as info instead of a warning to disposition.
+        if warning.startswith('has no ') and 'baseline' in warning:
+            key = 'native_markers_without_fallback_baseline'
+            result['info'][key] = result['info'].get(key, 0) + 1
+            return
+        result['warnings'].append(f"data-pptx-native marker {marker_id}: {warning}")
 
     def _check_pptx_structure_metadata(
         self,
@@ -2372,40 +2505,53 @@ class SVGQualityChecker:
             return None
         anchor = (text_el.get('text-anchor') or 'start').strip()
         ls = gf(text_el.get('letter-spacing'), 0.0) or 0.0
+        heavy = _geom_is_heavy(text_el)
 
+        # Each line keeps its runs as (text, font_size, heavy) so an inline
+        # tspan with its own font-size is measured at that size.
         mixed_sizes = False
-        lines = []  # (content, x_abs, baseline)
-        cur_text = (text_el.text or '').strip()
+        lines = []  # (runs, x_abs, baseline)
+        head = (text_el.text or '').strip()
+        cur_runs = [(head, fs, heavy)] if head else []
         cur_x, cur_y = x, y
-        started = bool(cur_text)
+        started = bool(head)
         for child in list(text_el):
             if not self._is_tspan(child):
                 continue
             if child.get('font-size') is not None:
                 mixed_sizes = True
+            child_fs = gf(child.get('font-size'))
+            run_fs = child_fs if child_fs and child_fs > 0 else fs
+            run_heavy = _geom_is_heavy(child, heavy)
             seg = (child.text or '').strip()
             if self._is_line_tspan(child):
-                if started and cur_text:
-                    lines.append((cur_text, cur_x, cur_y))
+                if started and cur_runs:
+                    lines.append((cur_runs, cur_x, cur_y))
                 ty = gf(child.get('y'))
                 dy_v = gf(child.get('dy'), 0.0) or 0.0
                 cur_y = ty if ty is not None else cur_y + dy_v
                 cur_x = gf(child.get('x'), x)
-                cur_text = seg
+                cur_runs = [(seg, run_fs, run_heavy)] if seg else []
                 started = True
             elif seg:
-                cur_text = (cur_text + ' ' + seg).strip()
+                cur_runs.append((seg, run_fs, run_heavy))
             tail = (child.tail or '').strip()
             if tail:
-                cur_text = (cur_text + ' ' + tail).strip()
-        if started and cur_text:
-            lines.append((cur_text, cur_x, cur_y))
+                cur_runs.append((tail, fs, heavy))
+        if started and cur_runs:
+            lines.append((cur_runs, cur_x, cur_y))
         if not lines:
             return None
 
         line_boxes = []
-        for content, lx, baseline in lines:
-            w = _geom_text_width(content, fs, ls)
+        for runs, lx, baseline in lines:
+            content = ' '.join(text for text, _size, _heavy in runs)
+            # Joining space at the block size; equals the old single-string
+            # estimate when every run shares the block size and weight.
+            w = sum(_geom_text_width(text, size, ls, run_heavy)
+                    for text, size, run_heavy in runs)
+            w += (len(runs) - 1) * (GEOM_SPACE_WIDTH * fs + 2 * ls)
+            size = max(run_size for _text, run_size, _heavy in runs)
             if anchor == 'middle':
                 x0 = lx - w / 2.0
             elif anchor == 'end':
@@ -2417,8 +2563,10 @@ class SVGQualityChecker:
                 'width': w,
                 'x0': x0 + dx,
                 'x1': x0 + w + dx,
-                'top': baseline - GEOM_ASCENT * fs + dy,
-                'bottom': baseline + GEOM_DESCENT * fs + dy,
+                'top': baseline - GEOM_ASCENT * size + dy,
+                'bottom': baseline + GEOM_DESCENT * size + dy,
+                'baseline': baseline + dy,
+                'size': size,
             })
         return {
             'font_size': fs,
@@ -2429,18 +2577,54 @@ class SVGQualityChecker:
             'mixed_sizes': mixed_sizes,
         }
 
-    def _geom_collect(self, top, vb_w, vb_h):
-        """One top-level child -> (obstacle boxes, text blocks).
+    @classmethod
+    def _geom_stroke_segments(cls, elem, tag, dx, dy, stroke, background):
+        """Straight stroke segments of a line / polyline / unfilled path.
+
+        Faint strokes return nothing — a hairline close to the page
+        background color (a light gridline on white, a navy grid on black)
+        or a half-transparent stroke leaves the text over it legible.
+        """
+        if not stroke or stroke.lower() == 'none':
+            return []
+        gf = cls._geom_float
+        if (gf(elem.get('stroke-opacity'), 1.0) or 0.0) < 0.5:
+            return []
+        rgb = _geom_hex_rgb(stroke)
+        if rgb and (gf(elem.get('stroke-width'), 1.0) or 1.0) <= GEOM_FAINT_WIDTH:
+            diff = sum(abs(c - b) for c, b in zip(rgb, background)) / 765
+            if diff <= GEOM_FAINT_DIFF:
+                return []
+        if tag == 'line':
+            polys = [[(gf(elem.get('x1'), 0.0), gf(elem.get('y1'), 0.0)),
+                      (gf(elem.get('x2'), 0.0), gf(elem.get('y2'), 0.0))]]
+        elif tag == 'polyline':
+            pts = re.findall(r'(-?[\d.]+)[\s,]+(-?[\d.]+)', elem.get('points') or '')
+            polys = [[(float(px), float(py)) for px, py in pts]]
+        else:  # path: an unfilled connector drawn with straight commands only
+            if (elem.get('fill') or '').strip().lower() not in ('none', 'transparent'):
+                return []
+            polys = _geom_path_polylines(elem.get('d') or '') or []
+        return [(ax + dx, ay + dy, bx + dx, by + dy)
+                for poly in polys for (ax, ay), (bx, by) in zip(poly, poly[1:])]
+
+    def _geom_collect(self, top, vb_w, vb_h, paint, background):
+        """One top-level child -> (obstacle boxes, text blocks, stroke segments,
+        opaque fill boxes).
 
         Boxes stay per-element (no union): a union bbox would let two footer
         texts span the whole page width and false-fire on anything between
-        them.
+        them. `paint` is a one-item list holding the page-wide paint order;
+        blocks, segments and fills carry it so a stroke hidden under an
+        opaque shape painted before the text is not reported.
         """
         boxes = []
         blocks = []
+        segments = []  # (order, (x1, y1, x2, y2))
+        fills = []  # (order, box)
         canvas_area = vb_w * vb_h
 
-        def visit(elem, dx, dy):
+        def visit(elem, dx, dy, stroke):
             shift = self._geom_translate(elem)
             if shift is None:
                 return  # non-translate transform: skip subtree
@@ -2450,9 +2634,16 @@ class SVGQualityChecker:
                 return
             if self._geom_opacity_exempt(elem):
                 return  # watermark: neither obstacle nor checked text
+            paint[0] += 1
+            order = paint[0]
+            stroke = (elem.get('stroke') or stroke or '').strip()
+            if tag in ('line', 'polyline', 'path'):
+                segments.extend((order, seg) for seg in self._geom_stroke_segments(
+                    elem, tag, dx, dy, stroke, background))
             if tag == 'text':
                 block = self._geom_text_block(elem, dx, dy)
                 if block is not None:
+                    block['order'] = order
                     blocks.append(block)
                     for line in block['lines']:
                         boxes.append((line['x0'], line['top'],
@@ -2460,25 +2651,34 @@ class SVGQualityChecker:
                 return  # tspans already consumed
             box = self._geom_shape_box(elem, tag, dx, dy)
             if box is not None:
+                fill = (elem.get('fill') or '').strip().lower()
+                if (tag == 'image' or (fill and fill not in ('none', 'transparent')
+                                       and (self._geom_float(elem.get('fill-opacity'), 1.0)
+                                            or 0.0) >= 0.9)) and tag != 'line':
+                    fills.append((order, box))
                 area = (box[2] - box[0]) * (box[3] - box[1])
                 if not (tag in ('rect', 'image')
                         and area >= GEOM_BG_COVERAGE * canvas_area):
                     boxes.append(box)
             for sub in list(elem):
-                visit(sub, dx, dy)
+                visit(sub, dx, dy, stroke)
 
-        visit(top, 0.0, 0.0)
-        return boxes, blocks
+        visit(top, 0.0, 0.0, '')
+        return boxes, blocks, segments, fills
 
     def _check_text_geometry(self, root: ET.Element, svg_path: Path,
                              result: Dict) -> None:
         """Static text overflow / collision / wrap-budget checks.
 
         Width model: CJK 1.0 x fs, Latin 0.55 x fs, space 0.25 x fs
-        (validated against the 2026-07-17 defect corpus — 8/8 reproduced).
+        (validated against the 2026-07-17 defect corpus — 8/8 reproduced);
+        heavy digits 0.63 x fs and '%' 1.0 x fs; inline tspans at their own
+        font-size.
         A-class (canvas overflow, cross-group intrusion) -> error;
         B-class (unnecessary wrap, over-width single-sentence wrap) ->
-        warning.
+        warning; a visible stroke (line / polyline / straight unfilled path,
+        any group; light hairline gridlines and faint strokes excluded)
+        crossing a text line's glyph core -> warning.
         """
         parsed = _parse_viewbox_values(root.get('viewBox') or '')
         if parsed is None:
@@ -2488,13 +2688,27 @@ class SVGQualityChecker:
             return
 
         groups = []  # (key, label, boxes, blocks)
+        strokes = []  # (label, order, (x1, y1, x2, y2))
+        fills = []  # (order, box) — opaque shapes that can hide a stroke
+        paint = [0]
+        background = (255, 255, 255)
+        for rect in root.iter(f'{{{SVG_NS}}}rect'):
+            rgb = _geom_hex_rgb(rect.get('fill'))
+            w = self._geom_float(rect.get('width'), 0.0) or 0.0
+            h = self._geom_float(rect.get('height'), 0.0) or 0.0
+            if rgb and w * h >= GEOM_BG_COVERAGE * vb_w * vb_h:
+                background = rgb  # first full-canvas fill = page background
+                break
         for child in list(root):
             tag = _local_name(child)
             if tag in _NON_VISUAL_SVG_TAGS or tag in _GEOM_SKIP_TAGS:
                 continue
             label = child.get('id') or f'<{tag}>'
-            boxes, blocks = self._geom_collect(child, vb_w, vb_h)
+            boxes, blocks, segments, child_fills = self._geom_collect(
+                child, vb_w, vb_h, paint, background)
             groups.append((id(child), label, boxes, blocks))
+            strokes.extend((label, order, seg) for order, seg in segments)
+            fills.extend(child_fills)
 
         body_px = self._geom_body_px(svg_path)
         margin = vb_w * GEOM_MARGIN_RATIO
@@ -2506,6 +2720,49 @@ class SVGQualityChecker:
                 if body_px:
                     self._geom_b_checks(block, label, key, groups, vb_w,
                                         margin, body_px, result)
+                self._geom_stroke_checks(block, label, strokes, fills, result)
+
+    @staticmethod
+    def _geom_stroke_checks(block, label, strokes, fills, result):
+        """Warn when a visible stroke runs through a text line's glyph core.
+
+        The core spans the conservative ink width horizontally (touching the
+        start edge counts) and cap height to baseline vertically, so rules
+        drawn under the baseline and lines ending beside a label stay quiet.
+        A crossing is hidden — and skipped — when an opaque shape painted
+        after the stroke and before the text covers it (a number badge on a
+        rail, a chip on a track).
+        """
+        for line in block['lines']:
+            gap = line['width'] * (1.0 - GEOM_CONSERVATIVE)
+            if block['anchor'] == 'middle':
+                ex0, ex1 = line['x0'] + gap / 2.0, line['x1'] - gap / 2.0
+            elif block['anchor'] == 'end':
+                ex0, ex1 = line['x0'] + gap, line['x1']
+            else:
+                ex0, ex1 = line['x0'], line['x1'] - gap
+            rx0, rx1 = ex0 - GEOM_TOUCH, ex1 + GEOM_TOUCH
+            ry1 = line['baseline'] - 0.5
+            ry0 = line['baseline'] - GEOM_GLYPH_CAP * line['size'] + 0.5
+            for seg_label, seg_order, (x1, y1, x2, y2) in strokes:
+                part = _geom_clip(x1, y1, x2, y2, rx0, ry0, rx1, ry1)
+                if part is None or math.dist(part[:2], part[2:]) < GEOM_MIN_CROSS:
+                    continue
+                if any(seg_order < fill_order < block['order']
+                       and fx0 - GEOM_TOUCH <= min(part[0], part[2])
+                       and max(part[0], part[2]) <= fx1 + GEOM_TOUCH
+                       and fy0 - GEOM_TOUCH <= min(part[1], part[3])
+                       and max(part[1], part[3]) <= fy1 + GEOM_TOUCH
+                       for fill_order, (fx0, fy0, fx1, fy1) in fills):
+                    continue  # hidden under an opaque shape behind the text
+                snippet = line['text'][:18] + ('…' if len(line['text']) > 18 else '')
+                result['warnings'].append(
+                    f"text geometry: line \"{snippet}\" in group '{label}' is "
+                    f"crossed by a stroke in group '{seg_label}' "
+                    f"(x={x1:.0f}..{x2:.0f}, y={y1:.0f}..{y2:.0f}) — move the "
+                    f"text or the stroke apart, or confirm in the pixel check"
+                )
+                break  # one report per text line
 
     def _geom_a_checks(self, block, label, own_key, groups, vb_w, vb_h,
                        result):
@@ -3208,9 +3465,26 @@ class SVGQualityChecker:
             self._pptx_structure_issues.append(('error', str(exc)))
             return
 
+        # --authoring (P01 gate): lock pages after the last authored page are
+        # not written yet, so their "absent page" findings are warnings; a gap
+        # inside the authored range stays an error. The final sweep runs
+        # without the flag and keeps every absent page an error.
+        actual_slides = {spec.slide_num for spec in specs}
+        planned_slides = {ref.slide_num for ref in structure_lock.layouts}
+        planned_slides |= {ref.slide_num for ref in structure_lock.prototypes}
+        unwritten = planned_slides - actual_slides
+        pending_tail = bool(self.authoring and complete_roster and unwritten
+                            and actual_slides and min(unwritten) > max(actual_slides))
+
+        def lock_issue(message: str) -> Tuple[str, str]:
+            if pending_tail and 'references absent page(s)' in message:
+                return ('warning', f"{message} — not authored yet (--authoring); "
+                                   f"the final full sweep must list none")
+            return ('error', message)
+
         if complete_roster:
             self._pptx_structure_issues.extend(
-                ('error', message)
+                lock_issue(message)
                 for message in _template_lock_errors(specs, structure_lock)
             )
         else:
@@ -3223,7 +3497,7 @@ class SVGQualityChecker:
             )
         if _template_prototype_errors is not None:
             self._pptx_structure_issues.extend(
-                ('error', message)
+                lock_issue(message)
                 for message in _template_prototype_errors(
                     specs,
                     structure_lock,
@@ -4260,12 +4534,17 @@ class SVGQualityChecker:
             for error in result['errors']:
                 print(f"   [ERROR] {error}")
 
-        # Display warnings
+        # Display warnings: every text-geometry warning (each needs a
+        # disposition line), plus the first 2 others unless --all-warnings
         if result['warnings']:
-            for warning in result['warnings'][:2]:  # Only show first 2 warnings
+            shown = [w for w in result['warnings'] if w.startswith('text geometry')]
+            others = [w for w in result['warnings'] if not w.startswith('text geometry')]
+            limit = len(others) if self.show_all_warnings else 2
+            for warning in shown + others[:limit]:
                 print(f"   [WARN] {warning}")
-            if len(result['warnings']) > 2:
-                print(f"   ... and {len(result['warnings']) - 2} more warning(s)")
+            if len(others) > limit:
+                print(f"   ... and {len(others) - limit} more warning(s) "
+                      f"(--all-warnings lists them)")
 
         print()
 
@@ -4548,6 +4827,12 @@ def print_usage() -> None:
     print("                                  Deck-wide contract checks are skipped and no")
     print("                                  pass stamp is written — the final full sweep")
     print("                                  still covers everything.")
+    print("  --authoring                   P01 gate on a structured template route: spec_lock")
+    print("                                  pages after the last authored page may be absent")
+    print("                                  (warning instead of error). Never on the final sweep.")
+    print("  --all-warnings                List every warning per file. By default every")
+    print("                                  `text geometry:` warning and the first 2 others")
+    print("                                  are listed.")
     print("  --template-mode               Validate a template workspace's templates/ directory:")
     print("                                  glob *.svg directly and skip spec_lock checks;")
     print("                                  always enforce roster consistency and emit placeholder hints.")
@@ -4573,7 +4858,9 @@ def main() -> None:
         sys.exit(1)
 
     template_mode = '--template-mode' in sys.argv
-    checker = SVGQualityChecker(template_mode=template_mode)
+    checker = SVGQualityChecker(template_mode=template_mode,
+                                show_all_warnings='--all-warnings' in sys.argv,
+                                authoring='--authoring' in sys.argv)
 
     # Parse arguments
     target = sys.argv[1]
