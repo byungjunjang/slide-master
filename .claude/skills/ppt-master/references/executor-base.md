@@ -232,6 +232,7 @@ shape and to keep only the exceptions below as ordinary SVG.
 | Decision | Action |
 |---|---|
 | Plain rect / symmetric round rect / circle / ellipse | Keep the ordinary SVG primitive; it is already natively editable. |
+| Line that joins two diagram shapes | Bind it: `data-pptx-start` / `data-pptx-end` on a `<line>` or orthogonal `<polyline>` / `<path>` ([native-shape-authoring.md](./native-shape-authoring.md) §6). |
 | Exact single-preset match | Call `preset_shape_svg.py render` and paste its complete stdout fragment into the current hand-authored SVG. |
 | Stock shape that needs a gradient fill/stroke or a pattern fill | Keep ordinary SVG — the helper paints `none` or a solid HEX on both fill and stroke only ([`native-shape-authoring.md`](./native-shape-authoring.md) §5). |
 | Page-specific, compound, organic, branded, icon, or data geometry | Keep ordinary SVG path/polygon geometry. |
@@ -243,11 +244,13 @@ existing SVG, classify path contours, or upgrade ordinary SVG during export.
 **Hard rule**: do not hand-write `data-pptx-authoring`, `data-pptx-prst`,
 `data-pptx-frame`, adjustment, carrier, preview, or fingerprint metadata. The
 helper generates them atomically from the shared 187-shape registry. Rerun the
-helper when geometry or paint changes.
+helper when geometry or paint changes. Exception: the bound-route attributes
+`data-pptx-start`, `data-pptx-end` and their `-site` overrides are hand-written
+(native-shape-authoring.md §6).
 
 Connector-family presets require `--object-kind connector`, `fill="none"`, and
-a visible stroke. They export as unconnected `p:cxnSp`; do not hand-add
-endpoint/site metadata. `actionButton*` presets provide visual geometry only,
+a visible stroke. Helper connector fragments export as unconnected `p:cxnSp`;
+to attach a line to shapes, bind a plain route instead (native-shape-authoring.md §6). `actionButton*` presets provide visual geometry only,
 not actions or hyperlinks.
 
 **Hard rule — narrow helper scope**: the helper prints one shape fragment to

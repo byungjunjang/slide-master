@@ -96,6 +96,13 @@ except ImportError:
     _find_partial_preset_adjustments = None
 
 try:
+    from svg_to_pptx.drawingml.connectors import (
+        validate_connector_bindings as _validate_connector_bindings,
+    )
+except ImportError:
+    _validate_connector_bindings = None
+
+try:
     from pptx_to_svg.preset_authoring import (
         AUTHORING_ATTR as _AUTHORING_ATTR,
         validate_authored_preset_tree as _validate_authored_preset_tree,
@@ -1093,6 +1100,9 @@ class SVGQualityChecker:
                 self._check_preset_geometry_metadata(root, result)
                 self._check_preset_geometry_transforms(root, result)
 
+                # 7d. Bound connector routes must name connectable shapes.
+                self._check_connector_bindings(root, result)
+
                 # 8. Check object-level animation anchor quality.
                 self._check_animation_group_ids(root, result)
 
@@ -1971,6 +1981,20 @@ class SVGQualityChecker:
                     )
         result['warnings'].extend(sorted(partial_warnings))
         result['errors'].extend(sorted(issues))
+
+    def _check_connector_bindings(self, root: ET.Element, result: Dict) -> None:
+        """Validate data-pptx-start/end routes with the exporter's resolver."""
+        if _validate_connector_bindings is not None:
+            result['errors'].extend(_validate_connector_bindings(root))
+        elif any(
+            elem.get('data-pptx-start') is not None
+            or elem.get('data-pptx-end') is not None
+            for elem in root.iter()
+        ):
+            result['errors'].append(
+                'Unable to import connector binding validator; '
+                'cannot verify data-pptx-start/end routes'
+            )
 
     def _check_preset_geometry_transforms(
         self,

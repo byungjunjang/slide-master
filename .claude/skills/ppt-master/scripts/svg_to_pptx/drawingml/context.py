@@ -39,6 +39,14 @@ class ConvertContext:
     source_shape_id_map: dict[tuple[str, str], int] = field(default_factory=dict)
     claimed_shape_ids: set[int] = field(default_factory=set)
     referenced_shape_ids: set[int] = field(default_factory=set)
+    # Bound connector targets (connectors.py): native carrier element ->
+    # (pre-allocated shape id, SVG id, presets it may export as). An entry is
+    # removed once its element converts; leftovers mean the target vanished.
+    connector_targets: dict[ET.Element, tuple[int, str, frozenset[str]]] = field(
+        default_factory=dict
+    )
+    # Bound routes: route element -> precomputed a:stCxn / a:endCxn XML.
+    connector_links: dict[ET.Element, str] = field(default_factory=dict)
     slide_num: int = 1
     translate_x: float = 0.0
     translate_y: float = 0.0
@@ -208,6 +216,8 @@ class ConvertContext:
             source_shape_id_map=self.source_shape_id_map,
             claimed_shape_ids=self.claimed_shape_ids,
             referenced_shape_ids=self.referenced_shape_ids,
+            connector_targets=self.connector_targets,
+            connector_links=self.connector_links,
             slide_num=self.slide_num,
             translate_x=self.translate_x + dx,
             translate_y=self.translate_y + dy,

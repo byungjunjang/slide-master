@@ -25,6 +25,7 @@ from pptx_shapes import (
 from pptx_to_svg.preset_authoring import AUTHORING_ATTR, AUTHORING_VALUE
 from resource_paths import resolve_external_image_reference
 
+from .connectors import classify_route, connector_frame, is_bound_route, route_points
 from .context import ConvertContext, ShapeResult
 from .theme_colors import color_node_xml
 from .theme_fonts import theme_font_tokens
@@ -270,10 +271,48 @@ def _connector_connection_xml(elem: ET.Element, ctx: ConvertContext) -> str:
 
 
 def _claim_element_shape_id(elem: ET.Element, ctx: ConvertContext) -> int:
+    target = ctx.connector_targets.get(elem)
+    if target is not None:
+        return target[0]
     return ctx.claim_shape_id(
         elem.get('data-pptx-shape-id'),
         elem.get('data-pptx-shape-scope'),
     )
+
+
+def _convert_bound_route(elem: ET.Element, ctx: ConvertContext) -> ShapeResult:
+    """Convert a ``data-pptx-start/end`` route to an attached ``p:cxnSp``."""
+    links = ctx.connector_links.get(elem)
+    if links is None:
+        raise ValueError('data-pptx-start/end route was not resolved before conversion')
+    transform = elem.get('transform')
+    points = [
+        _transformed_point(ctx, x, y, transform)
+        for x, y in route_points(elem, (ctx.viewport_width, ctx.viewport_height))
+    ]
+    preset, corners = classify_route(points)
+    x, y, w, h, rot, flip_h, flip_v, adj1 = connector_frame(preset, corners)
+    off_x, off_y, ext_cx, ext_cy = (px_to_emu(value) for value in (x, y, w, h))
+    validate_ooxml_xfrm(off_x, off_y, ext_cx, ext_cy)
+    guide = '' if adj1 is None else f'<a:gd name="adj1" fmla="val {adj1}"/>'
+    shape_id = _claim_element_shape_id(elem, ctx)
+    xml = _wrap_connector(
+        shape_id,
+        f'Connector {shape_id}',
+        off_x,
+        off_y,
+        ext_cx,
+        ext_cy,
+        f'<a:prstGeom prst="{preset}"><a:avLst>{guide}</a:avLst></a:prstGeom>',
+        '<a:noFill/>',
+        build_stroke_xml(elem, ctx, get_stroke_opacity(elem, ctx)),
+        rot=rot,
+        xfrm_attr=(' flipH="1"' if flip_h else '') + (' flipV="1"' if flip_v else ''),
+        connection_xml=links,
+    )
+    xs = [px_to_emu(point[0]) for point in corners]
+    ys = [px_to_emu(point[1]) for point in corners]
+    return ShapeResult(xml=xml, bounds_emu=(min(xs), min(ys), max(xs), max(ys)))
 
 
 def _context_transform_matrix(ctx: ConvertContext) -> tuple[float, float, float, float, float, float]:
@@ -1222,6 +1261,8 @@ def convert_line(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
     heads (headEnd / tailEnd) correctly.  Plain lines (no markers) continue to
     use custom geometry which is sufficient and avoids flipH/flipV complexity.
     """
+    if is_bound_route(elem):
+        return _convert_bound_route(elem, ctx)
     preset_geom = _build_preset_geom_from_meta(elem)
     transform = elem.get('transform')
     raw_x1 = svg_length_x(elem.get('x1'), ctx)
@@ -1383,6 +1424,8 @@ def convert_line(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
 
 def convert_path(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
     """Convert SVG <path> to DrawingML custom geometry shape."""
+    if is_bound_route(elem):
+        return _convert_bound_route(elem, ctx)
     preset_geom = _build_preset_geom_from_meta(elem)
     preserved_custom_geom = _build_preserved_custom_geom(elem)
     native_geom = preset_geom or preserved_custom_geom
@@ -1552,6 +1595,8 @@ def convert_polygon(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None
 
 def convert_polyline(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None:
     """Convert SVG <polyline> to DrawingML custom geometry shape."""
+    if is_bound_route(elem):
+        return _convert_bound_route(elem, ctx)
     preset_geom = _build_preset_geom_from_meta(elem)
     points = _parse_points(elem.get('points', ''))
     if not points:
