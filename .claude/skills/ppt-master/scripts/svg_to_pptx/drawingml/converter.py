@@ -26,6 +26,7 @@ from pptx_to_svg.preset_authoring import (
 )
 from resource_paths import icon_search_dirs_for_svg
 
+from .connectors import ConnectorBinding, resolve_connector_bindings
 from .context import ConvertContext, ShapeResult
 from .theme_colors import ThemeColorSpec
 from .theme_fonts import ThemeFontSpec
@@ -827,6 +828,57 @@ def _build_source_shape_id_map(root: ET.Element) -> dict[tuple[str, str], int]:
     return mapping
 
 
+def _reserve_connector_targets(
+    bindings: list[ConnectorBinding],
+    ctx: ConvertContext,
+) -> None:
+    """Fix bound targets' shape ids before conversion and precompute links.
+
+    A route may precede its targets in paint order, so each target gets its
+    id up front; the target claims it when it converts.
+    """
+    for binding in bindings:
+        links: list[str] = []
+        for end, tag in ((binding.start, 'stCxn'), (binding.end, 'endCxn')):
+            if end is None:
+                continue
+            raw_id = end.carrier.get('data-pptx-shape-id')
+            if raw_id is not None:
+                shape_id = ctx.reference_shape_id(
+                    raw_id, end.carrier.get('data-pptx-shape-scope')
+                )
+            else:
+                target = ctx.connector_targets.get(end.carrier)
+                if target is None:
+                    target = (ctx.next_id(), end.svg_id, end.presets)
+                    ctx.connector_targets[end.carrier] = target
+                shape_id = target[0]
+            links.append(f'<a:{tag} id="{shape_id}" idx="{end.site}"/>')
+        ctx.connector_links[binding.route] = ''.join(links)
+
+
+def _settle_connector_target(
+    elem: ET.Element,
+    result: ShapeResult | None,
+    ctx: ConvertContext,
+) -> None:
+    """Fail closed when a bound target did not export as its preset."""
+    target = ctx.connector_targets.pop(elem, None)
+    if target is None:
+        return
+    shape_id, svg_id, presets = target
+    match = re.search(r'<a:prstGeom prst="([^"]+)"', result.xml) if result else None
+    if (
+        match is None
+        or match.group(1) not in presets
+        or f'<p:cNvPr id="{shape_id}"' not in result.xml
+    ):
+        raise SvgNativeConversionError(
+            f'Connector target "{svg_id}" did not export as a native '
+            f'{"/".join(sorted(presets))} shape with connection sites'
+        )
+
+
 def _geometry_trace_metadata(elem: ET.Element, result: ShapeResult) -> dict[str, Any]:
     """Describe the native geometry decision for conversion diagnostics."""
     xml = result.xml.lstrip()
@@ -941,6 +993,7 @@ def convert_element(elem: ET.Element, ctx: ConvertContext) -> ShapeResult | None
         except Exception as e:
             trace('error', error=str(e))
             raise SvgNativeConversionError(f'Failed to convert <{tag}>: {e}') from e
+        _settle_connector_target(elem, result, ctx)
         if result:
             shape_match = re.search(r'<p:cNvPr id="(\d+)"', result.xml)
             metadata: dict[str, Any] = {}
@@ -1220,6 +1273,12 @@ def convert_svg_to_slide_shapes(
         theme_font_spec=theme_font_spec,
         theme_color_spec=theme_color_spec,
     )
+    connector_bindings, binding_errors = resolve_connector_bindings(root)
+    if binding_errors:
+        raise SvgNativeConversionError(
+            f'{svg_path.name}: ' + '; '.join(binding_errors)
+        )
+    _reserve_connector_targets(connector_bindings, ctx)
 
     shapes: list[str] = []
     converted = 0
@@ -1287,6 +1346,11 @@ def convert_svg_to_slide_shapes(
         raise SvgNativeConversionError(
             'Connector target shape ids were reserved but not restored: '
             + ', '.join(str(shape_id) for shape_id in unresolved_connector_targets)
+        )
+    if ctx.connector_targets:
+        raise SvgNativeConversionError(
+            'Connector targets did not export as slide shapes: '
+            + ', '.join(sorted(svg_id for _id, svg_id, _p in ctx.connector_targets.values()))
         )
 
     # Animation target fallback. Semantic <g id="..."> groups are the

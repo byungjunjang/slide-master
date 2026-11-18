@@ -1420,6 +1420,8 @@ Common commands:
             print(f"Chart area: ({coord.chart_area.x_min}, {coord.chart_area.y_min}) - "
                   f"({coord.chart_area.x_max}, {coord.chart_area.y_max})")
             print(f"Value scale: {scale_source}")
+            print("Compare: " + ("X/Width" if args.horizontal else "Y/Height")
+                  + " only; category position and bar thickness are layout")
             print()
             print(calc.format_table(positions))
 

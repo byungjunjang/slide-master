@@ -5,20 +5,26 @@ Examples:
     python3 update_spec.py <project_path> primary=#0066AA
     python3 update_spec.py <project_path> colors.text=#111111
     python3 update_spec.py <project_path> typography.font_family='"PingFang SC", "Microsoft YaHei", sans-serif'
+    python3 update_spec.py <project_path> typography.body=22
+    python3 update_spec.py <project_path> --stale
 
 v2 scope:
 - `colors.*` — HEX value replacement across svg_output/*.svg (case-insensitive match).
 - `typography.font_family` — replaces the inner value of every `font-family="..."`
   / `font-family='...'` attribute in svg_output/*.svg. This is a global replace:
   every text element becomes the new family, regardless of role.
+- `typography.<size>` (body, title, footnote, ...) — rewrites the lock only and
+  raises `design_revision`; it does NOT touch the SVGs, because a size change
+  needs per-page re-layout. `--stale` then lists the pages whose root
+  `data-design-revision` stamp is below the lock's revision: re-adjust only
+  those and re-stamp them.
 
 Bare `key=value` (no dot) is treated as `colors.key=value` for backward compat.
 
-Other keys (typography sizes, per-role `typography.*_family` overrides, icons,
-images, canvas, forbidden) are intentionally NOT supported — they involve
-attribute-scoped or semantic replacements whose risk/benefit does not warrant
-bulk propagation. For per-role family changes, edit spec_lock.md and re-author
-the affected pages.
+Other keys (per-role `typography.*_family` overrides, icons, images, canvas,
+forbidden) are intentionally NOT supported — they involve attribute-scoped or
+semantic replacements whose risk/benefit does not warrant bulk propagation.
+For per-role family changes, edit spec_lock.md and re-author the affected pages.
 """
 from __future__ import annotations
 
@@ -33,6 +39,9 @@ configure_utf8_stdio()
 
 HEX_RE = re.compile(r"^#(?:[0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$")
 FONT_FAMILY_RE = re.compile(r"""(font-family\s*=\s*)(["'])(.*?)\2""")
+SIZE_RE = re.compile(r"^(?:\d+(?:\.\d+)?|\.\d+)$")
+DESIGN_REVISION = "design_revision"
+PAGE_REVISION_RE = re.compile(r"""\sdata-design-revision\s*=\s*["'](\d+)["']""")
 
 
 def parse_lock(lock_path: Path) -> dict[str, dict[str, str]]:
@@ -75,6 +84,43 @@ def rewrite_lock(lock_path: Path, section: str, key: str, new_value: str) -> Non
             lock_path.write_text("".join(lines), encoding="utf-8")
             return
     raise KeyError(f"key {key!r} not found under section {section!r} in {lock_path}")
+
+
+def lock_revision(sections: dict[str, dict[str, str]]) -> int:
+    """Return spec_lock.md `design_revision` (0 when the section is absent)."""
+    value = sections.get(DESIGN_REVISION, {}).get(DESIGN_REVISION, "0")
+    return int(value) if value.isdigit() else 0
+
+
+def page_revision(svg_text: str) -> int:
+    """Return the root `<svg data-design-revision>` stamp (0 when unstamped)."""
+    root_tag = re.search(r"<svg\b[^>]*>", svg_text)
+    match = PAGE_REVISION_RE.search(root_tag.group(0)) if root_tag else None
+    return int(match.group(1)) if match else 0
+
+
+def stale_pages(project: Path) -> list[tuple[str, int]]:
+    """Return `(file name, stamp)` for pages built against an older design revision."""
+    current = lock_revision(parse_lock(project / "spec_lock.md"))
+    stale = []
+    for svg in sorted((project / "svg_output").glob("*.svg")):
+        stamp = page_revision(svg.read_text(encoding="utf-8"))
+        if stamp < current:
+            stale.append((svg.name, stamp))
+    return stale
+
+
+def bump_design_revision(lock_path: Path) -> int:
+    """Raise `design_revision` by one, adding the section when absent; return it."""
+    new = lock_revision(parse_lock(lock_path)) + 1
+    try:
+        rewrite_lock(lock_path, DESIGN_REVISION, DESIGN_REVISION, str(new))
+    except KeyError:
+        text = lock_path.read_text(encoding="utf-8").rstrip("\n")
+        lock_path.write_text(
+            f"{text}\n\n## {DESIGN_REVISION}\n- {DESIGN_REVISION}: {new}\n", encoding="utf-8"
+        )
+    return new
 
 
 def replace_color_in_svgs(
@@ -158,8 +204,9 @@ def main() -> int:
     ap.add_argument("project_path", type=Path, help="project folder containing spec_lock.md and svg_output/")
     ap.add_argument(
         "assignment",
-        help="section.key=value (e.g. colors.primary=#0066AA, typography.font_family='\"Inter\", Arial, sans-serif'). "
-        "Bare key=value is treated as colors.key=value.",
+        nargs="?",
+        help="section.key=value (e.g. colors.primary=#0066AA, typography.font_family='\"Inter\", Arial, sans-serif', "
+        "typography.body=22). Bare key=value is treated as colors.key=value.",
     )
     ap.add_argument(
         "--dry-run",
@@ -167,7 +214,14 @@ def main() -> int:
         action="store_true",
         help="preview which SVGs would change; do not write anything to disk.",
     )
+    ap.add_argument(
+        "--stale",
+        action="store_true",
+        help="list pages whose data-design-revision stamp is below spec_lock.md design_revision; change nothing.",
+    )
     args = ap.parse_args()
+    if not args.stale and not args.assignment:
+        ap.error("an assignment is required unless --stale is given")
 
     project = args.project_path.resolve()
     lock = project / "spec_lock.md"
@@ -179,6 +233,21 @@ def main() -> int:
     if not svg_dir.exists():
         print(f"error: svg_output/ not found at {svg_dir}", file=sys.stderr)
         return 2
+
+    if args.stale:
+        revision = lock_revision(parse_lock(lock))
+        stale = stale_pages(project)
+        print(f"design_revision: {revision}")
+        if not stale:
+            print("stale pages: none")
+            return 0
+        print(
+            f"stale pages ({len(stale)}): re-adjust each to spec_lock.md, then set "
+            f'data-design-revision="{revision}" on its root <svg>'
+        )
+        for name, stamp in stale:
+            print(f"  - {name} (built against {stamp})")
+        return 0
 
     if "=" not in args.assignment:
         print("error: assignment must be [section.]key=value", file=sys.stderr)
@@ -231,10 +300,27 @@ def main() -> int:
             return 2
         if not args.dry_run:
             rewrite_lock(lock, "typography", key, new_value)
+    elif section == "typography" and not key.endswith("_family"):
+        if not SIZE_RE.match(new_value):
+            print(f"error: typography.{key} must be a unitless px number (got {new_value!r})", file=sys.stderr)
+            return 2
+        if old_value == new_value:
+            print(f"no change: typography.{key} already = {new_value}")
+            return 0
+        prefix = "[dry-run] " if args.dry_run else ""
+        revision = lock_revision(sections) + 1
+        if not args.dry_run:
+            rewrite_lock(lock, "typography", key, new_value)
+            bump_design_revision(lock)
+        print(f"{prefix}spec_lock.md: typography.{key}  {old_value} → {new_value}")
+        print(f"{prefix}spec_lock.md: design_revision → {revision} (svg_output/ is not touched)")
+        print(f"Next: run `update_spec.py {args.project_path} --stale`, re-adjust each listed page, "
+              f'and stamp it data-design-revision="{revision}".')
+        return 0
     else:
         print(
             f"error: {section}.{key} is not supported by update_spec.py.\n"
-            f"v2 supports: colors.* (HEX), typography.font_family.\n"
+            f"v2 supports: colors.* (HEX), typography.font_family, typography sizes.\n"
             f"Edit spec_lock.md and the affected SVGs by hand for other changes.",
             file=sys.stderr,
         )

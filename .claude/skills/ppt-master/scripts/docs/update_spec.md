@@ -8,6 +8,7 @@ Propagate a `spec_lock.md` value change to both the lock file and every `svg_out
 
 ```bash
 python3 .claude/skills/ppt-master/scripts/update_spec.py <project_path> <section>.<key>=<value>
+python3 .claude/skills/ppt-master/scripts/update_spec.py <project_path> --stale   # pages built against an older design_revision
 ```
 
 Bare `<key>=<value>` (no dot) is treated as `colors.<key>=<value>` for backward compat.
@@ -38,7 +39,8 @@ python3 .claude/skills/ppt-master/scripts/update_spec.py projects/acme_ppt169_20
 - **Supported**:
   - `colors.*` — HEX value replacement across `svg_output/*.svg` (case-insensitive).
   - `typography.font_family` — replaces the inner value of every `font-family="..."` / `font-family='...'` attribute.
-- **Not supported**: typography sizes, icons, images, canvas, forbidden — these involve attribute-scoped or semantic replacements whose risk/benefit does not warrant bulk propagation. Edit `spec_lock.md` and the affected SVGs by hand, or re-author the pages.
+  - `typography.<size role>` — lock only: the new size is written to `spec_lock.md` and `design_revision` goes up; no SVG is rewritten. `--stale` lists the pages whose root `data-design-revision` is older, and those pages are re-adjusted by hand.
+- **Not supported**: icons, images, canvas, forbidden — these involve attribute-scoped or semantic replacements whose risk/benefit does not warrant bulk propagation. Edit `spec_lock.md` and the affected SVGs by hand, or re-author the pages.
 
 ## When to use
 

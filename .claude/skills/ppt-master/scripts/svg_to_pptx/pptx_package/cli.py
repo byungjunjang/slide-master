@@ -349,6 +349,9 @@ Recorded narration:
             'and generated are accepted only to report a migration error.'
         ),
     )
+    parser.add_argument('--no-embed-fonts', action='store_true',
+                        help='Do not embed the installed Pretendard TrueType faces '
+                             'the deck uses (default: embed full fonts).')
     parser.add_argument('--no-image-optimize', action='store_true',
                         help='Disable native PPTX raster image optimization; embeds original image bytes.')
     parser.add_argument('--image-max-dimension', type=int, default=2560,
@@ -894,6 +897,7 @@ Recorded narration:
         narration_padding=args.narration_padding,
         merge_paragraphs=args.merge_paragraphs,
         image_optimize=not args.no_image_optimize,
+        embed_fonts=not args.no_embed_fonts,
         image_max_dimension=args.image_max_dimension,
         image_sizing=args.image_sizing,
         image_scale=args.image_scale,

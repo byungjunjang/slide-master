@@ -4,6 +4,7 @@
 Usage:
     python3 scripts/project_manager.py init <project_name> [--format ppt169] [--dir <path>]
     python3 scripts/project_manager.py import-sources <project_path> <source1> [<source2> ...] [--move | --copy]
+    python3 scripts/project_manager.py install-deck <project_path> <deck_id>
     python3 scripts/project_manager.py validate <project_path>
     python3 scripts/project_manager.py info <project_path>
 """
@@ -868,6 +869,58 @@ class ProjectManager:
 
         return summary
 
+    def install_deck(self, project_path: str, deck_id: str) -> list[Path]:
+        """Install library deck `deck_id` into a project (SKILL.md Step 3).
+
+        Rejects every destination collision and runs the structured-template
+        preflight before copying anything, then copies `templates/` plus any
+        `images/` and `icons/` (never `exports/`). Returns the copied paths.
+        """
+        decks_dir = SKILL_DIR / "templates" / "decks"
+        source = decks_dir / deck_id
+        if (
+            source.resolve().parent != decks_dir.resolve()
+            or not (source / "templates" / "design_spec.md").is_file()
+        ):
+            raise ValueError(
+                f"Unknown deck id: {deck_id!r} (see {decks_dir / 'decks_index.json'})"
+            )
+        project_dir = Path(project_path)
+        if not project_dir.is_dir():
+            raise FileNotFoundError(f"Project directory does not exist: {project_dir}")
+
+        mapping = [
+            (src, project_dir / root / src.relative_to(source / root))
+            for root in ("templates", "images", "icons")
+            if (source / root).is_dir()
+            for src in sorted((source / root).rglob("*"))
+            if src.is_file()
+        ]
+        collisions = [dst for _src, dst in mapping if dst.exists()]
+        if collisions:
+            raise FileExistsError(
+                f"Deck {deck_id!r} not installed; these files already exist "
+                "(nothing was copied):\n"
+                + "\n".join(f"  - {path}" for path in collisions)
+            )
+        try:
+            self._run_tool([
+                sys.executable,
+                str(TOOLS_DIR / "svg_quality_checker.py"),
+                str(source / "templates"),
+                "--template-mode",
+            ])
+        except RuntimeError as exc:
+            raise RuntimeError(
+                f"Structured-template preflight failed for deck {deck_id!r}; "
+                f"nothing was copied.\n{exc}"
+            ) from exc
+
+        for src, dst in mapping:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+        return [dst for _src, dst in mapping]
+
     def validate_project(self, project_path: str) -> tuple[bool, list[str], list[str]]:
         project_path_obj = Path(project_path)
         is_valid, errors, warnings = validate_project_structure(str(project_path_obj))
@@ -906,6 +959,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="""Examples:
   python3 scripts/project_manager.py init demo --format ppt169
   python3 scripts/project_manager.py import-sources projects/demo file.md --move
+  python3 scripts/project_manager.py install-deck projects/demo mckinsey
   python3 scripts/project_manager.py validate projects/demo
   python3 scripts/project_manager.py info projects/demo
 """,
@@ -926,6 +980,13 @@ def build_parser() -> argparse.ArgumentParser:
     mode = import_sources.add_mutually_exclusive_group()
     mode.add_argument("--move", action="store_true", help="Move local source files")
     mode.add_argument("--copy", action="store_true", help="Copy local source files")
+
+    install_deck = subparsers.add_parser(
+        "install-deck",
+        help="Preflight a library deck and copy it into a project (no overwrite)",
+    )
+    install_deck.add_argument("project_path", help="Project directory")
+    install_deck.add_argument("deck_id", help="Deck id from templates/decks/decks_index.json")
 
     validate = subparsers.add_parser("validate", help="Validate a project directory")
     validate.add_argument("project_path", help="Project directory")
@@ -987,6 +1048,14 @@ def main(argv: list[str] | None = None) -> int:
                 print("\nSkipped:")
                 for item in summary["skipped"]:
                     print(f"  - {item}")
+            return 0
+
+        if args.command == "install-deck":
+            copied = manager.install_deck(args.project_path, args.deck_id)
+            print(f"[OK] Installed deck '{args.deck_id}' into: {args.project_path}")
+            print("\nCopied files:")
+            for path in copied:
+                print(f"  - {path.relative_to(args.project_path)}")
             return 0
 
         if args.command == "validate":

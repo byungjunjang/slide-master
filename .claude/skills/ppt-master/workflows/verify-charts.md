@@ -28,7 +28,7 @@ Read `<project_path>/design_spec.md` §VII Visualization Reference List (authori
 | `direct-calc` | `line_chart`, `area_chart`, `scatter_chart` | Use `calc line`; area uses line output as the top boundary, then closes to `y_max`. |
 | `direct-calc` | `pie_chart`, `donut_chart` | Use `calc pie`; donut passes `--inner-radius`. |
 | `direct-calc` | `radar_chart` | Use `calc radar`; separate subcommand, not under `calc pie`. |
-| `decomposable-calc` | `stacked_bar_chart`, `stacked_area_chart`, `grouped_bar_chart`, `dumbbell_chart`, `pareto_chart`, `dual_axis_line_chart`, `bullet_chart`, `butterfly_chart`, `waterfall_chart`, `box_plot_chart`, `gantt_chart` | Verify by repeated direct calculations; see recipes below. |
+| `decomposable-calc` | `stacked_bar_chart`, `stacked_area_chart`, `grouped_bar_chart`, `dumbbell_chart`, `pareto_chart`, `dual_axis_line_chart`, `bullet_chart`, `butterfly_chart`, `waterfall_chart`, `box_plot_chart`, `gantt_chart`, `football_field`, `tornado` | Verify by repeated direct calculations; see recipes below. |
 | `partial-calc` | `bubble_chart` | Use `calc line` for `cx/cy`; verify radius only when a size scale is explicit. |
 | `formula-verify` | `progress_bar_chart`, `gauge_chart`, `funnel_chart` | One-line math; record the formula and resulting length/angle/width in the receipt, no calculator call needed. |
 | `manual-verify` | `sankey_chart`, `heatmap_chart`, `treemap_chart` | Data-driven geometry exists, but the current calculator has no complete layout model. Inspect and report; do not silently skip. |
@@ -100,6 +100,8 @@ For each page in the Step 1 list:
 
 6. **Scale-aware comparison.** Compare calculator output against the SVG's existing coordinates. Before declaring a mismatch, verify that every calculator invocation used the same axis range, plot area, center/radius, start angle, or size scale that the SVG visually declares. For `calc bar`, the output header must show `Value scale: axis ticks (...)` when the SVG has explicit ticks; if it shows `auto (max*1.1)`, go back to step 4 and re-run with the correct `--value-range`. **Do NOT update the SVG with mismatched-scale output.** Only update SVG attributes when the scale is confirmed to match and coordinates genuinely differ. Update by hand (do NOT use regex / bulk replacement — coordinates are positional and easy to swap incorrectly).
 
+   **Category axis is layout — compare the value axis only (non-blocking).** Calculator output on a categorical axis comes from its own spacing model (`calc bar` spaces bars `0.3 × --bar-width` apart, centered in `--area`; category indexes in `calc line` become even bands), not from data. Compare only value-axis geometry: vertical bars `Y` / `Height`, horizontal bars `X` / `Width`, and the value coordinate of category-indexed points (Pareto, dumbbell). Never count a category-axis difference (category position, group offset, bar thickness) as a mismatch, and never rewrite it from calc output.
+
 After updating any page, re-run the quality checker on the project to confirm nothing broke:
 
 ```bash
@@ -112,7 +114,7 @@ python3 .claude/skills/ppt-master/scripts/svg_quality_checker.py <project_path>
 
 `stacked_bar_chart` and `stacked_area_chart` are not single-call but reduce cleanly to repeated calls on existing primitives. The operator already had to compute cumulative values to draw the SVG — verify-charts reuses them.
 
-**Stacked bar** — for N stacked series on the same x categories, run `calc bar` N times. Pass each segment's **height** as the data value, and shift `--area`'s `y_max` down by the sum of all lower segments for that category. Compare each segment's `(x, y, width, height)` against the SVG.
+**Stacked bar** — for N stacked series on the same x categories, run `calc bar` N times. Pass each segment's **height** as the data value, and shift `--area`'s `y_max` down by the sum of all lower segments for that category. Compare each segment's value-axis `(y, height)` against the SVG (category `x` / `width` are layout, Step 2 item 6).
 
 ```bash
 # Example: two-series stack at category "Q1" with bottom=30, top=20, plot area y from 100 to 500
@@ -184,8 +186,8 @@ python3 .claude/skills/ppt-master/scripts/svg_position_calculator.py calc line \
 **Grouped bar chart** — N series sharing the same x categories, side-by-side instead of stacked:
 
 1. Read the value-axis range and the plot area.
-2. Compute the inner-group spacing: if there are `N` series and the visual group spans width `W` per category, each series-bar's width is `W/N` and its x offset within the group is `(i - 1) × W/N`. Read these from the SVG (the first category's bars give you both).
-3. Run `calc bar` once per series with the **same** `--area` and `--value-range` but with each call's `--bar-width` set to the inner width. The calc's per-category center X gives the **group** center; each series-bar's actual `x = group_center - W/2 + (i-1) × W/N`. Compare against the SVG.
+2. Run `calc bar` once per series with the **same** `--area` and `--value-range`. Compare each series-bar's value-axis `(y, height)` against the SVG (`--horizontal`: `(x, width)`).
+3. Group centers, inner offsets, and bar widths are category layout — do not compare them (Step 2 item 6).
 
 **Box plot chart** — Q1/Q3 box + median line + whiskers. All five quantities are y-values on the same axis:
 
@@ -199,11 +201,17 @@ python3 .claude/skills/ppt-master/scripts/svg_position_calculator.py calc line \
 2. Run `calc line` once over `start_index:row_y` per task — output `SVG_X` gives the bar's `x`. Run it again over `end_index:row_y` — output `SVG_X` gives `x + width`. Subtract for width.
 3. Compare each task rect's `(x, width)` against the calculated start and end. Row y can be read directly (categories are not value-driven).
 
+**Football field / tornado** — floating horizontal bars whose two ends are points on one value axis. Use the dumbbell `calc line` setup: `--area` from the plot-area marker, `--x-range` from the ticks, `--y-range "0,N"` with the row index as y; compare `SVG_X` only.
+
+1. Football field: run `calc line` on the low values, then on the high values. Low `SVG_X` = rect `x`; high `SVG_X` = rect `x + width`. Run it once more on the reference values and compare each reference line's `x1`.
+2. Tornado: run `calc line` on the downside, upside and base values. A downside rect spans downside → base `SVG_X`; an upside rect spans base → upside `SVG_X`; the base line's `x1` = base `SVG_X`.
+3. A delta axis below zero uses the same calls; pass negatives with `=` (`--data=-8.5:0.5,...`, `--x-range=-10,10`) so argparse does not read them as flags.
+
 **Waterfall chart** — floating bars connected by running totals. Each bar's top and bottom edge correspond to two points on the same value axis (`cum_before`, `cum_after`):
 
 1. Read the y-axis tick range and the plot area; compute running totals in category order (start with `cum[0] = base_value`, then `cum[i] = cum[i-1] + delta[i]` for increase, `cum[i-1] - delta[i]` for decrease, reset to delta for totals).
 2. Build two virtual series: `top[i] = max(cum_before, cum_after)`, `bot[i] = min(cum_before, cum_after)`. Run `calc bar` twice on these with identical `--area`, `--bar-width`, `--value-range`. The `top` run's `Y` is the bar's `y`; `height = bot.Y - top.Y` for that index.
-3. Compare each waterfall rect's `(x, y, width, height)` against the calculated pair. Connector lines should run from `(x + width, top_or_bot[i].Y)` to `(x_next, top_or_bot[i+1].Y)` at the matching shared cumulative value.
+3. Compare each waterfall rect's value-axis `(y, height)` against the calculated pair (category `x` / `width` are layout, Step 2 item 6). Connector lines should run from `(x + width, top_or_bot[i].Y)` to `(x_next, top_or_bot[i+1].Y)` at the matching shared cumulative value.
 4. Total bars (full-height start/end) use `bot = 0` and the calc reduces to the standard `calc bar` recipe.
 
 **Bubble chart / quadrant bubble scatter** — partial calculator support:
@@ -241,6 +249,8 @@ verify-charts: 16_before_after.svg | type=dumbbell | mode=decomposable-calc | sc
 verify-charts: 17_drivers_pareto.svg | type=pareto | mode=decomposable-calc | scale=left 0-80 / right 0-100 | calc=ran×2 | svg=updated
 verify-charts: 18_market_bubbles.svg | type=bubble | mode=partial-calc | xy=ran | radius=manual (scale missing) | svg=unchanged
 verify-charts: 20_quota_attainment.svg | type=bullet | mode=decomposable-calc | scale=0-120 (from ticks) | calc=ran×3 (bands+actual+target) | svg=updated
+verify-charts: 29_valuation_range.svg | type=football-field | mode=decomposable-calc | scale=500-1300 (from ticks) | calc=ran×3 (low/high/ref) | svg=unchanged
+verify-charts: 30_irr_sensitivity.svg | type=tornado | mode=decomposable-calc | scale=10-35 (from ticks) | calc=ran×3 (down/base/up) | svg=unchanged
 verify-charts: 21_inflow_outflow.svg | type=butterfly | mode=decomposable-calc | scale=0-500 (from ticks) | calc=ran×2 + mirror | svg=unchanged
 verify-charts: 22_profit_bridge.svg | type=waterfall | mode=decomposable-calc | scale=0-500 (from ticks) | calc=ran×2 (top/bot) | svg=updated
 verify-charts: 23_quarterly_progress.svg | type=progress | mode=formula-verify | formula=68/100×800=544px | svg=unchanged

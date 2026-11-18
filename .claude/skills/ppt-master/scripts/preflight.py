@@ -25,6 +25,7 @@ import argparse
 import importlib
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
@@ -54,6 +55,7 @@ FONT_FAMILY = "Pretendard"
 # never "not installed" — see font_installed().
 FONT_SCAN_CAP = 20000
 FONT_SUFFIXES = {".ttf", ".otf", ".ttc"}
+OFFICECLI_NPM_SPEC = "@officecli/officecli@1.0.135"
 
 
 def _module_missing(module: str) -> bool:
@@ -166,11 +168,30 @@ def check_codex_stubs() -> list[str]:
 
 
 def check_officecli() -> list[str]:
-    if shutil.which("officecli"):
-        return []
+    binary = shutil.which("officecli")
+    if not binary:
+        return [
+            "officecli not on PATH — verify_deck.py skips OpenXML validation and "
+            f"the exported-PPTX contact sheet (optional layer; npm install -g {OFFICECLI_NPM_SPEC})"
+        ]
+    # Retry once: OfficeCLI auto-updates its native binary and the call that
+    # triggers the swap can crash (workflows/verify-pptx-export.md).
+    detail = ""
+    for _attempt in range(2):
+        try:
+            proc = subprocess.run([binary, "--version"], capture_output=True, text=True,
+                                  encoding="utf-8", errors="replace", timeout=30)
+        except (subprocess.TimeoutExpired, OSError) as exc:
+            detail = exc.__class__.__name__
+            continue
+        if proc.returncode == 0:
+            return []
+        text = (proc.stderr or proc.stdout or "").strip()
+        detail = f"exit {proc.returncode}: {text.splitlines()[0][:160] if text else 'no output'}"
     return [
-        "officecli not on PATH — verify_deck.py skips OpenXML validation and "
-        "the exported-PPTX contact sheet (optional layer; npm install -g officecli)"
+        f"officecli on PATH but `officecli --version` failed twice ({detail}) — "
+        f"verify_deck.py will report validate as a tool error; reinstall: "
+        f"npm install -g {OFFICECLI_NPM_SPEC}"
     ]
 
 

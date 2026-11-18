@@ -169,6 +169,7 @@ def _launch_background_server(
     preferred_port: int,
     idle_timeout: int,
     open_browser: bool,
+    auto_confirm: int = 0,
 ) -> tuple[subprocess.Popen, int, Path]:
     """Start the confirm server child and wait until it is reachable."""
     confirm_dir = project_path / CONFIRM_DIR_NAME
@@ -184,6 +185,8 @@ def _launch_background_server(
         '--timeout',
         str(idle_timeout),
         '--no-browser',
+        '--auto-confirm',
+        str(auto_confirm),
     ]
     with log_path.open('a', encoding='utf-8') as log:
         proc = _popen_detached(
@@ -872,6 +875,7 @@ def create_app(
     idle_timeout: int = 900,
     lock_file: Optional[Path] = None,
     server_port: Optional[int] = None,
+    auto_confirm: int = 0,
 ) -> Flask:
     """Create and configure the Flask app for a given project directory."""
     project_path = Path(project_dir).resolve()
@@ -882,6 +886,7 @@ def create_app(
     app.config['CONFIRM_DIR'] = confirm_dir
     app.config['LOCK_FILE'] = lock_file
     app.config['SERVER_PORT'] = server_port
+    app.config['AUTO_CONFIRM'] = max(0, int(auto_confirm or 0))
     app.config['LAST_REQUEST_TIME'] = time.time()
 
     @app.before_request
@@ -1028,6 +1033,10 @@ def create_app(
         # Report whether a result already exists (re-open after confirm).
         result_file = confirm_dir / RESULT_NAME
         data['_already_confirmed'] = result_file.exists()
+        # Opt-in countdown (--auto-confirm): the page confirms the recommended
+        # values when it ends, unless the user touches the page first.
+        if app.config['AUTO_CONFIRM']:
+            data['_auto_confirm_seconds'] = app.config['AUTO_CONFIRM']
         # Later stages render only downstream sections, so fold earlier confirmed
         # choices from result.json back in. A refresh / reopen then re-inits from
         # the user's choices instead of catalog defaults.
@@ -1099,6 +1108,11 @@ def build_parser() -> argparse.ArgumentParser:
         help=f'Port to listen on (default: {DEFAULT_PORT})',
     )
     parser.add_argument('--no-browser', action='store_true', help='Do not auto-open browser')
+    parser.add_argument(
+        '--auto-confirm', type=int, default=0, metavar='SECONDS',
+        help='Opt-in: the page counts down SECONDS and then confirms the recommended '
+             'values; any click, key, scroll or touch stops it (default: 0 = off)',
+    )
     parser.add_argument(
         '--daemon', action='store_true',
         help='Start the server in the background; combine with --wait to block until confirmation',
@@ -1178,6 +1192,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                     preferred_port=recovery_port,
                     idle_timeout=args.timeout,
                     open_browser=False,
+                    auto_confirm=args.auto_confirm,
                 )
             except RuntimeError as exc:
                 logger.error('%s', exc)
@@ -1228,6 +1243,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                 preferred_port=args.port,
                 idle_timeout=args.timeout,
                 open_browser=not args.no_browser,
+                auto_confirm=args.auto_confirm,
             )
         except RuntimeError as exc:
             logger.error('%s', exc)
@@ -1264,6 +1280,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         idle_timeout=args.timeout,
         lock_file=lock_file,
         server_port=args.port,
+        auto_confirm=args.auto_confirm,
     )
 
     url = _server_url(args.port)

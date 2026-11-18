@@ -146,8 +146,11 @@ closed.
 
 **Fidelity boundary**: an unchanged authored fragment is `Native-stable` as
 one `p:sp` or `p:cxnSp`. Text remains outside the atomic fragment and may export
-as a grouped editable text box. Authoring v1 creates only unconnected
-`p:cxnSp`; it does not accept hand-written endpoint/site metadata. An
+as a grouped editable text box. Helper connector fragments export only
+unconnected `p:cxnSp`; a plain `<line>` / orthogonal `<polyline>` / `<path>` with
+`data-pptx-start` / `data-pptx-end` exports as an attached `straightConnector1` /
+`bentConnector2` / `bentConnector3` (native-shape-authoring.md §6; resolver
+`svg_to_pptx/drawingml/connectors.py`, shared by export and the quality checker). An
 `actionButton*` preset maps visual geometry only. Preset appearance never
 invents connector attachment, action behavior, navigation targets, or
 hyperlinks.

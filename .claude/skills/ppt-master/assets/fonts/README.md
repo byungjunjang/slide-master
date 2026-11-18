@@ -26,7 +26,10 @@ registered in `scripts/svg_to_pptx/drawingml/utils.py DUAL_SCRIPT_FONTS`).
 
 ### Installing on another machine
 
-PPTX files do **not** embed fonts. A deck opened on a machine without Pretendard falls back
-to a system font. To install: select all files in `Pretendard/` → right-click → **Install**
+`svg_to_pptx.py` embeds the installed Pretendard TTF faces the deck uses (`--no-embed-fonts`
+skips). The OTF files here cannot be embedded (CFF outlines), so embedding needs the TTF build
+installed; a face without one is skipped with a warning. On a machine without Pretendard,
+PowerPoint draws the embedded glyphs but lays Hangul out wider than the installed font, so
+line breaks can change — install Pretendard where the deck is edited or presented. To install: select all files in `Pretendard/` → right-click → **Install**
 (Windows), or download from https://github.com/orioncactus/pretendard (macOS/Linux
 supported upstream). SIL OFL permits free redistribution with the license file.

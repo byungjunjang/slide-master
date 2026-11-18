@@ -4,6 +4,9 @@ PPT Master - SVG Editor Server
 
 Flask backend for the SVG annotation editor.
 Serves the web UI and provides API endpoints for reading/writing SVG annotations.
+It also lists design_spec.md §IX page stubs, keeps per-page versions under
+backup/pages/<page>/, and stages page delete/reorder until Apply changes.
+See workflows/live-preview.md for the editor contract.
 
 Usage:
     python3 scripts/svg_editor/server.py <project_dir>
@@ -33,6 +36,8 @@ import urllib.error
 import urllib.request
 import webbrowser
 import xml.etree.ElementTree as ET
+import xml.parsers.expat
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -98,6 +103,7 @@ from svg_to_pptx.geometry_properties import (  # noqa: E402
     INLINE_GEOMETRY_PROPERTIES,
     materialize_inline_geometry_properties,
 )
+from update_spec import lock_revision, parse_lock  # noqa: E402
 
 _ICONS_DIR = _SCRIPTS_DIR.parent.parent / 'templates' / 'icons'
 _USE_ICON_PATTERN = re.compile(r'<use\s+[^>]*data-icon="[^"]*"[^>]*/>')
@@ -109,7 +115,7 @@ _SLIDE_CACHE_LOCK = threading.Lock()
 _SLIDE_CACHE: dict = {}  # path -> (mtime, (content, warnings))
 
 _LIST_CACHE_LOCK = threading.Lock()
-_LIST_CACHE: dict = {}  # path -> (mtime, annotation_count_on_disk)
+_LIST_CACHE: dict = {}  # path -> (mtime, (annotation_count_on_disk, design_revision))
 
 DEFAULT_PORT = 5050
 PUBLIC_HOST = '127.0.0.1'
@@ -397,6 +403,212 @@ def _coalesce_into(prev: dict, cur: dict) -> None:
     ]
 
 
+# ---------------------------------------------------------------------------
+# Page plan (design_spec.md §IX stubs), per-page versions, byte-preserving save.
+# ---------------------------------------------------------------------------
+
+PAGE_VERSIONS_DIR = Path('backup') / 'pages'
+PAGE_PLAN_LOG_NAME = 'page_plan.json'
+_VERSION_ID_RE = re.compile(r'^\d{8}-\d{6}-\d{6}$')
+# Guards backup/pages/ and page renames against the version watcher thread.
+_VERSION_LOCK = threading.Lock()
+_PAGE_NUMBER_RE = re.compile(r'^(\d+)_?(.*)$')
+_SLIDE_HEADING_RE = re.compile(r'^####\s+Slide\s+(\d+)\s*[-–—:]?\s*(.*)$', re.MULTILINE)
+_ATTR_RE = re.compile(r'(\s+)([^\s=/>]+)(\s*=\s*)(["\'])(.*?)\4', re.DOTALL)
+
+
+def _page_number(name: str) -> Optional[int]:
+    match = _PAGE_NUMBER_RE.match(name)
+    return int(match.group(1)) if match else None
+
+
+def _outline_pages(design_spec: Path) -> list[dict]:
+    """Return design_spec.md §IX pages: number, label, title, core message, chart."""
+    try:
+        text = design_spec.read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return []
+    start = re.search(r'^##\s+IX\.', text, re.MULTILINE)
+    if not start:
+        return []
+    section = text[start.end():]
+    end = re.search(r'^##\s+[^#]', section, re.MULTILINE)
+    if end:
+        section = section[:end.start()]
+    heads = list(_SLIDE_HEADING_RE.finditer(section))
+    pages = []
+    for index, head in enumerate(heads):
+        stop = heads[index + 1].start() if index + 1 < len(heads) else len(section)
+        block = section[head.end():stop]
+
+        def _field(label: str) -> str:
+            match = re.search(rf'^\s*-\s+\*\*{label}\*\*\s*:\s*(.+)$', block, re.MULTILINE)
+            return match.group(1).strip() if match else ''
+
+        pages.append({
+            'number': int(head.group(1)),
+            'label': head.group(2).strip(),
+            'title': _field('Title'),
+            'core': _field('Core message'),
+            'chart': re.sub(r'\s*\(see\b.*$', '', _field('Visualization')),
+        })
+    return pages
+
+
+def _versions_dir(project_path: Path, name: str) -> Path:
+    return project_path / PAGE_VERSIONS_DIR / Path(name).stem
+
+
+def _list_versions(project_path: Path, name: str) -> list[Path]:
+    """Stored versions of one page, oldest first (ids sort chronologically)."""
+    version_dir = _versions_dir(project_path, name)
+    return sorted(version_dir.glob('*.svg')) if version_dir.is_dir() else []
+
+
+def _store_version(project_path: Path, name: str, data: bytes) -> Optional[str]:
+    """Keep ``data`` as the newest version of page ``name`` unless it already is.
+
+    Callers hold ``_VERSION_LOCK``.
+    """
+    existing = _list_versions(project_path, name)
+    if existing and existing[-1].read_bytes() == data:
+        return None
+    version_dir = _versions_dir(project_path, name)
+    version_dir.mkdir(parents=True, exist_ok=True)
+    version_id = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
+    (version_dir / f'{version_id}.svg').write_bytes(data)
+    return version_id
+
+
+def _attr_text(value: str) -> str:
+    """Escape an attribute value the way ElementTree writes it."""
+    return (html.escape(value, quote=True)
+            .replace('\n', '&#10;').replace('\r', '&#13;').replace('\t', '&#09;'))
+
+
+def _element_spans(data: bytes) -> list[list[int]]:
+    """Byte offsets ``[start, close]`` per element, in document order.
+
+    ``start`` is the start tag's ``<``; ``close`` is the end tag's ``<`` (for an
+    empty-element tag it is just past ``/>`` and is never used).
+    """
+    parser = xml.parsers.expat.ParserCreate()
+    spans: list[list[int]] = []
+    stack: list[list[int]] = []
+
+    def _start(_name, _attrs) -> None:
+        stack.append([parser.CurrentByteIndex, -1])
+        spans.append(stack[-1])
+
+    def _end(_name) -> None:
+        stack.pop()[1] = parser.CurrentByteIndex
+
+    parser.StartElementHandler = _start
+    parser.EndElementHandler = _end
+    parser.Parse(data, True)
+    return spans
+
+
+def _tag_end(data: bytes, start: int) -> int:
+    """Return the index just past the ``>`` that closes the start tag at ``start``."""
+    quote = 0
+    for index in range(start + 1, len(data)):
+        byte = data[index]
+        if quote:
+            if byte == quote:
+                quote = 0
+        elif byte in (0x22, 0x27):
+            quote = byte
+        elif byte == 0x3E:
+            return index + 1
+    raise ValueError('unterminated start tag')
+
+
+def _patch_start_tag(tag: str, old: dict, new: dict) -> Optional[str]:
+    """Rewrite only the changed attributes of one start tag (None = cannot)."""
+    changed = {key for key in set(old) | set(new) if old.get(key) != new.get(key)}
+    if any(key.startswith('{') for key in changed):
+        return None
+
+    def _sub(match: re.Match) -> str:
+        key = match.group(2)
+        if key not in changed:
+            return match.group(0)
+        if key not in new:
+            return ''
+        quote = match.group(4)
+        return f'{match.group(1)}{key}{match.group(3)}{quote}{_attr_text(new[key])}{quote}'
+
+    patched = _ATTR_RE.sub(_sub, tag)
+    added = ''.join(
+        f' {key}="{_attr_text(value)}"'
+        for key, value in new.items()
+        if key in changed and key not in old
+    )
+    if added:
+        close = re.search(r'\s*/?>$', patched)
+        patched = patched[:close.start()] + added + patched[close.start():]
+    return patched
+
+
+def _element_signature(root: ET.Element) -> list[tuple]:
+    return [
+        (elem.tag, elem.attrib, elem.text or '', elem.tail or '')
+        for elem in root.iter()
+    ]
+
+
+def _patched_svg(original: bytes, root: ET.Element) -> Optional[bytes]:
+    """Splice the edited attributes / leaf text of ``root`` into ``original``.
+
+    Every untouched byte (other elements, comments, formatting) stays identical.
+    Returns None when the edit changed the element structure or the splice does
+    not reproduce ``root`` exactly; the caller then serializes the whole page.
+    """
+    try:
+        old_elements = list(ET.fromstring(original).iter())
+        spans = _element_spans(original)
+    except (ET.ParseError, xml.parsers.expat.ExpatError):
+        return None
+    new_elements = list(root.iter())
+    if not len(old_elements) == len(spans) == len(new_elements):
+        return None
+    patches: list[tuple[int, int, str]] = []
+    for old, new, (start, close) in zip(old_elements, new_elements, spans):
+        if old.tag != new.tag:
+            return None
+        same_text = (old.text or '') == (new.text or '')
+        if old.attrib == new.attrib and same_text:
+            continue
+        end = _tag_end(original, start)
+        tag = original[start:end].decode('utf-8')
+        new_tag = _patch_start_tag(tag, old.attrib, new.attrib)
+        if new_tag is None:
+            return None
+        if same_text:
+            patches.append((start, end, new_tag))
+            continue
+        if len(old) or len(new):
+            return None
+        text = html.escape(new.text or '', quote=False)
+        if tag.endswith('/>'):
+            name = re.match(r'<([^\s/>]+)', tag).group(1)
+            patches.append((start, end, f'{new_tag[:-2].rstrip()}>{text}</{name}>'))
+        else:
+            patches.append((start, end, new_tag))
+            patches.append((end, close, text))
+    out = bytearray(original)
+    for start, end, text in sorted(patches, reverse=True):
+        out[start:end] = text.encode('utf-8')
+    try:
+        check = ET.fromstring(bytes(out))
+    except ET.ParseError:
+        return None
+    if _element_signature(check) != _element_signature(root):
+        return None
+    return bytes(out)
+
+
 def create_app(
     project_dir: str,
     idle_timeout: int = 900,
@@ -421,6 +633,9 @@ def create_app(
     # Per-file staged direct edits. They affect the browser preview immediately,
     # but are written to svg_output/ only by /api/save-all.
     app.config['PENDING_EDITS'] = {}
+
+    # Staged page order (pages left out are deleted), applied by /api/save-all.
+    app.config['PAGE_PLAN'] = None
 
     # Idle timeout: auto-shutdown if no one connects within idle_timeout seconds
     app.config['LAST_REQUEST_TIME'] = time.time()
@@ -451,6 +666,56 @@ def create_app(
 
     watchdog = threading.Thread(target=_idle_watchdog, daemon=True)
     watchdog.start()
+
+    def _version_watcher():
+        # ponytail: 2 s mtime poll; two rewrites of one page inside one tick keep only the last.
+        seen: dict[str, float] = {}
+        while True:
+            with _VERSION_LOCK:
+                for svg_file in sorted(svg_dir.glob('*.svg')):
+                    try:
+                        mtime = svg_file.stat().st_mtime
+                        if seen.get(svg_file.name) == mtime:
+                            continue
+                        data = svg_file.read_bytes()
+                        ET.fromstring(data)  # a half-written page is retried next tick
+                        _store_version(project_path, svg_file.name, data)
+                    except (OSError, ET.ParseError):
+                        continue
+                    seen[svg_file.name] = mtime
+            time.sleep(2)
+
+    threading.Thread(target=_version_watcher, daemon=True).start()
+
+    def _lock_sections() -> dict:
+        try:
+            return parse_lock(project_path / 'spec_lock.md')
+        except (OSError, UnicodeDecodeError):
+            return {}
+
+    def _pages_locked_reason(sections: dict) -> str:
+        """Why page delete/reorder is refused here ('' when it is allowed)."""
+        if sections.get('pptx_structure', {}).get('mode') in ('structured', 'preserve'):
+            return ('Structured template deck: spec_lock.md pptx_layouts / page_layouts map '
+                    'each Layout to a page position (P01, P02, ...). Deleting or reordering '
+                    'pages here would break that map; ask in the chat to restructure the deck.')
+        for side in ('animations.json', 'audio'):
+            if (project_path / side).exists():
+                return (f'{side} keys per-page settings by file name; renumbering pages would '
+                        'detach them. Ask in the chat to restructure the deck.')
+        return ''
+
+    def _page_stubs(names: list[str]) -> list[dict]:
+        """design_spec.md §IX pages that have no SVG yet."""
+        design_spec = project_path / 'design_spec.md'
+        marker = _runtime_dir(project_path) / PAGE_PLAN_LOG_NAME
+        try:
+            if marker.exists() and marker.stat().st_mtime >= design_spec.stat().st_mtime:
+                return []  # pages were restructured here; §IX numbering no longer applies
+        except OSError:
+            return []
+        written = {_page_number(name) for name in names}
+        return [page for page in _outline_pages(design_spec) if page['number'] not in written]
 
     @app.route('/api/shutdown', methods=['POST'])
     def shutdown():
@@ -555,6 +820,8 @@ def create_app(
             return jsonify({'slides': []})
 
         annotations = app.config['ANNOTATIONS']
+        sections = _lock_sections()
+        design_revision = lock_revision(sections)
         slides = []
         for svg_file in sorted(svg_dir.glob('*.svg')):
             path_str = str(svg_file)
@@ -566,17 +833,22 @@ def create_app(
 
             ok = True
             error_msg: Optional[str] = None
-            disk_count = _cache_get(_LIST_CACHE, _LIST_CACHE_LOCK, path_str, mtime)
-            if disk_count is None:
+            cached = _cache_get(_LIST_CACHE, _LIST_CACHE_LOCK, path_str, mtime)
+            if cached is None:
+                revision = 0
                 try:
                     tree = ET.parse(path_str)
                     disk_count = len(parse_annotations(tree.getroot()))
+                    stamp = tree.getroot().get('data-design-revision', '0')
+                    revision = int(stamp) if stamp.isdigit() else 0
                 except ET.ParseError as exc:
                     ok = False
                     error_msg = f'XML parse error: {exc}'
                     disk_count = 0
                     logger.warning('slide parse failed: %s: %s', svg_file.name, exc)
-                _cache_put(_LIST_CACHE, _LIST_CACHE_LOCK, path_str, mtime, disk_count)
+                cached = (disk_count, revision)
+                _cache_put(_LIST_CACHE, _LIST_CACHE_LOCK, path_str, mtime, cached)
+            disk_count, revision = cached
 
             mem_count = len(annotations.get(svg_file.name, {}))
             annotation_count = max(disk_count, mem_count)
@@ -588,9 +860,17 @@ def create_app(
                 'ok': ok,
                 'error': error_msg,
                 'mtime': mtime,
+                'stale': revision < design_revision,
+                'versions': len(_list_versions(project_path, svg_file.name)),
             })
 
-        return jsonify({'slides': slides})
+        return jsonify({
+            'slides': slides,
+            'stubs': _page_stubs([slide['name'] for slide in slides]),
+            'design_revision': design_revision,
+            'page_plan': app.config['PAGE_PLAN'],
+            'pages_locked': _pages_locked_reason(sections),
+        })
 
     def _safe_svg_path(name: str):
         """Validate slide name and return safe path. Returns None if invalid.
@@ -864,11 +1144,148 @@ def create_app(
         stack.pop()
         return jsonify({'status': 'ok', 'undo_depth': len(stack)})
 
+    @app.route('/api/slide/<name>/versions')
+    def get_versions(name: str):
+        """List stored versions of one page, newest first."""
+        svg_file = _safe_svg_path(name)
+        if svg_file is None:
+            return jsonify({'error': 'Invalid slide name'}), 400
+        try:
+            current = svg_file.read_bytes()
+        except OSError:
+            current = None
+        versions = [
+            {'id': path.stem, 'current': path.read_bytes() == current}
+            for path in reversed(_list_versions(project_path, name))
+        ]
+        return jsonify({'versions': versions})
+
+    @app.route('/api/slide/<name>/restore', methods=['POST'])
+    def post_restore(name: str):
+        """Write a stored version back to svg_output/ (the replaced content stays a version)."""
+        svg_file = _safe_svg_path(name)
+        if svg_file is None:
+            return jsonify({'error': 'Invalid slide name'}), 400
+        if not svg_file.exists():
+            return jsonify({'error': 'Slide not found'}), 404
+        version_id = (request.get_json(silent=True) or {}).get('version')
+        if not isinstance(version_id, str) or not _VERSION_ID_RE.match(version_id):
+            return jsonify({'error': 'Invalid version id'}), 400
+        if app.config['PENDING_EDITS'].get(name) or name in app.config['ANNOTATIONS']:
+            return jsonify({'error': 'Apply or undo the staged changes on this page first'}), 409
+        source = _versions_dir(project_path, name) / f'{version_id}.svg'
+        if not source.is_file():
+            return jsonify({'error': 'Version not found'}), 404
+        with _VERSION_LOCK:
+            _store_version(project_path, name, svg_file.read_bytes())
+            data = source.read_bytes()
+            svg_file.write_bytes(data)
+            _store_version(project_path, name, data)
+        _append_edit_log(project_path, {
+            'ts': time.time(), 'file': name, 'action': 'restore_version', 'version': version_id,
+        })
+        return jsonify({'status': 'ok', 'version': version_id})
+
+    @app.route('/api/pages', methods=['POST'])
+    def post_pages():
+        """Stage a page order until Apply changes; pages left out are deleted.
+
+        Body: ``{order: [names...]}``, or ``{order: null}`` to drop the staged plan.
+        """
+        reason = _pages_locked_reason(_lock_sections())
+        if reason:
+            return jsonify({'error': reason}), 409
+        order = (request.get_json(silent=True) or {}).get('order')
+        if order is None:
+            app.config['PAGE_PLAN'] = None
+            return jsonify({'status': 'ok', 'page_plan': None})
+        current = sorted(path.name for path in svg_dir.glob('*.svg'))
+        if (not isinstance(order, list) or not order
+                or not all(isinstance(item, str) for item in order)
+                or len(set(order)) != len(order) or not set(order) <= set(current)):
+            return jsonify({'error': 'order must list existing pages once each'}), 400
+        app.config['PAGE_PLAN'] = None if order == current else order
+        return jsonify({'status': 'ok', 'page_plan': app.config['PAGE_PLAN']})
+
+    def _apply_page_plan(order: list[str]) -> tuple[dict, list[str]]:
+        """Delete the pages left out of ``order`` and renumber the rest in order.
+
+        A deleted page keeps its history (newest version = its last content, plus
+        its notes file) under ``backup/pages/<page>~deleted-<ts>/``. Each renamed
+        page takes its notes file and version history along. Callers hold
+        ``_VERSION_LOCK``.
+        """
+        current = sorted(path.name for path in svg_dir.glob('*.svg'))
+        deleted = [name for name in current if name not in order]
+        notes_dir = project_path / 'notes'
+        width = max(2, len(str(len(order))))
+        renamed: dict[str, str] = {}
+        moves: list[tuple[Path, Path]] = []
+        for index, name in enumerate(order, 1):
+            match = _PAGE_NUMBER_RE.match(name)
+            rest = match.group(2) if match else name
+            new_name = f'{index:0{width}d}{"" if rest.startswith(".") else "_"}{rest}'
+            if new_name == name:
+                continue
+            renamed[name] = new_name
+            old_stem, new_stem = Path(name).stem, Path(new_name).stem
+            moves += [
+                (svg_dir / name, svg_dir / new_name),
+                (notes_dir / f'{old_stem}.md', notes_dir / f'{new_stem}.md'),
+                (_versions_dir(project_path, name), _versions_dir(project_path, new_name)),
+            ]
+        moves = [(src, dst) for src, dst in moves if src.exists()]
+        vacated = {src for src, _ in moves}
+        for name in deleted:
+            vacated |= {svg_dir / name, notes_dir / f'{Path(name).stem}.md',
+                        _versions_dir(project_path, name)}
+        clash = [dst for _, dst in moves if dst.exists() and dst not in vacated]
+        if clash:
+            raise FileExistsError(f'page rename target already exists: {clash[0]}')
+
+        stamp = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
+        for name in deleted:
+            _store_version(project_path, name, (svg_dir / name).read_bytes())
+            version_dir = _versions_dir(project_path, name)
+            kept = version_dir.with_name(f'{version_dir.name}~deleted-{stamp}')
+            version_dir.rename(kept)
+            notes = notes_dir / f'{Path(name).stem}.md'
+            if notes.exists():
+                notes.rename(kept / notes.name)
+            (svg_dir / name).unlink()
+            _append_edit_log(project_path, {
+                'ts': time.time(), 'file': name, 'action': 'page_delete', 'kept_in': str(kept),
+            })
+        # Two phases so a target name is never taken while its source still sits there.
+        # ponytail: no rollback; an OS error mid-rename leaves *.renaming names to fix by hand.
+        parked = []
+        for src, dst in moves:
+            temp = src.with_name(src.name + '.renaming')
+            src.rename(temp)
+            parked.append((temp, dst))
+        for temp, dst in parked:
+            temp.rename(dst)
+        for old, new in renamed.items():
+            _append_edit_log(project_path, {
+                'ts': time.time(), 'file': old, 'action': 'page_rename', 'new': new,
+            })
+        return renamed, deleted
+
     @app.route('/api/save-all', methods=['POST'])
     def save_all():
         annotations = app.config['ANNOTATIONS']
         pending_edits = app.config['PENDING_EDITS']
+        page_plan = app.config['PAGE_PLAN']
         modified = []
+
+        if page_plan:
+            reason = _pages_locked_reason(_lock_sections())
+            if reason:
+                return jsonify({'error': reason}), 409
+            if not set(page_plan) <= {path.name for path in svg_dir.glob('*.svg')}:
+                app.config['PAGE_PLAN'] = None
+                return jsonify({'error': 'Pages changed on disk since the page order was '
+                                         'staged; nothing was written. Stage it again.'}), 409
 
         filenames = sorted(set(annotations.keys()) | set(pending_edits.keys()))
         for filename in filenames:
@@ -882,10 +1299,11 @@ def create_app(
                 continue
 
             try:
-                tree = ET.parse(str(svg_file))
-                root = tree.getroot()
-            except ET.ParseError:
+                original = svg_file.read_bytes()
+                root = ET.fromstring(original)
+            except (OSError, ET.ParseError):
                 continue
+            tree = ET.ElementTree(root)
 
             assign_temp_ids(root)
 
@@ -912,7 +1330,16 @@ def create_app(
             annotated_ids = set(anns.keys())
             strip_unused_temp_ids(root, annotated_ids)
 
-            tree.write(str(svg_file), encoding='UTF-8', xml_declaration=True)
+            updated = _patched_svg(original, root)
+            with _VERSION_LOCK:
+                _store_version(project_path, filename, original)
+                if updated is None:
+                    # ponytail: structural edits (tspan promotion, namespaced attributes)
+                    # still re-serialize the whole page, which drops XML comments.
+                    tree.write(str(svg_file), encoding='UTF-8', xml_declaration=True)
+                elif updated != original:
+                    svg_file.write_bytes(updated)
+                _store_version(project_path, filename, svg_file.read_bytes())
             ts = time.time()
             for element_id, annotation_text in anns.items():
                 old_text = old_annotations.get(element_id)
@@ -941,7 +1368,27 @@ def create_app(
         app.config['ANNOTATIONS'] = {}
         app.config['PENDING_EDITS'] = {}
 
-        return jsonify({'status': 'ok', 'files_modified': modified})
+        renamed: dict[str, str] = {}
+        deleted: list[str] = []
+        if page_plan:
+            app.config['PAGE_PLAN'] = None
+            try:
+                with _VERSION_LOCK:
+                    renamed, deleted = _apply_page_plan(page_plan)
+            except OSError as exc:
+                logger.warning('page plan failed: %s', exc)
+                return jsonify({'error': f'Page changes failed: {exc}',
+                                'files_modified': modified}), 500
+            # Also the marker that retires §IX stubs until design_spec.md changes again.
+            try:
+                (_runtime_dir(project_path) / PAGE_PLAN_LOG_NAME).write_text(json.dumps({
+                    'ts': time.time(), 'renamed': renamed, 'deleted': deleted,
+                }, ensure_ascii=False, indent=2), encoding='utf-8')
+            except OSError as exc:
+                logger.warning('page plan record failed: %s', exc)
+
+        return jsonify({'status': 'ok', 'files_modified': modified,
+                        'renamed': renamed, 'deleted': deleted})
 
     return app
 
