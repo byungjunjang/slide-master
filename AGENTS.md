@@ -33,16 +33,8 @@ a deck from a document/topic/template):
    [`.claude/skills/ppt-master/workflows/routing.md`](.claude/skills/ppt-master/workflows/routing.md)
    first. Use its one discriminator question only for the ambiguity it defines;
    do not load competing full owners before the answer.
-2. **Load the selected owner(s) in full.** The router owns the complete matrix;
-   this table is a compact Codex handoff summary:
-
-   | Selected family | Full runtime owner(s) |
-   |---|---|
-   | Main SVG generation / PPTX re-architecture | [Main `ppt-master/SKILL.md`](.claude/skills/ppt-master/SKILL.md) |
-   | Strict 1:1 SVG beautify | [`beautify-pptx.md`](.claude/skills/ppt-master/workflows/beautify-pptx.md), then main `SKILL.md` only at its explicit shared-SVG handoff |
-   | Raw PPTX template fill | [`ppt-template-fill/SKILL.md`](.claude/skills/ppt-template-fill/SKILL.md) only |
-   | Finished-PPTX native enhancement | [`native-enhance-pptx/SKILL.md`](.claude/skills/native-enhance-pptx/SKILL.md), then its required execution workflow |
-   | Another standalone route | The selected workflow; load the next owner only at an explicit handoff |
+2. **Load the selected owner(s) in full.** The router's matrix names each owner
+   and its handoffs; load another owner only at an explicit handoff.
 
 3. **Apply only owner-defined gates.** Confirmations, preflight, validation,
    recovery, export, and completion checks come from the selected owner. Sharing

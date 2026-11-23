@@ -22,15 +22,8 @@ an existing PowerPoint package and use their own execution gates.
 
 **Route selection authority**:
 [`.claude/skills/ppt-master/workflows/routing.md`](.claude/skills/ppt-master/workflows/routing.md)
-owns the complete matrix and wins over every summary below.
-
-| Selected family | Full execution owner(s) |
-|---|---|
-| New SVG-authored deck or PPTX re-architecture | [Main `ppt-master/SKILL.md`](.claude/skills/ppt-master/SKILL.md) |
-| Existing PPTX, strict 1:1 wording/page preservation with visual redesign | [`beautify-pptx.md`](.claude/skills/ppt-master/workflows/beautify-pptx.md), then the main skill only at its explicit shared-SVG handoff |
-| Raw PPTX template plus new material/topic | [`ppt-template-fill/SKILL.md`](.claude/skills/ppt-template-fill/SKILL.md) only |
-| Finished PPTX, stable visible content/layout, add notes/audio/timing/transitions | [`native-enhance-pptx/SKILL.md`](.claude/skills/native-enhance-pptx/SKILL.md), then its required execution workflow |
-| Reusable template creation or another standalone workflow | The selected workflow; load another owner only at an explicit handoff |
+owns the complete matrix and wins over every summary below (owner pointers:
+[Execution Pointers](#execution-pointers)).
 
 An ambiguous PPTX optimization request stays in the router until its one
 discriminator question resolves whether the deck is 1:1 beautify or
@@ -48,13 +41,12 @@ re-architectable source. Do not load either full owner before that answer.
 ## Font Policy (install-local, standing preference)
 
 - Every SVG-authored deck uses **Pretendard** as the fixed font family — do not propose or pick other families unless the user explicitly asks in the current conversation. Hierarchy comes from weight/size, not family switching. Direct-PPTX routes preserve source fonts unless their selected owner says otherwise. Full contract: [`strategist.md §g` install-local font lock](.claude/skills/ppt-master/references/strategist.md).
-- Stack: `Pretendard, "Malgun Gothic", sans-serif`; intermediate weights use installed family names (`"Pretendard Medium"`, `"Pretendard SemiBold"`, etc.).
-- Font files are bundled at [`.claude/skills/ppt-master/assets/fonts/Pretendard/`](.claude/skills/ppt-master/assets/fonts/Pretendard/) (SIL OFL) and installed user-level on this machine. Export embeds the installed Pretendard TTF faces the deck uses (full fonts, ~1.2 MB per face; `--no-embed-fonts` skips). Without Pretendard, PowerPoint draws the embedded glyphs but lays Hangul out wider, so machines that edit or present the deck still need Pretendard installed.
+- Font files: [`.claude/skills/ppt-master/assets/fonts/Pretendard/`](.claude/skills/ppt-master/assets/fonts/Pretendard/) (SIL OFL). Export embeds the installed faces (`--no-embed-fonts` skips), but machines that edit or present the deck still need Pretendard installed.
 
 ## Required Conventions
 
 - **Repo-wide style rules** — when editing prompt files under [`.claude/skills/ppt-master/references/`](.claude/skills/ppt-master/references/), Python under [`.claude/skills/ppt-master/scripts/`](.claude/skills/ppt-master/scripts/), or any other code/prose in the repo, follow the matching style rule in [`docs/rules/`](docs/rules/).
-- **Markdown language consistency** — Markdown files under `.claude/skills/ppt-master/workflows/`, `.claude/skills/ppt-master/references/`, and `docs/` are currently single-language per directory. New files mirror the language of their siblings; do not mix English scaffolding with Chinese paragraphs (or vice versa) inside one file. Chat replies are unaffected.
+- **Markdown language consistency** — Markdown files under `.claude/skills/ppt-master/workflows/`, `.claude/skills/ppt-master/references/`, and `docs/`: new files mirror the language of their siblings; do not mix English scaffolding with Chinese paragraphs (or vice versa) inside one file. Chat replies are unaffected.
 
 ## Compatibility Boundary
 
@@ -81,9 +73,6 @@ of treating a root-level command list as a gate checklist.
 
 ## Core Directories
 
-- `.claude/skills/ppt-master/SKILL.md` — main SVG workflow authority.
-- `.claude/skills/ppt-template-fill/SKILL.md` — raw-template direct-PPTX authority.
-- `.claude/skills/native-enhance-pptx/SKILL.md` — finished-PPTX enhancement entry owner.
 - `.claude/skills/ppt-master/references/` — role definitions and technical specifications.
 - `.claude/skills/ppt-master/scripts/` — runnable tool scripts.
 - `.claude/skills/ppt-master/scripts/docs/` — topic-focused script docs.
